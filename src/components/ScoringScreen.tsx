@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
+import { useState, useCallback, useEffect } from 'react';
+import { enqueueHoleWrite, getQueuedWrites, onQueueChange } from '../lib/writeQueue';
 import {
   calc, derive, settle, holeComplete, getsStroke, runningAt, headline,
   holeKeys, missingIn, totals, half, initials, setContext,
@@ -31,10 +31,9 @@ function curHole(m: Match, holes: number, pinned: Record<string, number>): numbe
 
 interface Props {
   data: EventData;
-  reload: () => void;
 }
 
-export default function ScoringScreen({ data, reload }: Props) {
+export default function ScoringScreen({ data }: Props) {
   const { scoringSessions, scoringMatches } = data;
 
   // Always refresh the scoring context
@@ -88,7 +87,6 @@ export default function ScoringScreen({ data, reload }: Props) {
           data={data}
           pinned={pinned}
           setPinned={setPinned}
-          reload={reload}
           tabbed={tabbed}
         />
       </div>
@@ -213,13 +211,24 @@ interface HeroCardProps {
   data: EventData;
   pinned: Record<string, number>;
   setPinned: (fn: (p: Record<string, number>) => Record<string, number>) => void;
-  reload: () => void;
   tabbed: boolean;
 }
 
-function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbed }: HeroCardProps) {
+function HeroCard({ match: m, session: s, data, pinned, setPinned, tabbed }: HeroCardProps) {
   const r = calc(m);
   const [saving, setSaving] = useState(false);
+  const [pending, setPending] = useState(0);
+
+  // How many scores are still waiting to reach the server
+  useEffect(() => {
+    let live = true;
+    const update = () => {
+      getQueuedWrites().then(q => { if (live) setPending(q.length); });
+    };
+    update();
+    const off = onQueueChange(update);
+    return () => { live = false; off(); };
+  }, []);
 
   const i = Math.min(curHole(m, s.holes, pinned), s.holes - 1);
   const h = m.hs[i];
@@ -258,17 +267,13 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
       entered_by: mePlayer?.id || null,
     };
 
-    const { error } = await supabase
-      .from('match_hole')
-      .upsert(row, { onConflict: 'match_id,hole' });
-
-    if (error) {
-      console.error('Failed to save score:', error);
-    }
+    // Goes into the IndexedDB queue first, then syncs: immediately when
+    // online, otherwise on reconnect / reopen / timer. The queue notifies
+    // useEventData, which reloads and overlays anything still unsynced.
+    await enqueueHoleWrite(row);
 
     setSaving(false);
-    reload();
-  }, [dbMatch, data.players, reload]);
+  }, [dbMatch, data.players]);
 
   const handleScoreSet = useCallback(async (k: string, value: number | 'X') => {
     if (viewOnly) return;
@@ -343,7 +348,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
           <span className="hh1">Hole {i + 1}</span>
           <span className="hh2">
             Par {s.par[i]}{s.si ? ` · SI ${s.si[i]}` : ' · scratch'}
-            {saving ? ' · saving…' : ''}
+            {saving ? ' · saving…' : pending > 0 ? ` · ${pending} to sync` : data.offline ? ' · offline' : ''}
           </span>
         </div>
         <button
@@ -413,7 +418,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
               </button>
             </div>
 
-            <div className="tgs">
+            <div className="tgs-wrap"><div className="tgs">
               {NOTE.map(t => {
                 const val = s.par[i] + t.o;
                 const on = g === val && !isX;
@@ -438,7 +443,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
                   </button>
                 );
               })}
-            </div>
+            </div></div>
           </div>
         );
       })}
