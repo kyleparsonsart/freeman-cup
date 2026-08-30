@@ -7,7 +7,7 @@ function tap() {
 }
 
 export default function App() {
-  const { data, loading, error, reload } = useEventData();
+  const { data, loading, error } = useEventData();
   const root = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export default function App() {
               {error}
             </div>
           )}
-          {data && <ScoringScreen data={data} reload={reload} />}
+          {data && <ScoringScreen data={data} />}
         </section>
       </div>
 

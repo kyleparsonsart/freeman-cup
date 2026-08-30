@@ -1,9 +1,15 @@
 {
   "name": "The Freeman Cup 2026",
   "short_name": "Freeman Cup",
+  "id": "/",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0A1410",
   "theme_color": "#0A1410",
-  "icons": []
+  "description": "Ryder Cup style scoring for the Freeman Cup at Sand Valley",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
 }

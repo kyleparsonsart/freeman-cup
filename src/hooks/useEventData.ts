@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase, ensureAuth } from '../lib/supabase';
 import { setContext, type Session, type Match, type HoleData, type Player } from '../lib/scoring';
+import { idbGet, idbPut } from '../lib/db';
+import { getQueuedWrites, overlayQueue, onQueueChange } from '../lib/writeQueue';
 import type {
   DbEvent, DbTeam, DbPlayer, DbCourse, DbRound, DbTeeGroup, DbMatch, DbMatchHole,
 } from '../lib/types';
@@ -20,6 +22,20 @@ export interface EventData {
   playerMap: Record<string, Player>;
   playerById: Record<string, DbPlayer>;
   mePlayerId: string; // Kyle P.'s player id
+  /** true when the server was unreachable and this came from the cached snapshot */
+  offline: boolean;
+}
+
+/** The raw tables of one good fetch — cached in IndexedDB for offline opens. */
+interface RawTables {
+  event: DbEvent;
+  teams: DbTeam[];
+  players: DbPlayer[];
+  courses: DbCourse[];
+  rounds: DbRound[];
+  teeGroups: DbTeeGroup[];
+  matches: DbMatch[];
+  matchHoles: DbMatchHole[];
 }
 
 const FMT_MAP: Record<string, 'Four-ball' | 'Foursomes' | 'Singles'> = {
@@ -41,46 +57,82 @@ function formatDate(d: string): string {
   return `${days[dt.getDay()]} ${months[dt.getMonth()]} ${dt.getDate()}`;
 }
 
+async function fetchTables(): Promise<RawTables> {
+  await ensureAuth();
+  const [
+    { data: events, error: e1 },
+    { data: teams, error: e2 },
+    { data: players, error: e3 },
+    { data: courses, error: e4 },
+    { data: rounds, error: e5 },
+    { data: teeGroups, error: e6 },
+    { data: matches, error: e7 },
+    { data: matchHoles, error: e8 },
+  ] = await Promise.all([
+    supabase.from('event').select('*'),
+    supabase.from('team').select('*'),
+    supabase.from('player').select('*'),
+    supabase.from('course').select('*'),
+    supabase.from('round').select('*').order('seq'),
+    supabase.from('tee_group').select('*').order('seq'),
+    supabase.from('match').select('*').order('seq'),
+    supabase.from('match_hole').select('*'),
+  ]);
+
+  const err = e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8;
+  if (err) throw new Error(err.message);
+
+  const event = (events as DbEvent[])[0];
+  if (!event) throw new Error('No event found');
+
+  return {
+    event,
+    teams: teams as DbTeam[],
+    players: players as DbPlayer[],
+    courses: courses as DbCourse[],
+    rounds: rounds as DbRound[],
+    teeGroups: teeGroups as DbTeeGroup[],
+    matches: matches as DbMatch[],
+    matchHoles: matchHoles as DbMatchHole[],
+  };
+}
+
 export function useEventData() {
   const [data, setData] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    await ensureAuth();
-    const [
-      { data: events, error: e1 },
-      { data: teams, error: e2 },
-      { data: players, error: e3 },
-      { data: courses, error: e4 },
-      { data: rounds, error: e5 },
-      { data: teeGroups, error: e6 },
-      { data: matches, error: e7 },
-      { data: matchHoles, error: e8 },
-    ] = await Promise.all([
-      supabase.from('event').select('*'),
-      supabase.from('team').select('*'),
-      supabase.from('player').select('*'),
-      supabase.from('course').select('*'),
-      supabase.from('round').select('*').order('seq'),
-      supabase.from('tee_group').select('*').order('seq'),
-      supabase.from('match').select('*').order('seq'),
-      supabase.from('match_hole').select('*'),
-    ]);
+    let raw: RawTables;
+    let offline = false;
 
-    const err = e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8;
-    if (err) { setError(err.message); setLoading(false); return; }
+    try {
+      raw = await fetchTables();
+      // remember this fetch for offline opens; best-effort
+      idbPut('snapshot', 'tables', raw).catch(() => {});
+    } catch (e) {
+      // server unreachable (or errored): fall back to the last good snapshot
+      const snap = await idbGet<RawTables>('snapshot', 'tables').catch(() => undefined);
+      if (!snap) {
+        setError(e instanceof Error ? e.message : String(e));
+        setLoading(false);
+        return;
+      }
+      raw = snap;
+      offline = true;
+    }
 
-    const event = events![0] as DbEvent;
-    if (!event) { setError('No event found'); setLoading(false); return; }
+    // scores entered but not yet synced sit on top of whatever we have
+    const queued = await getQueuedWrites();
 
-    const teamList = teams as DbTeam[];
-    const playerList = players as DbPlayer[];
-    const courseList = courses as DbCourse[];
-    const roundList = rounds as DbRound[];
-    const tgList = teeGroups as DbTeeGroup[];
-    const matchList = matches as DbMatch[];
-    const holeList = matchHoles as DbMatchHole[];
+    const { event } = raw;
+    const teamList = raw.teams;
+    const playerList = raw.players;
+    const courseList = raw.courses;
+    const roundList = raw.rounds;
+    const tgList = raw.teeGroups;
+    const matchList = raw.matches;
+    const holeList = overlayQueue(raw.matchHoles, queued);
 
     // Build player lookup by id
     const playerById: Record<string, DbPlayer> = {};
@@ -195,12 +247,16 @@ export function useEventData() {
     setData({
       event, teams: teamList, players: playerList, courses: courseList,
       rounds: roundList, teeGroups: tgList, matches: matchList, matchHoles: holeList,
-      scoringSessions, scoringMatches, playerMap, playerById, mePlayerId,
+      scoringSessions, scoringMatches, playerMap, playerById, mePlayerId, offline,
     });
+    setError(null);
     setLoading(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // Reload whenever the write queue changes (a score was entered or synced)
+  useEffect(() => onQueueChange(() => { load(); }), [load]);
 
   // Subscribe to realtime changes on match_hole
   useEffect(() => {
