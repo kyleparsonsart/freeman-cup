@@ -368,10 +368,8 @@ body.light .xchip.on{color:var(--on-solid)}
 .tg:disabled{opacity:.3}
 .tg:disabled .mk,.tg:disabled .cap{color:var(--moss-dim)}
 .tg .cap{font-family:var(--body);font-weight:600;font-size:11px;letter-spacing:.01em;color:var(--moss);opacity:.78;line-height:1}
-/* white box = the score you posted. outline draws evenly on all four sides
-   and sits inside the cell, so it never inherits the 1px column divider width */
-.tg.sel{--bg:var(--ink-3);background:var(--ink-3);outline:2px solid #FFFFFF;outline-offset:-3px}
-.tg.sel .cap{color:#FFFFFF;opacity:1}
+.tg.sel{--bg:#2A4D3E;background:#2A4D3E}
+.tg.sel .cap{color:var(--bone);opacity:1}
 /* brass underline = where the handicap stroke lands it. inset shadow, so no height shift */
 .tg.adj{box-shadow:inset 0 -3px 0 var(--brass)}
 .tg.adj .mk{--mkc:var(--brass)}
@@ -379,7 +377,7 @@ body.light .xchip.on{color:var(--on-solid)}
 /* one variable drives stroke, digit and rings, so selected flips the whole mark to white */
 .mk{--mkc:var(--moss);width:36px;height:36px;display:grid;place-items:center;
   font-family:var(--num);font-size:24px;font-weight:600;line-height:1;color:var(--mkc);font-variant-numeric:tabular-nums}
-.tg.sel .mk{--mkc:#FFFFFF}
+.tg.sel .mk{--mkc:var(--bone)}
 /* notation only draws on the posted score, so the row reads as numbers until you pick one.
    border sits inside the fixed 26px box and the rings are shadows, so nothing shifts on select */
 .tg.sel .mk.u1{border:1.75px solid var(--mkc);border-radius:50%}
@@ -652,7 +650,7 @@ body.light .legend b{color:#120C00}
 body.light .legend .ldot{background:#120C00}
 body.light .pick.on,body.light .seg button.sel[data-w="H"],
 body.light .bovr button.sel[data-w="H"]{color:var(--on-solid)}
-body.light .tg.sel{outline-color:var(--bone)}
+body.light .tg.sel{--bg:#B8CEAB;background:#B8CEAB}
 body.light .tg.sel .mk{--mkc:var(--bone)}
 body.light .tg.sel .cap{color:var(--bone)}
 

@@ -17,6 +17,10 @@ const NOTE = [
   { o: 1,  sh: 'o1', cap: 'Bogey' },
   { o: 2,  sh: 'o2', cap: 'Double' },
   { o: 3,  sh: 'o3', cap: 'Triple' },
+  { o: 4,  sh: '',   cap: '\u2013' },
+  { o: 5,  sh: '',   cap: '\u2013' },
+  { o: 6,  sh: '',   cap: '\u2013' },
+  { o: 7,  sh: '',   cap: '\u2013' },
 ];
 
 function curHole(m: Match, holes: number, pinned: Record<string, number>): number {
