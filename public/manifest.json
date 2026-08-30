@@ -1,0 +1,9 @@
+{
+  "name": "The Freeman Cup 2026",
+  "short_name": "Freeman Cup",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A1410",
+  "theme_color": "#0A1410",
+  "icons": []
+}

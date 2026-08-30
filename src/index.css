@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0F1E19;
+  --color-ink-2: #172B24;
+  --color-ink-3: #1E362D;
+  --color-line: #26443A;
+  --color-bone: #F0EBDC;
+  --color-moss: #8CA79B;
+  --color-moss-dim: #5D7268;
+  --color-red: #C8402F;
+  --color-blue: #4C86C4;
+  --color-brass: #D8A93F;
+  --color-board: #0A1712;
+
+  --font-display: 'Fraunces Variable', Fraunces, Georgia, serif;
+  --font-body: 'Work Sans Variable', 'Work Sans', system-ui, sans-serif;
+  --font-num: 'Barlow Condensed', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root { height: 100%; }
+body {
+  color: var(--color-bone);
+  font-family: var(--font-body);
+  font-optical-sizing: auto;
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+button { font-family: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+input, select { font-family: inherit; color: inherit; background: none; border: none; }
+:focus-visible { outline: 2px solid var(--color-brass); outline-offset: 2px; border-radius: 2px; }
+button:focus:not(:focus-visible), button:active { outline: none; }
