@@ -45,7 +45,7 @@ body.light .syncdot span{color:var(--on-brass)}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
 
-.body{flex:1;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column}
+.body{flex:1;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column}
 .body>.view{flex:none}
 .body>#v-scoring.on{flex:1}
 .view{display:none;padding:0 0 30px}
