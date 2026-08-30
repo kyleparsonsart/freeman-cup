@@ -8,8 +8,6 @@ import {
 } from '../lib/scoring';
 import type { EventData } from '../hooks/useEventData';
 
-const ME = 'kyle'; // hard-coded as Kyle P.
-
 const NOTE = [
   { o: -2, sh: 'u2', cap: 'Eagle' },
   { o: -1, sh: 'u1', cap: 'Birdie' },
@@ -34,7 +32,7 @@ interface Props {
 }
 
 export default function ScoringScreen({ data }: Props) {
-  const { scoringSessions, scoringMatches } = data;
+  const { scoringSessions, scoringMatches, meKey } = data;
 
   // Always refresh the scoring context
   setContext(data.playerMap, scoringSessions, scoringMatches);
@@ -54,7 +52,7 @@ export default function ScoringScreen({ data }: Props) {
   const [pinned, setPinned] = useState<Record<string, number>>({});
 
   const hero = roundMatches.find(m => m.id === heroId)
-    || roundMatches.find(m => m.a.includes(ME) || m.b.includes(ME))
+    || (meKey ? roundMatches.find(m => m.a.includes(meKey) || m.b.includes(meKey)) : undefined)
     || roundMatches[0];
 
   if (!todayRound || !hero) {
@@ -77,6 +75,7 @@ export default function ScoringScreen({ data }: Props) {
             matches={roundMatches}
             heroId={hero.id}
             onSelect={setHeroId}
+            meKey={meKey}
           />
         </div>
       )}
@@ -159,13 +158,14 @@ interface GroupTabsProps {
   matches: Match[];
   heroId: string;
   onSelect: (id: string) => void;
+  meKey: string;
 }
 
-function GroupTabs({ matches, heroId, onSelect }: GroupTabsProps) {
+function GroupTabs({ matches, heroId, onSelect, meKey }: GroupTabsProps) {
   return (
     <div className="ftabs" role="tablist">
       {matches.map(m => {
-        const mine = m.a.includes(ME) || m.b.includes(ME);
+        const mine = !!meKey && (m.a.includes(meKey) || m.b.includes(meKey));
         const letter = String.fromCharCode(65 + m.g);
         const rr = calc(m);
         const st2 = !rr.played ? '\u2014'
@@ -238,10 +238,9 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, tabbed }: Her
 
   // Find the scorer for this group
   const scorerKey = s.scorer[m.g];
-  const iAmScorer = scorerKey === ME;
-  // Commissioner can score any group
-  const isCommissioner = data.players.some(p => p.name === 'Kyle P.' && p.is_commissioner);
-  const viewOnly = !iAmScorer && !isCommissioner;
+  const iAmScorer = !!data.meKey && scorerKey === data.meKey;
+  // The commissioner can score any group
+  const viewOnly = !iAmScorer && !data.meIsCommissioner;
 
   // Find the match's tee_group_id and match_id from the DB
   const dbMatch = data.matches.find(dm => dm.id === m.id);
@@ -255,16 +254,13 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, tabbed }: Her
     if (!dbMatch) return;
     setSaving(true);
 
-    // Find entered_by player id
-    const mePlayer = data.players.find(p => p.name === 'Kyle P.');
-
     const row = {
       match_id: dbMatch.id,
       hole: holeNum + 1,
       scores,
       result,
       derived,
-      entered_by: mePlayer?.id || null,
+      entered_by: data.mePlayerId || null,
     };
 
     // Goes into the IndexedDB queue first, then syncs: immediately when
@@ -273,7 +269,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, tabbed }: Her
     await enqueueHoleWrite(row);
 
     setSaving(false);
-  }, [dbMatch, data.players]);
+  }, [dbMatch, data.mePlayerId]);
 
   const handleScoreSet = useCallback(async (k: string, value: number | 'X') => {
     if (viewOnly) return;

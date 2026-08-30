@@ -682,3 +682,19 @@ body.light .ftab[aria-selected="true"]{background:var(--ink-2);border-color:var(
 .dbtn{font-size:15px}
 
 #root{width:100%;height:100%}
+
+/* ---------- auth (added in Sprint 2; no prototype counterpart) ---------- */
+.auth{display:flex;flex-direction:column;gap:12px;padding:30px 4px 0;max-width:340px}
+.auth h2{font-family:var(--display);font-size:24px;font-weight:600;color:var(--bone);font-variation-settings:"SOFT" 40,"WONK" 0}
+.auth .asub{font-size:14px;line-height:1.55;color:var(--moss)}
+.auth .asub b{color:var(--bone);font-weight:600}
+.aform{display:flex;flex-direction:column;gap:10px}
+.ainput{border:1px solid var(--line);background:var(--ink-2);padding:12px;font-size:16px;color:var(--bone);width:100%;border-radius:2px}
+.ainput::placeholder{color:var(--moss-dim)}
+.ainput.code{font-family:var(--num);font-size:26px;letter-spacing:.35em;text-align:center;padding:10px 0 10px .35em}
+.abtn{padding:12px;background:var(--brass);color:var(--ink);font-weight:600;font-size:15px;border-radius:2px;width:100%}
+.abtn:disabled{opacity:.55}
+.aghost{align-self:flex-start;font-size:13.5px;color:var(--moss);text-decoration:underline;text-underline-offset:3px;padding:4px 0}
+.aerr{font-size:13.5px;color:var(--red);line-height:1.5}
+.adev{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line);display:flex;flex-wrap:wrap;gap:6px}
+.adev button{font-size:12px;padding:6px 10px;border:1px solid var(--line);color:var(--moss)}

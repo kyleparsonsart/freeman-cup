@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { supabase, ensureAuth } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import { setContext, type Session, type Match, type HoleData, type Player } from '../lib/scoring';
 import { idbGet, idbPut } from '../lib/db';
 import { getQueuedWrites, overlayQueue, onQueueChange } from '../lib/writeQueue';
@@ -21,7 +21,12 @@ export interface EventData {
   scoringMatches: Match[];
   playerMap: Record<string, Player>;
   playerById: Record<string, DbPlayer>;
-  mePlayerId: string; // Kyle P.'s player id
+  /* the signed-in player */
+  mePlayerId: string;
+  meKey: string;
+  meIsCommissioner: boolean;
+  /** signed in, but no player row carries this account (seat not claimable) */
+  unclaimed: boolean;
   /** true when the server was unreachable and this came from the cached snapshot */
   offline: boolean;
 }
@@ -58,7 +63,6 @@ function formatDate(d: string): string {
 }
 
 async function fetchTables(): Promise<RawTables> {
-  await ensureAuth();
   const [
     { data: events, error: e1 },
     { data: teams, error: e2 },
@@ -106,6 +110,10 @@ export function useEventData() {
     let raw: RawTables;
     let offline = false;
 
+    // who is signed in (local read, works offline)
+    const { data: { session } } = await supabase.auth.getSession();
+    const uid = session?.user.id ?? null;
+
     try {
       raw = await fetchTables();
       // remember this fetch for offline opens; best-effort
@@ -120,6 +128,21 @@ export function useEventData() {
       }
       raw = snap;
       offline = true;
+    }
+
+    // first sign-in on this seat: bind the auth account to the player row
+    // that carries this email (see claim_seat in freeman-cup-auth.sql)
+    let me = uid ? raw.players.find(p => p.auth_uid === uid) : undefined;
+    if (!me && uid && !offline) {
+      const { data: claimedId } = await supabase.rpc('claim_seat');
+      if (claimedId) {
+        raw = {
+          ...raw,
+          players: raw.players.map(p => p.id === claimedId ? { ...p, auth_uid: uid } : p),
+        };
+        me = raw.players.find(p => p.id === claimedId);
+        idbPut('snapshot', 'tables', raw).catch(() => {});
+      }
     }
 
     // scores entered but not yet synced sit on top of whatever we have
@@ -237,9 +260,10 @@ export function useEventData() {
       };
     });
 
-    // Find Kyle P.'s player id
-    const kyle = playerList.find(p => p.name === 'Kyle P.');
-    const mePlayerId = kyle?.id || '';
+    const mePlayerId = me?.id || '';
+    const meKey = me ? playerKey(me.id) : '';
+    const meIsCommissioner = me?.is_commissioner ?? false;
+    const unclaimed = !!uid && !me;
 
     // Set the scoring engine context
     setContext(playerMap, scoringSessions, scoringMatches);
@@ -247,7 +271,8 @@ export function useEventData() {
     setData({
       event, teams: teamList, players: playerList, courses: courseList,
       rounds: roundList, teeGroups: tgList, matches: matchList, matchHoles: holeList,
-      scoringSessions, scoringMatches, playerMap, playerById, mePlayerId, offline,
+      scoringSessions, scoringMatches, playerMap, playerById,
+      mePlayerId, meKey, meIsCommissioner, unclaimed, offline,
     });
     setError(null);
     setLoading(false);
