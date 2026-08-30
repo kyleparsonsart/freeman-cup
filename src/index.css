@@ -356,7 +356,7 @@ body.light .xchip.on{color:var(--on-solid)}
 .sdot2{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--brass);margin-left:6px;vertical-align:2px}
 .bnet{font-family:var(--num);font-size:15px;color:var(--brass);flex:none;font-variant-numeric:tabular-nums;letter-spacing:0}
 /* scorecard notation toggles: X, eagle, birdie, par, bogey, double, triple */
-.tgs{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;
+.tgs{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;
   -webkit-overflow-scrolling:touch;scrollbar-width:none;
   border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .tgs::-webkit-scrollbar{display:none}
