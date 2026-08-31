@@ -1,8 +1,8 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { setContext, type Session, type Match, type HoleData, type Player } from '../lib/scoring';
 import { idbGet, idbPut } from '../lib/db';
-import { getQueuedWrites, overlayQueue, onQueueChange } from '../lib/writeQueue';
+import { getQueuedWrites, overlayQueue, onQueueChange, type QueuedHoleWrite } from '../lib/writeQueue';
 import type {
   DbEvent, DbTeam, DbPlayer, DbCourse, DbRound, DbTeeGroup, DbMatch, DbMatchHole, DbFeedEvent,
 } from '../lib/types';
@@ -122,13 +122,26 @@ export function useEventData() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+  // One load at a time. A tap triggers a reload from the queue, another
+  // when the flush lands, and a third from realtime; running them
+  // concurrently let an older fetch overwrite a newer one (the score you
+  // just tapped blinked out and back). Extra requests collapse into one
+  // more run after the current one finishes.
+  const inflight = useRef(false);
+  const again = useRef(false);
+
+  const doLoad = useCallback(async () => {
     let raw: RawTables;
     let offline = false;
 
     // who is signed in (local read, works offline)
     const { data: { session } } = await supabase.auth.getSession();
     const uid = session?.user.id ?? null;
+
+    // Read the queue *before* fetching. If a row is flushed while the fetch
+    // is in the air, the fetch may predate the upsert but the pre-read
+    // still has the row, so the overlay keeps the score on screen.
+    const queuedBefore = await getQueuedWrites();
 
     try {
       raw = await fetchTables();
@@ -161,8 +174,16 @@ export function useEventData() {
       }
     }
 
-    // scores entered but not yet synced sit on top of whatever we have
-    const queued = await getQueuedWrites();
+    // scores entered but not yet synced sit on top of whatever we have:
+    // union of the pre-fetch and post-fetch reads, latest write per hole
+    const queuedAfter = await getQueuedWrites();
+    const byKey = new Map<string, QueuedHoleWrite>();
+    [...queuedBefore, ...queuedAfter].forEach(q => {
+      const k = `${q.match_id}:${q.hole}`;
+      const prev = byKey.get(k);
+      if (!prev || prev.queued_at <= q.queued_at) byKey.set(k, q);
+    });
+    const queued = [...byKey.values()].sort((a, b) => a.queued_at - b.queued_at);
 
     const { event } = raw;
     const teamList = raw.teams;
@@ -307,6 +328,19 @@ export function useEventData() {
     setError(null);
     setLoading(false);
   }, []);
+
+  const load = useCallback(async () => {
+    if (inflight.current) { again.current = true; return; }
+    inflight.current = true;
+    try {
+      await doLoad();
+    } catch (e) {
+      console.error('load failed', e);
+    } finally {
+      inflight.current = false;
+      if (again.current) { again.current = false; load(); }
+    }
+  }, [doLoad]);
 
   useEffect(() => { load(); }, [load]);
 

@@ -159,18 +159,26 @@ interface HeroCardProps {
 
 function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbed }: HeroCardProps) {
   const r = calc(m);
-  const [saving, setSaving] = useState(false);
   const [pending, setPending] = useState(0);
 
-  // How many scores are still waiting to reach the server
+  // How many scores are still waiting to reach the server. Online, a row
+  // sits in the queue for a few hundred ms before it flushes; showing that
+  // reads as flicker, so a non-zero count only appears once it has been
+  // waiting a couple of seconds. Zero clears immediately.
   useEffect(() => {
     let live = true;
+    let timer: ReturnType<typeof setTimeout> | null = null;
     const update = () => {
-      getQueuedWrites().then(q => { if (live) setPending(q.length); });
+      getQueuedWrites().then(q => {
+        if (!live) return;
+        if (timer) { clearTimeout(timer); timer = null; }
+        if (q.length === 0) setPending(0);
+        else timer = setTimeout(() => { if (live) setPending(q.length); }, 2500);
+      });
     };
     update();
     const off = onQueueChange(update);
-    return () => { live = false; off(); };
+    return () => { live = false; off(); if (timer) clearTimeout(timer); };
   }, []);
 
   const i = Math.min(curHole(m, s.holes, pinned), s.holes - 1);
@@ -229,7 +237,6 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
     derived: boolean,
   ) => {
     if (!dbMatch) return;
-    setSaving(true);
 
     const row = {
       match_id: dbMatch.id,
@@ -244,8 +251,6 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
     // online, otherwise on reconnect / reopen / timer. The queue notifies
     // useEventData, which reloads and overlays anything still unsynced.
     await enqueueHoleWrite(row);
-
-    setSaving(false);
   }, [dbMatch, data.mePlayerId]);
 
   const handleScoreSet = useCallback(async (k: string, value: number | 'X') => {
@@ -336,7 +341,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
           <span className="hh1">Hole {i + 1}</span>
           <span className="hh2">
             Par {s.par[i]}{s.si ? ` · SI ${s.si[i]}` : ' · scratch'}
-            {saving ? ' · saving…' : pending > 0 ? ` · ${pending} to sync` : data.offline ? ' · offline' : ''}
+            {pending > 0 ? ` · ${pending} to sync` : data.offline ? ' · offline' : ''}
           </span>
         </div>
         <button
