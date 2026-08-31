@@ -3,6 +3,7 @@ import { useAuth } from './hooks/useAuth';
 import { useEventData } from './hooks/useEventData';
 import ScoringScreen from './components/ScoringScreen';
 import LiveScreen from './components/LiveScreen';
+import ScheduleScreen from './components/ScheduleScreen';
 import SignInScreen from './components/SignInScreen';
 import SettingsSheet from './components/SettingsSheet';
 
@@ -117,10 +118,7 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
         )}
         {data && tab === 'schedule' && (
           <section id="v-schedule" className="view on">
-            <div className="empty">
-              <b>Schedule</b>
-              Days, rounds and scorecards land here next.
-            </div>
+            <ScheduleScreen data={data} />
           </section>
         )}
       </div>

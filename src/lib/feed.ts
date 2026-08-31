@@ -49,7 +49,7 @@ const names = (keys: string[]) => keys.map(k => P[k]?.n || k).join(' / ');
 const firstOf = (keys: string[]) => P[keys[0]]?.n || keys[0] || '';
 
 /** Lowest net score on the winning side: whose hole it was. */
-function bestName(m: Match, s: Session, i: number, side: 'a' | 'b'): { k: string; n: string } | null {
+export function bestName(m: Match, s: Session, i: number, side: 'a' | 'b'): { k: string; n: string } | null {
   if (s.fmt === 'Foursomes') return { k: side, n: CFG.teams[side].name };
   let bn = Infinity, k: string | null = null;
   m[side].forEach(x => {
