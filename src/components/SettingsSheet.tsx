@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { getTheme, setTheme, type Theme } from '../lib/theme';
 import type { EventData } from '../hooks/useEventData';
 import type { DbPlayer } from '../lib/types';
 
@@ -29,6 +30,12 @@ export default function SettingsSheet({ data, open, onClose, reload, signOut }: 
   const [err, setErr] = useState<string | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
   const [cleared, setCleared] = useState(false);
+  const [theme, setThemeState] = useState<Theme>(getTheme());
+  const flipTheme = () => {
+    const next: Theme = theme === 'light' ? 'dark' : 'light';
+    setTheme(next);
+    setThemeState(next);
+  };
 
   const me = data.playerById[data.mePlayerId];
   const commish = data.meIsCommissioner;
@@ -92,6 +99,15 @@ export default function SettingsSheet({ data, open, onClose, reload, signOut }: 
       </div>
       <div className="setbody">
         {err && <div className="holine err">{err}</div>}
+
+        <div className="grp">
+          <h3>Appearance</h3>
+          <div className="hint">Dark holds up better in direct sun on the course. Light is easier indoors.</div>
+        </div>
+        <div className="fld">
+          <label>Light mode</label>
+          <button className="sw" role="switch" aria-checked={theme === 'light'} aria-label="Light mode" onClick={flipTheme} />
+        </div>
 
         <div className="grp"><h3>Account</h3></div>
         <div className="fld">

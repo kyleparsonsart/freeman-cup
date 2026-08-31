@@ -20,6 +20,8 @@ Read this first, then `SUPABASE-SETUP.md`. The prototype `freeman-cup-v66.html` 
 | Commissioner settings | Gear in header. Account + sign out for everyone. Commissioner: round state (`round.state`: upcoming / live / final, trigger keeps `locked` in step), scorer per tee group, pairings per match (+ foursomes odd-hole pickers), Clear all scores via `reset_event()` behind two taps |
 | Live tab (Aug 31) | Cup strip + feed. The feed is **derived** from match_hole (real `updated_at` timestamps) plus scorer switches from feed_event, in `src/lib/feed.ts`: round under way, holes won with birdie/eagle tags, dormie, match finals, lead changes, the clinch, last group in. A correction re-derives, so edit-in-place is free. No hole/match rows are written to feed_event; push (if built) needs its own server-side events |
 | Schedule tab (Aug 31) | Day rows, round cards (Live / Final / To play pill, score line), match rows that expand to the full read-only scorecard (`Scorecard.tsx`, port of `cardGrid`), rosters by index, Captains Shootout bar. Commissioner tap-to-edit cells from the prototype were left out; scores are corrected on the Scoring tab |
+| Design system (Aug 31) | `/designsystem`, public, Dado-style. Reads every `--token` from the running stylesheet (so it cannot drift), computes contrast live, type roles + specimens, form and layout, every component with sample data, voice, "how this stays true". Dark / Light switch in its header. `src/designsystem/`, `vercel.json` rewrite for the route |
+| Light mode (Aug 31) | `src/lib/theme.ts`; Appearance switch in settings for everyone; per-device, applied before first paint; theme-color meta follows. The prototype's `body.light` rules do the rest |
 | Tests | 38 unit (21 scoring + 10 write queue + 7 feed). 12 RLS integration tests unchanged; run `npm test` from a real terminal (sandboxed agents can't reach Supabase) |
 
 SQL that has run, in order: `freeman-cup-schema.sql`, `freeman-cup-auth.sql`, `freeman-cup-handoff.sql`, `freeman-cup-commish.sql`. Each is the record of what ran; don't re-run the schema.
@@ -29,7 +31,6 @@ SQL that has run, in order: `freeman-cup-schema.sql`, `freeman-cup-auth.sql`, `f
 ## Not built
 
 - **Push notifications** — the whole system: VAPID keys, `push_subscription` writes, a server-side sender (Edge Function or Vercel function), the 90-second hold, tiering. Biggest remaining risk to the date; a legitimate 2027 candidate
-- **Light mode** in the app (exists in the prototype)
 - **Rules & Scoring** guide sheet (book icon in the prototype header)
 
 ---
