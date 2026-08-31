@@ -58,7 +58,7 @@ export default function App() {
 
 /** Everything behind sign-in; mounting this starts the data load. */
 function CupApp({ signOut }: { signOut: () => Promise<void> }) {
-  const { data, loading, error } = useEventData();
+  const { data, loading, error, reload } = useEventData();
 
   if (data?.unclaimed) {
     return (
@@ -86,7 +86,7 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
           {error}
         </div>
       )}
-      {data && <ScoringScreen data={data} />}
+      {data && <ScoringScreen data={data} reload={reload} />}
     </section>
   );
 }

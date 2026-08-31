@@ -698,3 +698,7 @@ body.light .ftab[aria-selected="true"]{background:var(--ink-2);border-color:var(
 .aerr{font-size:13.5px;color:var(--red);line-height:1.5}
 .adev{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line);display:flex;flex-wrap:wrap;gap:6px}
 .adev button{font-size:12px;padding:6px 10px;border:1px solid var(--line);color:var(--moss)}
+
+/* handoff log line under the hole card (used in the prototype, unstyled there) */
+.holine{padding:9px 14px;font-size:12.5px;line-height:1.45;color:var(--moss);background:var(--ink-3);border-top:1px solid var(--line)}
+.holine.err{color:var(--red)}

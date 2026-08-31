@@ -77,3 +77,14 @@ export interface DbMatchHole {
   entered_by: string | null;
   updated_at: string;
 }
+
+export interface DbFeedEvent {
+  id: number;
+  event_id: string;
+  round_id: string | null;
+  match_id: string | null;
+  kind: string;
+  tier: 'none' | 'other_group' | 'all';
+  body: Record<string, unknown>;
+  occurred_at: string;
+}

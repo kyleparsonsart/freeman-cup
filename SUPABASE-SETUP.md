@@ -4,9 +4,15 @@ Do these in order. Items 1–3 now; 4–6 before invites go out Sep 27.
 
 ## Now
 
-1. **Run the SQL.** SQL editor → paste `freeman-cup-auth.sql` → run once.
-   Adds `claim_seat()`, which binds a signed-in account to the player row
-   with the matching email on first load.
+1. **Run the SQL.** SQL editor → paste `freeman-cup-auth.sql` → run once
+   (done Aug 30). Then `freeman-cup-handoff.sql` → run once: logs every
+   scorer switch to the feed and turns on realtime for `tee_group` and
+   `feed_event`.
+
+1b. **Site URL.** Authentication → URL Configuration → Site URL
+   `https://freeman-cup.vercel.app`, and add `http://localhost:5173` to
+   the redirect list. Until this is set, sign-in links bounce to
+   localhost:3000 (done Aug 30).
 
 2. **Turn signups off.** Authentication → Sign In / Providers → Email:
    disable "Allow new users to sign up". Sign-in emails then only go to
@@ -35,16 +41,19 @@ Do these in order. Items 1–3 now; 4–6 before invites go out Sep 27.
    default (refresh tokens don't expire) is fine for the trip — nobody
    gets signed out mid-round.
 
-6. **Real seats.** Replace the placeholder emails in `player` (SQL
-   editor: `update player set email = '...' where name = '...';`), then
-   Authentication → Users → Add user → Create new user for each of the 8
-   real emails with "Auto Confirm User" on (signups are off, so accounts
-   must be pre-created). No passwords needed — they sign in by code.
+6. **Real seats.** For each of the other 7 players:
+   - `update player set email = '...' where name = '...';`
+   - Authentication → Users → Add user → their real email, any throwaway
+     password (the form demands one; it is never used), Auto Confirm on.
+   - If the row's `auth_uid` is already set from Sprint 1 testing (Devin,
+     Matt), clear it first: `update player set auth_uid = null where name = '...';`
+     A claimed seat is never rebound automatically.
 
-## URL configuration (check once)
-
-Authentication → URL Configuration: Site URL `https://freeman-cup.vercel.app`,
-and add `http://localhost:5173` to the redirect allow list for dev.
+   Check with:
+   ```sql
+   select p.name, p.email, p.auth_uid, u.email as auth_email
+   from player p left join auth.users u on u.id = p.auth_uid order by p.name;
+   ```
 
 ## Local dev
 

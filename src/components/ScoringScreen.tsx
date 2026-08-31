@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import { enqueueHoleWrite, getQueuedWrites, onQueueChange } from '../lib/writeQueue';
 import {
   calc, derive, settle, holeComplete, getsStroke, runningAt, headline,
@@ -29,9 +30,10 @@ function curHole(m: Match, holes: number, pinned: Record<string, number>): numbe
 
 interface Props {
   data: EventData;
+  reload: () => void;
 }
 
-export default function ScoringScreen({ data }: Props) {
+export default function ScoringScreen({ data, reload }: Props) {
   const { scoringSessions, scoringMatches, meKey } = data;
 
   // Always refresh the scoring context
@@ -86,6 +88,7 @@ export default function ScoringScreen({ data }: Props) {
           data={data}
           pinned={pinned}
           setPinned={setPinned}
+          reload={reload}
           tabbed={tabbed}
         />
       </div>
@@ -211,10 +214,11 @@ interface HeroCardProps {
   data: EventData;
   pinned: Record<string, number>;
   setPinned: (fn: (p: Record<string, number>) => Record<string, number>) => void;
+  reload: () => void;
   tabbed: boolean;
 }
 
-function HeroCard({ match: m, session: s, data, pinned, setPinned, tabbed }: HeroCardProps) {
+function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbed }: HeroCardProps) {
   const r = calc(m);
   const [saving, setSaving] = useState(false);
   const [pending, setPending] = useState(0);
@@ -244,6 +248,40 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, tabbed }: Her
 
   // Find the match's tee_group_id and match_id from the DB
   const dbMatch = data.matches.find(dm => dm.id === m.id);
+
+  // Scorer handoff: the scorer hands the pencil on, the commissioner can
+  // reassign anyone. Goes straight to tee_group (the handoff policy), no
+  // queue — this one needs a signal, and says so.
+  const [picking, setPicking] = useState(false);
+  const [swapErr, setSwapErr] = useState<string | null>(null);
+  const canSwap = iAmScorer || data.meIsCommissioner;
+  const teeGroupId = dbMatch?.tee_group_id;
+  const handoff = teeGroupId ? data.handoffs[teeGroupId] : undefined;
+  const groupKeys = groupPlayers(m.s, m.g, data.scoringMatches);
+
+  const switchScorer = async (k: string) => {
+    if (!teeGroupId) return;
+    if (k === scorerKey) { setPicking(false); return; }
+    setSwapErr(null);
+    const { data: rows, error } = await supabase
+      .from('tee_group')
+      .update({ scorer_player_id: findPlayerId(k, data) })
+      .eq('id', teeGroupId)
+      .select('id');
+    if (error) {
+      setSwapErr(/fetch|network|load failed/i.test(error.message)
+        ? 'Needs a signal to switch scorer. Try again when you have one.'
+        : error.message);
+      return;
+    }
+    if (!rows?.length) {
+      // RLS filtered the row: not in this group and not the commissioner
+      setSwapErr('Only the scorer or the commissioner can switch.');
+      return;
+    }
+    setPicking(false);
+    reload();
+  };
 
   const postScore = useCallback(async (
     holeNum: number,
@@ -333,6 +371,21 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, tabbed }: Her
 
   return (
     <div className={`hero${tabbed ? ' tabbed' : ''}`}>
+      {/* Scorer picker */}
+      {picking && canSwap && (
+        <div className="picker">
+          {groupKeys.map(k => (
+            <button
+              key={k}
+              className={k === scorerKey ? 'sel' : ''}
+              onClick={() => switchScorer(k)}
+            >
+              {P[k]?.n || k}{k === data.meKey ? ' (you)' : ''}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Hole navigator */}
       <div className="hnav">
         <button
@@ -480,14 +533,27 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, tabbed }: Her
         )}
       </div>
 
+      {/* Handoff log line */}
+      {handoff && (
+        <div className="holine">
+          Taken over from {playerName(handoff.from, data)} by {playerName(handoff.by, data)}, {ago(handoff.at)}
+        </div>
+      )}
+      {swapErr && <div className="holine err">{swapErr}</div>}
+
       {/* Scorer banner */}
       <div className="scbar bottom">
         <span className="scin">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>
           </svg>
-          <b>{P[scorerKey]?.n || 'Unknown'}</b> is scoring this group
+          <b>{P[scorerKey]?.n || 'Nobody'}</b> is scoring this group
         </span>
+        {canSwap && (
+          <button className="swap" onClick={() => { setPicking(p => !p); setSwapErr(null); }}>
+            {picking ? 'Cancel' : 'Switch'}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -511,6 +577,28 @@ function StrokeLegend({ match: m, holeIdx: i, session: s }: { match: Match; hole
       The gold underline marks the score it plays as.
     </div>
   );
+}
+
+/** Every player in a tee group: at singles a group carries two matches. */
+function groupPlayers(sessionId: string, g: number, matches: Match[]): string[] {
+  const set: string[] = [];
+  matches.filter(m => m.s === sessionId && m.g === g).forEach(m => {
+    [...m.a, ...m.b].forEach(p => { if (!set.includes(p)) set.push(p); });
+  });
+  return set;
+}
+
+function playerName(id: string | null, data: EventData): string {
+  if (!id) return 'nobody';
+  return data.playerById[id]?.name || 'someone';
+}
+
+function ago(iso: string): string {
+  const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} min ago`;
+  const d = new Date(iso);
+  return `${((d.getHours() + 11) % 12) + 1}:${String(d.getMinutes()).padStart(2, '0')} ${d.getHours() >= 12 ? 'PM' : 'AM'}`;
 }
 
 function findPlayerId(key: string, data: EventData): string {

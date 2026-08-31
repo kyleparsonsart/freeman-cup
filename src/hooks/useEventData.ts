@@ -4,8 +4,16 @@ import { setContext, type Session, type Match, type HoleData, type Player } from
 import { idbGet, idbPut } from '../lib/db';
 import { getQueuedWrites, overlayQueue, onQueueChange } from '../lib/writeQueue';
 import type {
-  DbEvent, DbTeam, DbPlayer, DbCourse, DbRound, DbTeeGroup, DbMatch, DbMatchHole,
+  DbEvent, DbTeam, DbPlayer, DbCourse, DbRound, DbTeeGroup, DbMatch, DbMatchHole, DbFeedEvent,
 } from '../lib/types';
+
+/** The most recent scorer switch for a tee group (from feed_event). */
+export interface Handoff {
+  from: string | null; // player id
+  to: string | null;
+  by: string | null;
+  at: string;          // ISO
+}
 
 export interface EventData {
   event: DbEvent;
@@ -16,6 +24,8 @@ export interface EventData {
   teeGroups: DbTeeGroup[];
   matches: DbMatch[];
   matchHoles: DbMatchHole[];
+  /** latest scorer handoff per tee_group id */
+  handoffs: Record<string, Handoff>;
   /* scoring engine shapes */
   scoringSessions: Session[];
   scoringMatches: Match[];
@@ -41,6 +51,7 @@ interface RawTables {
   teeGroups: DbTeeGroup[];
   matches: DbMatch[];
   matchHoles: DbMatchHole[];
+  switches?: DbFeedEvent[];
 }
 
 const FMT_MAP: Record<string, 'Four-ball' | 'Foursomes' | 'Singles'> = {
@@ -72,6 +83,7 @@ async function fetchTables(): Promise<RawTables> {
     { data: teeGroups, error: e6 },
     { data: matches, error: e7 },
     { data: matchHoles, error: e8 },
+    { data: switches, error: e9 },
   ] = await Promise.all([
     supabase.from('event').select('*'),
     supabase.from('team').select('*'),
@@ -81,9 +93,10 @@ async function fetchTables(): Promise<RawTables> {
     supabase.from('tee_group').select('*').order('seq'),
     supabase.from('match').select('*').order('seq'),
     supabase.from('match_hole').select('*'),
+    supabase.from('feed_event').select('*').eq('kind', 'scorer_switch').order('occurred_at', { ascending: false }),
   ]);
 
-  const err = e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8;
+  const err = e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8 || e9;
   if (err) throw new Error(err.message);
 
   const event = (events as DbEvent[])[0];
@@ -98,6 +111,7 @@ async function fetchTables(): Promise<RawTables> {
     teeGroups: teeGroups as DbTeeGroup[],
     matches: matches as DbMatch[],
     matchHoles: matchHoles as DbMatchHole[],
+    switches: switches as DbFeedEvent[],
   };
 }
 
@@ -156,6 +170,19 @@ export function useEventData() {
     const tgList = raw.teeGroups;
     const matchList = raw.matches;
     const holeList = overlayQueue(raw.matchHoles, queued);
+
+    // Latest handoff per tee group (rows arrive newest first)
+    const handoffs: Record<string, Handoff> = {};
+    for (const ev of raw.switches || []) {
+      const tg = ev.body.tee_group_id as string | undefined;
+      if (!tg || handoffs[tg]) continue;
+      handoffs[tg] = {
+        from: (ev.body.from as string | null) ?? null,
+        to: (ev.body.to as string | null) ?? null,
+        by: (ev.body.by as string | null) ?? null,
+        at: ev.occurred_at,
+      };
+    }
 
     // Build player lookup by id
     const playerById: Record<string, DbPlayer> = {};
@@ -270,7 +297,7 @@ export function useEventData() {
 
     setData({
       event, teams: teamList, players: playerList, courses: courseList,
-      rounds: roundList, teeGroups: tgList, matches: matchList, matchHoles: holeList,
+      rounds: roundList, teeGroups: tgList, matches: matchList, matchHoles: holeList, handoffs,
       scoringSessions, scoringMatches, playerMap, playerById,
       mePlayerId, meKey, meIsCommissioner, unclaimed, offline,
     });
@@ -283,13 +310,13 @@ export function useEventData() {
   // Reload whenever the write queue changes (a score was entered or synced)
   useEffect(() => onQueueChange(() => { load(); }), [load]);
 
-  // Subscribe to realtime changes on match_hole
+  // Realtime: holes, scorer changes and feed lines all reload the data
   useEffect(() => {
     const channel = supabase
-      .channel('match_hole_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'match_hole' }, () => {
-        load(); // Reload all data on any change
-      })
+      .channel('cup_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'match_hole' }, () => { load(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tee_group' }, () => { load(); })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'feed_event' }, () => { load(); })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
