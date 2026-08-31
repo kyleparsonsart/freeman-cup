@@ -47,6 +47,7 @@ export interface DbRound {
   course_id: string;
   holes: number;
   locked: boolean;
+  state: 'upcoming' | 'live' | 'final';
 }
 
 export interface DbTeeGroup {

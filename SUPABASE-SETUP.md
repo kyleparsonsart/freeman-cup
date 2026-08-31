@@ -7,7 +7,9 @@ Do these in order. Items 1–3 now; 4–6 before invites go out Sep 27.
 1. **Run the SQL.** SQL editor → paste `freeman-cup-auth.sql` → run once
    (done Aug 30). Then `freeman-cup-handoff.sql` → run once: logs every
    scorer switch to the feed and turns on realtime for `tee_group` and
-   `feed_event`.
+   `feed_event`. Then `freeman-cup-commish.sql` → run once: adds
+   `round.state` (Not started / Live / Complete) and the commissioner-only
+   `reset_event()` behind "Clear all scores".
 
 1b. **Site URL.** Authentication → URL Configuration → Site URL
    `https://freeman-cup.vercel.app`, and add `http://localhost:5173` to

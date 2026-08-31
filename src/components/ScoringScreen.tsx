@@ -41,8 +41,9 @@ export default function ScoringScreen({ data, reload }: Props) {
   // Update module-level ref so CupStrip can access it
   _scoringMatches = scoringMatches;
 
-  // Find the current round (earliest not finished)
-  const todayRound = scoringSessions.find(s => {
+  // Find the current round: the one the commissioner set live, else the
+  // earliest not finished
+  const todayRound = scoringSessions.find(s => s.state === 'live') || scoringSessions.find(s => {
     const ms = scoringMatches.filter(m => m.s === s.id);
     if (ms.length && ms.every(m => calc(m).done)) return false;
     if (ms.some(m => calc(m).played > 0)) return true;

@@ -231,7 +231,7 @@ export function useEventData() {
         holes: r.holes,
         tees: tgs.map(tg => formatTeeTime(tg.tee_time)),
         scorer: tgs.map(tg => tg.scorer_player_id ? playerKey(tg.scorer_player_id) : ''),
-        state: r.locked ? 'final' : 'upcoming',
+        state: r.state ?? (r.locked ? 'final' : 'upcoming'),
         par: course?.par || [],
         si: course?.stroke_index || null,
       };
@@ -317,6 +317,8 @@ export function useEventData() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'match_hole' }, () => { load(); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tee_group' }, () => { load(); })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'feed_event' }, () => { load(); })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'round' }, () => { load(); })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'match' }, () => { load(); })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
