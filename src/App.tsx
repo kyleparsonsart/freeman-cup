@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useEventData } from './hooks/useEventData';
 import ScoringScreen from './components/ScoringScreen';
+import LiveScreen from './components/LiveScreen';
 import SignInScreen from './components/SignInScreen';
 import SettingsSheet from './components/SettingsSheet';
 
@@ -59,6 +60,8 @@ function Header({ right }: { right?: React.ReactNode }) {
 function CupApp({ signOut }: { signOut: () => Promise<void> }) {
   const { data, loading, error, reload } = useEventData();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [tab, setTab] = useState<'scoring' | 'live' | 'schedule'>('scoring');
+  const anyLive = !!data?.rounds.some(r => r.state === 'live');
 
   if (data?.unclaimed) {
     return (
@@ -95,24 +98,39 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
     <>
       <div className="body">
         <Header right={cog} />
-        <section id="v-scoring" className="view on">
-          {loading && (
-            <div className="empty">Loading…</div>
-          )}
-          {error && (
+        {loading && <div className="empty">Loading…</div>}
+        {error && (
+          <div className="empty">
+            <b>Error</b>
+            {error}
+          </div>
+        )}
+        {data && tab === 'scoring' && (
+          <section id="v-scoring" className="view on">
+            <ScoringScreen data={data} reload={reload} />
+          </section>
+        )}
+        {data && tab === 'live' && (
+          <section id="v-live" className="view on">
+            <LiveScreen data={data} />
+          </section>
+        )}
+        {data && tab === 'schedule' && (
+          <section id="v-schedule" className="view on">
             <div className="empty">
-              <b>Error</b>
-              {error}
+              <b>Schedule</b>
+              Days, rounds and scorecards land here next.
             </div>
-          )}
-          {data && <ScoringScreen data={data} reload={reload} />}
-        </section>
+          </section>
+        )}
       </div>
 
       <nav className="tabs" role="tablist">
-        <button className="tab" role="tab" aria-selected={true}>Scoring</button>
-        <button className="tab" role="tab" aria-selected={false}>Live</button>
-        <button className="tab" role="tab" aria-selected={false}>Schedule</button>
+        <button className="tab" role="tab" aria-selected={tab === 'scoring'} onClick={() => setTab('scoring')}>Scoring</button>
+        <button className="tab" role="tab" aria-selected={tab === 'live'} onClick={() => setTab('live')}>
+          Live{anyLive && <span className="pulse" />}
+        </button>
+        <button className="tab" role="tab" aria-selected={tab === 'schedule'} onClick={() => setTab('schedule')}>Schedule</button>
       </nav>
 
       {data && (

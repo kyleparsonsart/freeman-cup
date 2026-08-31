@@ -26,6 +26,8 @@ export interface EventData {
   matchHoles: DbMatchHole[];
   /** latest scorer handoff per tee_group id */
   handoffs: Record<string, Handoff>;
+  /** every scorer switch, for the feed */
+  switches: DbFeedEvent[];
   /* scoring engine shapes */
   scoringSessions: Session[];
   scoringMatches: Match[];
@@ -298,6 +300,7 @@ export function useEventData() {
     setData({
       event, teams: teamList, players: playerList, courses: courseList,
       rounds: roundList, teeGroups: tgList, matches: matchList, matchHoles: holeList, handoffs,
+      switches: raw.switches || [],
       scoringSessions, scoringMatches, playerMap, playerById,
       mePlayerId, meKey, meIsCommissioner, unclaimed, offline,
     });

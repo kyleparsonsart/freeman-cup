@@ -18,7 +18,8 @@ Read this first, then `SUPABASE-SETUP.md`. The prototype `freeman-cup-v66.html` 
 | Auth | Magic-link email → six-digit code typed in the app (iOS standalone PWA has its own storage, so a tapped link signs in Safari, not the app). `claim_seat()` binds the account to the player row by email, one-way. Signups off. Dev-only password row for the seed test accounts |
 | Scorer handoff | Switch/Cancel on the scorer line for scorer or commissioner, picker per prototype. Trigger logs every switch to `feed_event` (kind `scorer_switch`); "Taken over from X by Y" line. Realtime on `tee_group` flips lock state on other phones |
 | Commissioner settings | Gear in header. Account + sign out for everyone. Commissioner: round state (`round.state`: upcoming / live / final, trigger keeps `locked` in step), scorer per tee group, pairings per match (+ foursomes odd-hole pickers), Clear all scores via `reset_event()` behind two taps |
-| Tests | 31 unit (21 scoring + 10 write queue). 12 RLS integration tests unchanged; run `npm test` from a real terminal (sandboxed agents can't reach Supabase) |
+| Live tab (Aug 31) | Cup strip + feed. The feed is **derived** from match_hole (real `updated_at` timestamps) plus scorer switches from feed_event, in `src/lib/feed.ts`: round under way, holes won with birdie/eagle tags, dormie, match finals, lead changes, the clinch, last group in. A correction re-derives, so edit-in-place is free. No hole/match rows are written to feed_event; push (if built) needs its own server-side events |
+| Tests | 38 unit (21 scoring + 10 write queue + 7 feed). 12 RLS integration tests unchanged; run `npm test` from a real terminal (sandboxed agents can't reach Supabase) |
 
 SQL that has run, in order: `freeman-cup-schema.sql`, `freeman-cup-auth.sql`, `freeman-cup-handoff.sql`, `freeman-cup-commish.sql`. Each is the record of what ran; don't re-run the schema.
 
@@ -26,7 +27,6 @@ SQL that has run, in order: `freeman-cup-schema.sql`, `freeman-cup-auth.sql`, `f
 
 ## Not built
 
-- **Live tab** — cup score plus activity feed (feed_event already receives scorer switches; hole/match events do not exist yet)
 - **Schedule tab** — stacked days, round cards, inline scorecards
 - **Push notifications** — the whole system: VAPID keys, `push_subscription` writes, a server-side sender (Edge Function or Vercel function), the 90-second hold, tiering. Biggest remaining risk to the date; a legitimate 2027 candidate
 - **Light mode** in the app (exists in the prototype)
