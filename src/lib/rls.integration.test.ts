@@ -34,11 +34,30 @@ async function signIn(email: string, password: string): Promise<SupabaseClient> 
   return c;
 }
 
+/**
+ * The commissioner seat is claimed by a real account (no test password),
+ * so sign in as whoever holds it: mint a magic link with the service role
+ * and redeem its token hash. No email is sent.
+ */
+async function signInAsCommissioner(adminC: SupabaseClient): Promise<SupabaseClient> {
+  const { data: p, error: pe } = await adminC.from('player')
+    .select('auth_uid').eq('is_commissioner', true).single();
+  if (pe || !p?.auth_uid) throw new Error('Commissioner seat is unclaimed; sign in to the app once first.');
+  const { data: u, error: ue } = await adminC.auth.admin.getUserById(p.auth_uid);
+  if (ue || !u.user?.email) throw new Error(`Commissioner auth user missing: ${ue?.message}`);
+  const { data: link, error: le } = await adminC.auth.admin.generateLink({ type: 'magiclink', email: u.user.email });
+  if (le) throw new Error(`generateLink failed: ${le.message}`);
+  const c = anonClient();
+  const { error } = await c.auth.verifyOtp({ token_hash: link.properties.hashed_token, type: 'magiclink' });
+  if (error) throw new Error(`Commissioner sign-in failed: ${error.message}`);
+  return c;
+}
+
 // Test data references
 let admin: SupabaseClient;
 let mattClient: SupabaseClient;   // player, not a scorer anywhere
 let devinClient: SupabaseClient;  // scorer for round 3 tee group 1
-let kyleClient: SupabaseClient;   // commissioner + scorer for round 2 tee group 1
+let kyleClient: SupabaseClient;   // commissioner (whoever holds the seat) + scorer for round 2 tee group 1
 
 let round3Id: string;
 let round3Group1MatchId: string;
@@ -51,7 +70,7 @@ beforeAll(async () => {
   [mattClient, devinClient, kyleClient] = await Promise.all([
     signIn('matt@example.com', 'testpass123!'),
     signIn('devin@example.com', 'testpass123!'),
-    signIn('kyle@example.com', 'testpass123!'),
+    signInAsCommissioner(admin),
   ]);
 
   // Get round 3 data for scorer tests
