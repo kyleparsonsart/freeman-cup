@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import { calc, getsStroke, ses, P, CFG, type Match } from '../lib/scoring';
 import { bestName } from '../lib/feed';
 
@@ -100,7 +101,7 @@ export default function Scorecard({ match: m }: { match: Match }) {
 
         {/* players */}
         {keys.map(k => (
-          <div key={k} style={{ display: 'contents' }}>
+          <Fragment key={k}>
             <div className={`lb ${s.fmt === 'Foursomes' ? k : P[k]?.t || 'a'}`}>
               {nm(k)}
               {s.fmt !== 'Foursomes' && <> <span className="dim" style={{ fontFamily: 'var(--num)' }}>{P[k]?.h}</span></>}
@@ -109,7 +110,7 @@ export default function Scorecard({ match: m }: { match: Match }) {
             <div className="tot">{tot(k, 0, half1.length)}</div>
             {half2.length > 0 && <>{half2.map(i => box(k, i))}<div className="tot">{tot(k, 9, N)}</div></>}
             <div className="grand">{tot(k, 0, N)}</div>
-          </div>
+          </Fragment>
         ))}
 
         {row(<div className="lb meta">Hole won</div>, rr)}
