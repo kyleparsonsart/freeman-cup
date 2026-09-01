@@ -125,7 +125,7 @@ const TYPE_ROLES: { role: string; where: string; size: string; spec: string; cls
   { role: 'Day', where: 'Feed and schedule day headers', size: '17 / 18', spec: 'Fraunces 600 · −0.015em', cls: '.dayhd .n · .dayrow .n' },
   { role: 'Group label', where: 'Settings sections', size: '16', spec: 'Fraunces 600 · brass', cls: '.grp h3' },
   { role: 'Tab', where: 'Live · Scoring · Schedule', size: '16', spec: 'Fraunces 600', cls: '.tab' },
-  { role: 'Player', where: 'Name on the hole card', size: '20', spec: 'Work Sans 600 · −0.01em · team colour', cls: '.brow .bn' },
+  { role: 'Player', where: 'Name on the hole card', size: '21', spec: 'Fraunces 600 · −0.015em · opsz 32 · WONK 0 · team colour', cls: '.brow .bn' },
   { role: 'Body', where: 'Everything you read', size: '17', spec: 'Work Sans 400 · 1.6', cls: 'body' },
   { role: 'Feed body', where: 'Feed rows', size: '15 / 13', spec: 'Work Sans · moss, sub-line moss dim', cls: '.ev .bd · .sub2' },
   { role: 'Subtitle', where: 'Under the app title, strip labels', size: '11.5', spec: 'Work Sans · .012em · moss', cls: '.hd .sub · .striplbl' },
