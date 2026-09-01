@@ -118,8 +118,8 @@ export function Legend() {
   );
 }
 
-export function PlayerRow({ name, side, hcp, par, picked, stroke }: {
-  name: string; side: 'a' | 'b'; hcp: number; par: number; picked?: number; stroke?: boolean;
+export function PlayerRow({ name, side, hcp, par, picked, stroke, scorer }: {
+  name: string; side: 'a' | 'b'; hcp: number; par: number; picked?: number; stroke?: boolean; scorer?: boolean;
 }) {
   const x = false;
   const net = picked !== undefined && stroke ? `−1 = ${picked - 1}` : '';
@@ -128,6 +128,9 @@ export function PlayerRow({ name, side, hcp, par, picked, stroke }: {
       <div className="btop">
         <span className={`bn ${side}`}>{name}<span className="hcp"> ({hcp})</span>{stroke && <i className="sdot2" />}</span>
         <span className="bnet">{net}</span>
+        {scorer && (
+          <span className="skin"><Pencil />Scorekeeper<button className="swap">Switch</button></span>
+        )}
       </div>
       <div className="tgs-wrap"><div className="tgs">
         {NOTE.map(t => {
@@ -167,6 +170,8 @@ export function HoleFoot() {
   );
 }
 
+/** The bottom bar is now the fallback, for when the scorer isn't one of the rows
+    (foursomes, or the other match in a singles group). */
 export function ScorerBar({ picking }: { picking?: boolean }) {
   return (
     <>

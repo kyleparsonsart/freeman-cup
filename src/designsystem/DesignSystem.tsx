@@ -384,18 +384,17 @@ export default function DesignSystem() {
             </D.Demo>
 
             <D.Demo title="Hole card" classes={['.hero', '.hnav', '.bovr', '.legend', '.brow', '.tgs', '.tg', '.mk', '.bder', '.hfoot']}
-              note={<>The whole scoring surface, top to bottom: navigator, override strip, stroke legend, a row per player with the notation picker, the derive line, the footer, the scorer bar. Picked cells fill with the notation ring; the gold underline marks the net score a stroke turns it into.</>}>
+              note={<>The whole scoring surface, top to bottom: navigator, override strip, stroke legend, a row per player with the notation picker, the derive line, the footer. The scorekeeper is marked on their own row, with Switch beside it. Picked cells fill with the notation ring and pulse once on tap; the gold underline marks the net score a stroke turns it into.</>}>
               <div className="hero">
                 <D.HoleNav />
                 <D.Override />
                 <D.Legend />
-                <D.PlayerRow name="Griffin S." side="a" hcp={15} par={5} picked={5} stroke />
+                <D.PlayerRow name="Griffin S." side="a" hcp={15} par={5} picked={5} stroke scorer />
                 <D.PlayerRow name="Matt J." side="a" hcp={15} par={5} picked={7} stroke />
                 <D.PlayerRow name="Kyle P." side="b" hcp={15} par={5} picked={5} />
                 <D.PlayerRow name="JT W." side="b" hcp={15} par={5} />
                 <D.Derived kind="derived" />
                 <D.HoleFoot />
-                <D.ScorerBar />
               </div>
             </D.Demo>
 
@@ -409,8 +408,8 @@ export default function DesignSystem() {
               <D.Derived kind="waiting" /><D.Derived kind="derived" /><D.Derived kind="manual" /><D.Derived kind="bye" />
             </D.Demo>
 
-            <D.Demo title="Scorer handoff" classes={['.scbar', '.swap', '.picker', '.picker button.sel', '.holine']}
-              note={<>Switch opens the picker right above it; the log line remembers who took over from whom. Only the scorer or the commissioner sees Switch.</>}>
+            <D.Demo title="Scorer handoff" classes={['.skin', '.scbar', '.swap', '.picker', '.picker button.sel', '.holine']}
+              note={<>Normally the scorekeeper is marked inline on their row. This bottom bar is the fallback for when the scorer isn't one of the rows: foursomes, or the other match in a singles group. Switch opens the picker right above it; the log line remembers who took over from whom.</>}>
               <D.ScorerBar picking />
             </D.Demo>
 

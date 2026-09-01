@@ -195,6 +195,11 @@ function useTapGuard() {
 function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbed }: HeroCardProps) {
   const r = calc(m);
   const tap = useTapGuard();
+
+  // one-shot pulses: the cell just tapped, and the override button that
+  // lit when a hole was decided (not when navigating onto a decided hole)
+  const [pop, setPop] = useState<{ k: string; val: number } | null>(null);
+  const [popW, setPopW] = useState<'A' | 'B' | 'H' | null>(null);
   const [pending, setPending] = useState(0);
 
   // How many scores are still waiting to reach the server. Online, a row
@@ -222,6 +227,22 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
   const bye = r.done && i >= r.byeStart;
   const keys = s.fmt === 'Foursomes' ? ['a', 'b'] : [...m.a, ...m.b];
   const dv = derive(m, i);
+
+  const lastRes = useRef<{ id: string; i: number; r: string | null }>({ id: m.id, i, r: h.r });
+  useEffect(() => {
+    const prev = lastRes.current;
+    lastRes.current = { id: m.id, i, r: h.r };
+    if (prev.id === m.id && prev.i === i && prev.r !== h.r && h.r) {
+      setPopW(h.r);
+      const t = setTimeout(() => setPopW(null), 600);
+      return () => clearTimeout(t);
+    }
+  }, [m.id, i, h.r]);
+  useEffect(() => {
+    if (!pop) return;
+    const t = setTimeout(() => setPop(null), 600);
+    return () => clearTimeout(t);
+  }, [pop]);
 
   // Find the scorer for this group
   const scorerKey = s.scorer[m.g];
@@ -379,7 +400,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
             <button
               key={w}
               data-w={w}
-              className={`${h.r === w ? 'sel' : ''} ${viewOnly ? 'ro' : ''}`}
+              className={`${h.r === w ? 'sel' : ''}${popW === w ? ' pop' : ''} ${viewOnly ? 'ro' : ''}`}
               onPointerDown={tap.onPointerDown}
               onClick={e => { if (tap.isTap(e)) handleOverride(w); }}
             >
@@ -408,6 +429,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
         const st = getsStroke(m, k, i);
         const isX = g === 'X';
         const net = (!isX && g !== undefined && g !== null && st) ? `−1 = ${(g as number) - st}` : '';
+        const isScorerRow = k === scorerKey;
 
         return (
           <div key={k} className="brow">
@@ -418,7 +440,29 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
                 {st ? <i className="sdot2" /> : null}
               </span>
               <span className="bnet">{net}</span>
+              {isScorerRow && (
+                <span className="skin">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>
+                  </svg>
+                  Scorekeeper
+                  {canSwap && (
+                    <button className="swap" onClick={() => { setPicking(p => !p); setSwapErr(null); }}>
+                      {picking ? 'Cancel' : 'Switch'}
+                    </button>
+                  )}
+                </span>
+              )}
             </div>
+            {isScorerRow && picking && canSwap && (
+              <div className="picker">
+                {groupKeys.map(gk => (
+                  <button key={gk} className={gk === scorerKey ? 'sel' : ''} onClick={() => switchScorer(gk)}>
+                    {P[gk]?.n || gk}{gk === data.meKey ? ' (you)' : ''}
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="tgs-wrap"><div className="tgs">
               {NOTE.map(t => {
@@ -437,9 +481,9 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
                 return (
                   <button
                     key={t.o}
-                    className={`tg${on ? ' sel' : ''}${adj ? ' adj' : ''} ${viewOnly ? 'ro' : ''}`}
+                    className={`tg${on ? ' sel' : ''}${adj ? ' adj' : ''}${pop && pop.k === k && pop.val === val && on ? ' pop' : ''} ${viewOnly ? 'ro' : ''}`}
                     onPointerDown={tap.onPointerDown}
-                    onClick={e => { if (tap.isTap(e)) handleScoreSet(k, val); }}
+                    onClick={e => { if (tap.isTap(e)) { setPop({ k, val }); handleScoreSet(k, val); } }}
                   >
                     <span className={`mk ${t.sh}`}>{val}</span>
                     <span className="cap">{t.cap}</span>
@@ -495,35 +539,34 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
       )}
       {swapErr && <div className="holine err">{swapErr}</div>}
 
-      {/* Scorer picker: sits right above the Switch button that opens it */}
-      {picking && canSwap && (
-        <div className="picker">
-          {groupKeys.map(k => (
-            <button
-              key={k}
-              className={k === scorerKey ? 'sel' : ''}
-              onClick={() => switchScorer(k)}
-            >
-              {P[k]?.n || k}{k === data.meKey ? ' (you)' : ''}
-            </button>
-          ))}
-        </div>
+      {/* Scorer bar, only when the scorer isn't one of the rows above
+          (foursomes, or the other match in a singles group) */}
+      {!keys.includes(scorerKey) && (
+        <>
+          {picking && canSwap && (
+            <div className="picker">
+              {groupKeys.map(k => (
+                <button key={k} className={k === scorerKey ? 'sel' : ''} onClick={() => switchScorer(k)}>
+                  {P[k]?.n || k}{k === data.meKey ? ' (you)' : ''}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="scbar bottom">
+            <span className="scin">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>
+              </svg>
+              <b>{P[scorerKey]?.n || 'Nobody'}</b> is scoring this group
+            </span>
+            {canSwap && (
+              <button className="swap" onClick={() => { setPicking(p => !p); setSwapErr(null); }}>
+                {picking ? 'Cancel' : 'Switch'}
+              </button>
+            )}
+          </div>
+        </>
       )}
-
-      {/* Scorer banner */}
-      <div className="scbar bottom">
-        <span className="scin">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>
-          </svg>
-          <b>{P[scorerKey]?.n || 'Nobody'}</b> is scoring this group
-        </span>
-        {canSwap && (
-          <button className="swap" onClick={() => { setPicking(p => !p); setSwapErr(null); }}>
-            {picking ? 'Cancel' : 'Switch'}
-          </button>
-        )}
-      </div>
     </div>
   );
 }

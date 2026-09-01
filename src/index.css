@@ -740,3 +740,22 @@ body.light .ftab[aria-selected="true"]{background:var(--ink-2);border-color:var(
 .board + .fill .hero,.hero.tabbed{margin-top:0}
 body.light .ftab{background:transparent;border-color:var(--line)}
 body.light .ftab[aria-selected="true"]{background:var(--ink-3)}
+
+/* ---------- Sep 1: pulses and the inline scorekeeper ---------- */
+/* a ring that starts at the cell edge and drifts outward, once, on tap;
+   the same when a hole is decided and the VIK / CEL button lights */
+.tg,.bovr button{position:relative}
+.tg.pop,.bovr button.pop{z-index:2}
+.tg.pop::after,.bovr button.pop::after{content:"";position:absolute;inset:0;border:2px solid var(--bone);
+  border-radius:2px;pointer-events:none;animation:ringout .55s ease-out forwards}
+.bovr button.pop[data-w="A"]::after{border-color:var(--red)}
+.bovr button.pop[data-w="B"]::after{border-color:var(--blue)}
+.bovr button.pop[data-w="H"]::after{border-color:var(--moss)}
+@keyframes ringout{0%{transform:scale(1);opacity:.85}100%{transform:scale(1.14);opacity:0}}
+@media (prefers-reduced-motion:reduce){.tg.pop::after,.bovr button.pop::after{animation:none}}
+/* scorekeeper sits on the scorer's own row, right of the name */
+.skin{display:inline-flex;align-items:center;gap:6px;flex:none;font-size:12px;color:var(--moss);white-space:nowrap}
+.skin svg{width:12px;height:12px;color:var(--brass)}
+.skin .swap{padding:5px 8px;margin-left:2px}
+.btop .bnet:empty{display:none}
+.brow .picker{margin:0 0 2px;border-top:1px solid var(--line)}
