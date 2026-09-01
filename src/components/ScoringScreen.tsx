@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { enqueueHoleWrite, getQueuedWrites, onQueueChange } from '../lib/writeQueue';
 import {
@@ -196,6 +196,11 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
   const r = calc(m);
   const tap = useTapGuard();
 
+  // Every picker row starts at its left edge on each new hole. The rows
+  // are the same DOM nodes across holes, so a row scrolled to the high
+  // scores would otherwise stay there and invite a wrong tap.
+  const heroRef = useRef<HTMLDivElement>(null);
+
   // Ripples: a light disc spreads from the tap point across the cell and
   // fades as the selected fill takes over. One per element, keyed so a
   // second tap restarts it. Auto-decided holes ripple the override button
@@ -257,6 +262,10 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
   const bye = r.done && i >= r.byeStart;
   const keys = s.fmt === 'Foursomes' ? ['a', 'b'] : [...m.a, ...m.b];
   const dv = derive(m, i);
+
+  useLayoutEffect(() => {
+    heroRef.current?.querySelectorAll<HTMLElement>('.tgs').forEach(el => { el.scrollLeft = 0; });
+  }, [m.id, i]);
 
   const lastRes = useRef<{ id: string; i: number; r: string | null }>({ id: m.id, i, r: h.r });
   useEffect(() => {
@@ -395,7 +404,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
   const B = CFG.teams.b.short;
 
   return (
-    <div className={`hero${tabbed ? ' tabbed' : ''}`}>
+    <div className={`hero${tabbed ? ' tabbed' : ''}`} ref={heroRef}>
       {/* Hole navigator */}
       <div className="hnav">
         <button
