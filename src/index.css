@@ -784,3 +784,11 @@ body.light .tg.sel{--bg:var(--sel);background:var(--sel)}
 .bovr button[data-w="B"] .fillup{background:var(--blue)}
 @keyframes fillup{to{transform:translateY(0)}}
 @media (prefers-reduced-motion:reduce){.bovr button .fillup{animation:none;transform:none}.bovr button.sel.rise{background:inherit}}
+
+/* ---------- Sep 1: system chrome ---------- */
+/* the page is ink edge to edge, including under the translucent iOS
+   status bar and behind Safari's bars (theme-color matches --ink) */
+body{background:var(--ink)}
+body.light{background:var(--ink)}
+.hd{padding-top:calc(16px + env(safe-area-inset-top))}
+.sethd{padding-top:calc(16px + env(safe-area-inset-top))}

@@ -6,7 +6,8 @@
 export type Theme = 'dark' | 'light';
 
 const KEY = 'fc-theme';
-const META: Record<Theme, string> = { dark: '#0A1410', light: '#E7E0CD' };
+// --ink in each theme: the page colour Safari's chrome should match
+const META: Record<Theme, string> = { dark: '#0F1E19', light: '#F7F3E8' };
 
 export function getTheme(): Theme {
   try {

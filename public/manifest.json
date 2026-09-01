@@ -4,8 +4,8 @@
   "id": "/",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0A1410",
-  "theme_color": "#0A1410",
+  "background_color": "#0F1E19",
+  "theme_color": "#0F1E19",
   "description": "Ryder Cup style scoring for the Freeman Cup at Sand Valley",
   "icons": [
     { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
