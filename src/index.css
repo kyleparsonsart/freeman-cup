@@ -742,14 +742,23 @@ body.light .ftab{background:transparent;border-color:var(--line)}
 body.light .ftab[aria-selected="true"]{background:var(--ink-3)}
 
 /* ---------- Sep 1: ripple on select, and the inline scorekeeper ---------- */
-/* a light disc grows from the tap point to cover the cell and fades; the
-   selected fill is what remains. Auto-decided holes ripple the override
-   button from its centre. */
-.tg,.bovr button{position:relative;overflow:hidden}
-.ripple{position:absolute;border-radius:50%;background:var(--bone);pointer-events:none;
-  transform:scale(0);animation:ripple .6s cubic-bezier(.2,.6,.3,1) forwards}
-.bovr button .ripple{background:#fff}
-@keyframes ripple{0%{transform:scale(0);opacity:.32}60%{opacity:.18}100%{transform:scale(1);opacity:0}}
+/* the selected fill itself grows from the tap point to cover the cell;
+   by the time it fills, the cell is selected in the same colour, so the
+   disc simply becomes the background. Only on select, never on clear.
+   Auto-decided holes ripple the override button from its centre. */
+:root{--sel:#2A4D3E}
+body.light{--sel:#B8CEAB}
+.tg.sel{--bg:var(--sel);background:var(--sel)}
+body.light .tg.sel{--bg:var(--sel);background:var(--sel)}
+/* isolation + negative z-index: the disc paints above the cell's own
+   background but beneath the number and label */
+.tg,.bovr button{position:relative;overflow:hidden;isolation:isolate}
+.ripple{position:absolute;border-radius:50%;background:var(--sel);pointer-events:none;z-index:-1;
+  transform:scale(0);animation:ripple .45s cubic-bezier(.2,.6,.3,1) forwards}
+.bovr button[data-w="A"] .ripple{background:var(--red)}
+.bovr button[data-w="H"] .ripple{background:var(--moss)}
+.bovr button[data-w="B"] .ripple{background:var(--blue)}
+@keyframes ripple{0%{transform:scale(0)}100%{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.ripple{animation:none;display:none}}
 /* scorekeeper sits on the scorer's own row, right of the name */
 .skin{display:inline-flex;align-items:center;gap:6px;flex:none;font-size:12px;color:var(--moss);white-space:nowrap}

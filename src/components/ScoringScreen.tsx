@@ -421,7 +421,8 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
               onPointerDown={tap.onPointerDown}
               onClick={e => {
                 if (!tap.isTap(e)) return;
-                if (!viewOnly) rippleAt(`w:${w}`, e.currentTarget, e.clientX, e.clientY);
+                const clearing = h.r === w && !h.d; // same button again clears it: no ripple
+                if (!viewOnly && !clearing) rippleAt(`w:${w}`, e.currentTarget, e.clientX, e.clientY);
                 handleOverride(w);
               }}
             >
@@ -505,7 +506,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
                     onPointerDown={tap.onPointerDown}
                     onClick={e => {
                       if (!tap.isTap(e)) return;
-                      if (!viewOnly) rippleAt(`tg:${k}:${val}`, e.currentTarget, e.clientX, e.clientY);
+                      if (!viewOnly && !on) rippleAt(`tg:${k}:${val}`, e.currentTarget, e.clientX, e.clientY); // not when clearing
                       handleScoreSet(k, val);
                     }}
                   >
