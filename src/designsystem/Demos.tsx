@@ -122,12 +122,10 @@ export function PlayerRow({ name, side, hcp, par, picked, stroke, scorer }: {
   name: string; side: 'a' | 'b'; hcp: number; par: number; picked?: number; stroke?: boolean; scorer?: boolean;
 }) {
   const x = false;
-  const net = picked !== undefined && stroke ? `−1 = ${picked - 1}` : '';
   return (
     <div className="brow">
       <div className="btop">
         <span className={`bn ${side}`}>{name}<span className="hcp"> ({hcp})</span>{stroke && <i className="sdot2" />}</span>
-        <span className="bnet">{net}</span>
         {scorer && (
           <span className="skin"><Pencil />Scorekeeper<button className="swap">Switch</button></span>
         )}

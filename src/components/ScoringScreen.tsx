@@ -428,7 +428,6 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
         const g = h.sc[k];
         const st = getsStroke(m, k, i);
         const isX = g === 'X';
-        const net = (!isX && g !== undefined && g !== null && st) ? `−1 = ${(g as number) - st}` : '';
         const isScorerRow = k === scorerKey;
 
         return (
@@ -439,7 +438,6 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
                 {hcp != null && <span className="hcp"> ({hcp})</span>}
                 {st ? <i className="sdot2" /> : null}
               </span>
-              <span className="bnet">{net}</span>
               {isScorerRow && (
                 <span className="skin">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
