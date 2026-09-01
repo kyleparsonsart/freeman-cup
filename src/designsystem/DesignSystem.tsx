@@ -333,7 +333,7 @@ export default function DesignSystem() {
             <div className="ds-two">
               <div className="ds-tile"><div className="ds-shape" style={{ borderRadius: 2 }} /><div className="n">2px radius</div><div className="d">Inputs, the primary button, eyebrows. Barely there; enough to not look cut with scissors.</div><span className="ds-code">border-radius:2px</span></div>
               <div className="ds-tile"><div className="ds-shape" style={{ borderRadius: 0 }} /><div className="n">No radius</div><div className="d">Cards, feed rows, picker cells, the override strip, the scorecard grid. Everything that tiles.</div><span className="ds-code">.rcard · .ev · .tg</span></div>
-              <div className="ds-tile"><div className="ds-shape" style={{ borderRadius: 28, width: 120 }} /><div className="n">Pill</div><div className="d">Tags, the Picked up chip, level and state pills. 20px radius, 10.5 to 12px text.</div><span className="ds-code">.tag · .xchip · .spill</span></div>
+              <div className="ds-tile"><div className="ds-shape" style={{ borderRadius: 28, width: 120 }} /><div className="n">Pill</div><div className="d">Tags and state pills. 20px radius, 10.5 to 12px text. The derive-line labels are the exception: plain text.</div><span className="ds-code">.tag · .spill</span></div>
               <div className="ds-tile"><div className="ds-shape" style={{ borderRadius: 34 }} /><div className="n">The frame</div><div className="d">34px on the phone frame and the settings sheet, on desktop only. On a phone the app fills the viewport.</div><span className="ds-code">.phone @media(min-width:520px)</span></div>
             </div>
 
@@ -387,7 +387,7 @@ export default function DesignSystem() {
               <D.GroupTabs />
             </D.Demo>
 
-            <D.Demo title="Hole card" classes={['.hero', '.hnav', '.bovr', '.legend', '.brow', '.tgs', '.tg', '.mk', '.xchip', '.bder', '.hfoot']}
+            <D.Demo title="Hole card" classes={['.hero', '.hnav', '.bovr', '.legend', '.brow', '.tgs', '.tg', '.mk', '.bder', '.hfoot']}
               note={<>The whole scoring surface, top to bottom: navigator, override strip, stroke legend, a row per player with the notation picker, the derive line, the footer, the scorer bar. Picked cells fill with the notation ring; the gold underline marks the net score a stroke turns it into.</>}>
               <div className="hero">
                 <D.HoleNav />
@@ -396,7 +396,7 @@ export default function DesignSystem() {
                 <D.PlayerRow name="Griffin S." side="a" hcp={15} par={5} picked={5} stroke />
                 <D.PlayerRow name="Matt J." side="a" hcp={15} par={5} picked={7} stroke />
                 <D.PlayerRow name="Kyle P." side="b" hcp={15} par={5} picked={5} />
-                <D.PlayerRow name="JT W." side="b" hcp={15} par={5} x />
+                <D.PlayerRow name="JT W." side="b" hcp={15} par={5} />
                 <D.Derived kind="derived" />
                 <D.HoleFoot />
                 <D.ScorerBar />
@@ -414,7 +414,7 @@ export default function DesignSystem() {
             </D.Demo>
 
             <D.Demo title="Scorer handoff" classes={['.scbar', '.swap', '.picker', '.picker button.sel', '.holine']}
-              note={<>Switch opens the picker above the card; the log line under the card remembers who took over from whom. Only the scorer or the commissioner sees Switch.</>}>
+              note={<>Switch opens the picker right above it; the log line remembers who took over from whom. Only the scorer or the commissioner sees Switch.</>}>
               <D.ScorerBar picking />
             </D.Demo>
 
@@ -439,7 +439,7 @@ export default function DesignSystem() {
             </D.Demo>
 
             <D.Demo title="Buttons" classes={['.abtn', '.swap', '.cardlnk', '.lnk', '.aghost', '.done']} stage="pad"
-              note={<>One filled button, brass with ink on it, for the single primary action on a screen. Everything else is text or a hairline chip. No icons inside buttons except the pencil and the Picked up cross.</>}>
+              note={<>One filled button, brass with ink on it, for the single primary action on a screen. Everything else is text or a hairline chip. No icons inside buttons except the pencil on the scorer line.</>}>
               <D.Buttons />
             </D.Demo>
 

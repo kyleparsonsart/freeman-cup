@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useEventData } from './hooks/useEventData';
-import ScoringScreen from './components/ScoringScreen';
+import ScoringScreen, { currentRound } from './components/ScoringScreen';
+import CupStrip from './components/CupStrip';
 import LiveScreen from './components/LiveScreen';
 import ScheduleScreen from './components/ScheduleScreen';
 import SignInScreen from './components/SignInScreen';
@@ -45,12 +46,12 @@ export default function App() {
   );
 }
 
-function Header({ right }: { right?: React.ReactNode }) {
+function Header({ title, sub, right }: { title?: string; sub?: string | null; right?: React.ReactNode }) {
   return (
     <header className="hd">
       <div>
-        <h1>The Freeman Cup</h1>
-        <div className="sub">5th Annual · Sand Valley · Oct 2026</div>
+        <h1>{title ?? 'The Freeman Cup'}</h1>
+        {sub !== null && <div className="sub">{sub ?? '5th Annual · Sand Valley · Oct 2026'}</div>}
       </div>
       {right}
     </header>
@@ -95,10 +96,24 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
     </button>
   );
 
+  // Header per tab, as the prototype does it: the round on Scoring, the
+  // event on Schedule, and on Live the cup strip itself takes the top with
+  // the gear floating over it.
+  const round = data ? currentRound(data) : undefined;
+  const header = !data ? <Header right={cog} />
+    : tab === 'scoring' ? <Header title={round ? `${round.rd} · ${round.course}` : 'The Freeman Cup 2026'} sub={null} right={cog} />
+    : tab === 'schedule' ? <Header title="The Freeman Cup 2026" sub={null} right={cog} />
+    : (
+      <div className="livehd">
+        <CupStrip />
+        <div className="livecog">{cog}</div>
+      </div>
+    );
+
   return (
     <>
       <div className="body">
-        <Header right={cog} />
+        {header}
         {loading && <div className="empty">Loading…</div>}
         {error && (
           <div className="empty">
@@ -113,7 +128,7 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
         )}
         {data && tab === 'live' && (
           <section id="v-live" className="view on">
-            <LiveScreen data={data} />
+            <LiveScreen data={data} strip={false} />
           </section>
         )}
         {data && tab === 'schedule' && (

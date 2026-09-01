@@ -9,7 +9,7 @@ function rich(text: string): ReactNode[] {
   return text.split('**').map((part, i) => (i % 2 ? <b key={i}>{part}</b> : part));
 }
 
-export default function LiveScreen({ data }: { data: EventData }) {
+export default function LiveScreen({ data, strip = true }: { data: EventData; strip?: boolean }) {
   const days = useMemo(() => buildFeed({
     sessions: data.scoringSessions,
     matches: data.scoringMatches,
@@ -24,7 +24,7 @@ export default function LiveScreen({ data }: { data: EventData }) {
 
   return (
     <>
-      <CupStrip />
+      {strip && <CupStrip />}
       {!days.length ? (
         <div className="empty">
           <b>Quiet out there</b>

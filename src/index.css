@@ -702,3 +702,24 @@ body.light .ftab[aria-selected="true"]{background:var(--ink-2);border-color:var(
 /* handoff log line under the hole card (used in the prototype, unstyled there) */
 .holine{padding:9px 14px;font-size:12.5px;line-height:1.45;color:var(--moss);background:var(--ink-3);border-top:1px solid var(--line)}
 .holine.err{color:var(--red)}
+
+/* ---------- revisions, Sep 1 ---------- */
+/* derive-line labels are plain text, not pills */
+.bder .tag{border:none;background:none;padding:0;border-radius:0}
+/* the picker cells only show a pressed state for a real pointer; on touch,
+   a thumb starting a scroll must not light a cell up */
+.tg:active{background:var(--bg)}
+@media (hover:hover) and (pointer:fine){.tg:active{background:var(--ink-3)}}
+.tg,.tgs{-webkit-tap-highlight-color:transparent}
+/* the page scroller's own indicator was drawing behind sticky and
+   horizontally-scrolling children; the app hides it instead */
+.body{scrollbar-width:none}
+.body::-webkit-scrollbar{display:none}
+/* Live: the strip takes the top of the screen, gear floats over it */
+.livehd{position:relative}
+.livehd .strip{padding-top:calc(50px + env(safe-area-inset-top))}
+.livecog{position:absolute;top:calc(14px + env(safe-area-inset-top));right:18px;z-index:2;line-height:0}
+/* Schedule: day rows sit on the field like the Rosters title; bigger carets */
+.dayrow{background:transparent;border-bottom:none}
+.mrow2 .cchev{font-size:16px;width:18px}
+.dayhd .chev{font-size:15px}

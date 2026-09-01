@@ -28,10 +28,6 @@ const Pencil = () => (
   </svg>
 );
 
-const X = () => (
-  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M4 4l12 12M16 4L4 16"/></svg>
-);
-
 const NOTE = [
   { o: -2, sh: 'u2', cap: 'Eagle' }, { o: -1, sh: 'u1', cap: 'Birdie' }, { o: 0, sh: '', cap: 'Par' },
   { o: 1, sh: 'o1', cap: 'Bogey' }, { o: 2, sh: 'o2', cap: 'Double' }, { o: 3, sh: 'o3', cap: 'Triple' },
@@ -122,16 +118,16 @@ export function Legend() {
   );
 }
 
-export function PlayerRow({ name, side, hcp, par, picked, stroke, x }: {
-  name: string; side: 'a' | 'b'; hcp: number; par: number; picked?: number; stroke?: boolean; x?: boolean;
+export function PlayerRow({ name, side, hcp, par, picked, stroke }: {
+  name: string; side: 'a' | 'b'; hcp: number; par: number; picked?: number; stroke?: boolean;
 }) {
-  const net = picked !== undefined && stroke && !x ? `−1 = ${picked - 1}` : '';
+  const x = false;
+  const net = picked !== undefined && stroke ? `−1 = ${picked - 1}` : '';
   return (
     <div className="brow">
       <div className="btop">
         <span className={`bn ${side}`}>{name}<span className="hcp"> ({hcp})</span>{stroke && <i className="sdot2" />}</span>
         <span className="bnet">{net}</span>
-        <button className={`xchip${x ? ' on' : ''}`} aria-pressed={!!x}><X />Picked up</button>
       </div>
       <div className="tgs-wrap"><div className="tgs">
         {NOTE.map(t => {
@@ -174,6 +170,7 @@ export function HoleFoot() {
 export function ScorerBar({ picking }: { picking?: boolean }) {
   return (
     <>
+      <div className="holine">Taken over from Matt J. by Griffin S., 12 min ago</div>
       {picking && (
         <div className="picker">
           <button className="sel">Griffin S. (you)</button>
@@ -182,7 +179,6 @@ export function ScorerBar({ picking }: { picking?: boolean }) {
           <button>JT W.</button>
         </div>
       )}
-      <div className="holine">Taken over from Matt J. by Griffin S., 12 min ago</div>
       <div className="scbar bottom">
         <span className="scin"><Pencil /><b>Griffin S.</b> is scoring this group</span>
         <button className="swap">{picking ? 'Cancel' : 'Switch'}</button>

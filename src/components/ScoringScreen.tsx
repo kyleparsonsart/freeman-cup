@@ -8,7 +8,6 @@ import {
   type Match,
 } from '../lib/scoring';
 import type { EventData } from '../hooks/useEventData';
-import CupStrip from './CupStrip';
 
 const NOTE = [
   { o: -2, sh: 'u2', cap: 'Eagle' },
@@ -34,20 +33,24 @@ interface Props {
   reload: () => void;
 }
 
+/** The round the Scoring tab shows: the one set live, else the earliest not finished. */
+export function currentRound(data: EventData) {
+  const { scoringSessions, scoringMatches } = data;
+  return scoringSessions.find(s => s.state === 'live') || scoringSessions.find(s => {
+    const ms = scoringMatches.filter(m => m.s === s.id);
+    if (ms.length && ms.every(m => calc(m).done)) return false;
+    if (ms.some(m => calc(m).played > 0)) return true;
+    return s.state !== 'final';
+  }) || scoringSessions[scoringSessions.length - 1];
+}
+
 export default function ScoringScreen({ data, reload }: Props) {
   const { scoringSessions, scoringMatches, meKey } = data;
 
   // Always refresh the scoring context
   setContext(data.playerMap, scoringSessions, scoringMatches);
 
-  // Find the current round: the one the commissioner set live, else the
-  // earliest not finished
-  const todayRound = scoringSessions.find(s => s.state === 'live') || scoringSessions.find(s => {
-    const ms = scoringMatches.filter(m => m.s === s.id);
-    if (ms.length && ms.every(m => calc(m).done)) return false;
-    if (ms.some(m => calc(m).played > 0)) return true;
-    return s.state !== 'final';
-  }) || scoringSessions[scoringSessions.length - 1];
+  const todayRound = currentRound(data);
 
   const roundMatches = scoringMatches.filter(m => m.s === todayRound?.id);
   const [heroId, setHeroId] = useState<string | null>(null);
@@ -70,7 +73,6 @@ export default function ScoringScreen({ data, reload }: Props) {
 
   return (
     <>
-      <CupStrip />
       {tabbed && (
         <div className="board">
           <GroupTabs
@@ -315,21 +317,6 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
 
   return (
     <div className={`hero${tabbed ? ' tabbed' : ''}`}>
-      {/* Scorer picker */}
-      {picking && canSwap && (
-        <div className="picker">
-          {groupKeys.map(k => (
-            <button
-              key={k}
-              className={k === scorerKey ? 'sel' : ''}
-              onClick={() => switchScorer(k)}
-            >
-              {P[k]?.n || k}{k === data.meKey ? ' (you)' : ''}
-            </button>
-          ))}
-        </div>
-      )}
-
       {/* Hole navigator */}
       <div className="hnav">
         <button
@@ -396,19 +383,6 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
                 {st ? <i className="sdot2" /> : null}
               </span>
               <span className="bnet">{net}</span>
-              <button
-                className={`xchip${isX ? ' on' : ''} ${viewOnly ? 'ro' : ''}`}
-                data-set="x"
-                data-k={k}
-                aria-label={`Picked up, ${pnm}`}
-                aria-pressed={isX}
-                onClick={() => handleScoreSet(k, 'X')}
-              >
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
-                  <path d="M4 4l12 12M16 4L4 16"/>
-                </svg>
-                Picked up
-              </button>
             </div>
 
             <div className="tgs-wrap"><div className="tgs">
@@ -484,6 +458,21 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
         </div>
       )}
       {swapErr && <div className="holine err">{swapErr}</div>}
+
+      {/* Scorer picker: sits right above the Switch button that opens it */}
+      {picking && canSwap && (
+        <div className="picker">
+          {groupKeys.map(k => (
+            <button
+              key={k}
+              className={k === scorerKey ? 'sel' : ''}
+              onClick={() => switchScorer(k)}
+            >
+              {P[k]?.n || k}{k === data.meKey ? ' (you)' : ''}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Scorer banner */}
       <div className="scbar bottom">

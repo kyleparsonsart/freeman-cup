@@ -45,6 +45,10 @@ SQL that has run, in order: `freeman-cup-schema.sql`, `freeman-cup-auth.sql`, `f
 
 ## Decisions made this sprint (in addition to the original list)
 
+- **No "Picked up".** Removed Sep 1. Every player holes out or the scorer enters what they would have made; the engine still tolerates an `X` in old rows.
+- **Cup strip lives on Live only**, flush to the top with the gear over it. Scoring's header is `Round 3 · Sand Valley`; Schedule's is `The Freeman Cup 2026`.
+- **The page scroller's indicator is hidden**; it drew behind sticky and side-scrolling children on iOS.
+
 - **Code entry over link tap** for sign-in, because of the iOS storage container. Both are sent; the app asks for the code.
 - **A claimed seat is never rebound automatically.** Commissioner clears `auth_uid` by hand if someone changes address.
 - **Switch is shown to the scorer and the commissioner only** (prototype). The RLS policy is looser (anyone in the group) so the dead-phone case can be widened in the UI without a migration if the dress rehearsal calls for it.
