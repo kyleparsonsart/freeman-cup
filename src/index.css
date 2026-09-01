@@ -1,9 +1,14 @@
+/* display face: BIZ UDPMincho (Morisawa, SIL OFL), self-hosted Latin subset */
+@font-face{font-family:'BIZ UDPMincho';font-style:normal;font-weight:400;font-display:swap;
+  src:url('/fonts/BIZUDPMincho-Regular.woff2') format('woff2')}
+@font-face{font-family:'BIZ UDPMincho';font-style:normal;font-weight:700;font-display:swap;
+  src:url('/fonts/BIZUDPMincho-Bold.woff2') format('woff2')}
 :root{
   --ink:#0F1E19; --ink-2:#172B24; --ink-3:#1E362D; --line:#26443A;
   --bone:#F0EBDC; --moss:#8CA79B; --moss-dim:#5D7268;
   --red:#C8402F; --blue:#4C86C4; --brass:#D8A93F;
   --board:#0A1712; --rule:rgba(240,235,220,.055);
-  --display:'Fraunces Variable',Fraunces,Georgia,serif;
+  --display:'BIZ UDPMincho',Georgia,'Times New Roman',serif;
   --body:'Work Sans Variable','Work Sans',system-ui,sans-serif;
   --clock:'Barlow Condensed',system-ui,sans-serif;
   --num:var(--clock);
@@ -800,7 +805,7 @@ body.light{background:var(--ink)}
 @keyframes holeFromLeft{from{transform:translateX(-30px)}to{transform:none}}
 @media (prefers-reduced-motion:reduce){.hnc .hh1.from-right,.hnc .hh1.from-left{animation:none}}
 
-/* ---------- Sep 1: player names in Fraunces ---------- */
+/* ---------- Sep 1: player names in the display face ---------- */
 .brow .bn{font-family:var(--display);font-size:21px;font-weight:600;letter-spacing:-.015em;
   font-variation-settings:'opsz' 32,'SOFT' 30,'WONK' 0}
 .brow .bn .hcp{font-family:var(--num)}

@@ -119,13 +119,13 @@ function readTokens(): Record<string, string> {
 }
 
 const TYPE_ROLES: { role: string; where: string; size: string; spec: string; cls: string }[] = [
-  { role: 'App title', where: 'Header', size: '21', spec: 'Fraunces 600 · −0.015em · opsz 32 · SOFT 30 · WONK 0', cls: '.hd h1' },
-  { role: 'Section', where: 'Rosters, If we finish level', size: '19', spec: 'Fraunces 600 · −0.015em · WONK 0', cls: '.sh h2' },
-  { role: 'Round title', where: 'Course name on a round card', size: '19', spec: 'Fraunces 600 · −0.015em', cls: '.rtop .t1' },
-  { role: 'Day', where: 'Feed and schedule day headers', size: '17 / 18', spec: 'Fraunces 600 · −0.015em', cls: '.dayhd .n · .dayrow .n' },
-  { role: 'Group label', where: 'Settings sections', size: '16', spec: 'Fraunces 600 · brass', cls: '.grp h3' },
-  { role: 'Tab', where: 'Live · Scoring · Schedule', size: '16', spec: 'Fraunces 600', cls: '.tab' },
-  { role: 'Player', where: 'Name on the hole card', size: '21', spec: 'Fraunces 600 · −0.015em · opsz 32 · WONK 0 · team colour', cls: '.brow .bn' },
+  { role: 'App title', where: 'Header', size: '21', spec: 'Mincho 700 · −0.015em', cls: '.hd h1' },
+  { role: 'Section', where: 'Rosters, If we finish level', size: '19', spec: 'Mincho 700 · −0.015em', cls: '.sh h2' },
+  { role: 'Round title', where: 'Course name on a round card', size: '19', spec: 'Mincho 700 · −0.015em', cls: '.rtop .t1' },
+  { role: 'Day', where: 'Feed and schedule day headers', size: '17 / 18', spec: 'Mincho 700 · −0.015em', cls: '.dayhd .n · .dayrow .n' },
+  { role: 'Group label', where: 'Settings sections', size: '16', spec: 'Mincho 700 · brass', cls: '.grp h3' },
+  { role: 'Tab', where: 'Live · Scoring · Schedule', size: '16', spec: 'Mincho 700', cls: '.tab' },
+  { role: 'Player', where: 'Name on the hole card', size: '21', spec: 'Mincho 700 · −0.015em · team colour', cls: '.brow .bn' },
   { role: 'Body', where: 'Everything you read', size: '17', spec: 'Work Sans 400 · 1.6', cls: 'body' },
   { role: 'Feed body', where: 'Feed rows', size: '15 / 13', spec: 'Work Sans · moss, sub-line moss dim', cls: '.ev .bd · .sub2' },
   { role: 'Subtitle', where: 'Under the app title, strip labels', size: '11.5', spec: 'Work Sans · .012em · moss', cls: '.hd .sub · .striplbl' },
@@ -205,13 +205,13 @@ export default function DesignSystem() {
             </p>
             <div className="ds-grid" style={{ marginTop: 28 }}>
               <a className="ds-card" href="#color" style={{ textDecoration: 'none' }}><div className="n">Color</div><div className="d">12 tokens, one accent, contrast computed on this page</div></a>
-              <a className="ds-card" href="#type" style={{ textDecoration: 'none' }}><div className="n">Type</div><div className="d">Fraunces, Work Sans, Barlow Condensed. Every integer is condensed</div></a>
+              <a className="ds-card" href="#type" style={{ textDecoration: 'none' }}><div className="n">Type</div><div className="d">BIZ UDPMincho, Work Sans, Barlow Condensed. Every integer is condensed</div></a>
               <a className="ds-card" href="#form" style={{ textDecoration: 'none' }}><div className="n">Form and layout</div><div className="d">Square corners, one hairline, flat ink, a 420px frame on desktop only</div></a>
               <a className="ds-card" href="#components" style={{ textDecoration: 'none' }}><div className="n">Components</div><div className="d">The strip, the hole card, feed rows, cards, the scorecard, settings</div></a>
               <a className="ds-card" href="#voice" style={{ textDecoration: 'none' }}><div className="n">Voice</div><div className="d">Sentence case, golf words, the app says what it decided and why</div></a>
             </div>
             <p className="ds-p" style={{ marginTop: 22 }}>
-              The type foundation is Dado's, from Detail Binder. The rest is the prototype's, <code>freeman-cup-v66.html</code>,
+              The type foundation started as Dado's, from Detail Binder; the display face became BIZ UDPMincho on Sep 1. The rest is the prototype's, <code>freeman-cup-v66.html</code>,
               whose 680-line stylesheet is <code>src/index.css</code> verbatim. Two attempts to translate it into utilities drifted; copying it did not.
             </p>
           </section>
@@ -271,15 +271,15 @@ export default function DesignSystem() {
             <span className="ds-eyebrow">Foundations · 02</span>
             <h2 className="ds-h1">Type</h2>
             <p className="ds-lead">
-              Fraunces carries the titles, Work Sans carries the reading, Barlow Condensed carries anything that counts. Sentence case throughout, including tags and buttons. The one rule people break: if it is an integer, it is condensed.
+              BIZ UDPMincho carries the titles, Work Sans carries the reading, Barlow Condensed carries anything that counts. Sentence case throughout, including tags and buttons. The one rule people break: if it is an integer, it is condensed.
             </p>
 
             <h3 className="ds-h3">Families</h3>
             <div className="ds-grid">
               <div className="ds-card">
-                <div className="ds-fam" style={{ fontFamily: 'var(--display)', fontVariationSettings: "'opsz' 48,'SOFT' 30,'WONK' 1", fontWeight: 500 }}>Aa Bb 0123</div>
+                <div className="ds-fam" style={{ fontFamily: 'var(--display)', fontWeight: 700 }}>Aa Bb 0123</div>
                 <div className="n">Display</div>
-                <div className="d">Titles, section heads, day names, tabs. Variable axes: opsz tracks size, SOFT 30, WONK 0 on functional text.</div>
+                <div className="d">Titles, section heads, day names, tabs, player names. A Mincho serif, self-hosted as a Latin subset in two weights: 400 and 700. Anything asking for 500 or 600 resolves to regular or bold.</div>
                 <span className="ds-code">--display</span>
                 <div className="ds-stack">{stack(tokens.display)}</div>
               </div>
@@ -484,7 +484,8 @@ export default function DesignSystem() {
             <h3 className="ds-h3">What is still copied by hand</h3>
             <p className="ds-p"><b>theme-color and the manifest.</b> <code>index.html</code> and <code>public/manifest.json</code> carry <code>#0A1410</code> as literal values because the browser reads them before any CSS runs. <code>src/lib/theme.ts</code> keeps the meta in step when the theme flips; the manifest cannot follow.</p>
             <p className="ds-p"><b>The icons.</b> Brass on ink is baked into <code>public/icons/*.png</code>. If the brass changes, regenerate them.</p>
-            <p className="ds-p"><b>The type roles table above.</b> Sizes and axes are typed from the stylesheet, not read from it. The specimens are live, so a mismatch shows as the table disagreeing with the sample beside it.</p>
+            <p className="ds-p"><b>The type roles table above.</b> Sizes and weights are typed from the stylesheet, not read from it. The specimens are live, so a mismatch shows as the table disagreeing with the sample beside it.</p>
+            <p className="ds-p"><b>The fonts.</b> <code>public/fonts/*.woff2</code> are Latin subsets cut from the full BIZ UDPMincho files with fonttools. If a glyph is missing, re-subset with a wider range; do not swap in the 7 MB originals.</p>
             <div className="ds-foot">The Freeman Cup 2026 · Sand Valley · type by Dado · built for eight people and one silver jug.</div>
           </section>
         </main>

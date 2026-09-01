@@ -76,4 +76,4 @@ The original warnings still stand: don't let anyone rewrite `calc()` or `derive(
 
 Eight men, two teams, four rounds at Sand Valley, playing for **The Lassie**. Ten points, 5½ wins. Vikes (red): Griffin S. 15 (C), Devin E. 7, Brian K. 6, Matt J. 15. Celts (blue): Kyle P. 15 (C, commissioner), Phil J. 11, Justin D. 7, JT W. 15. Thu Mammoth Dunes four-ball; Fri The Commons foursomes (12 holes) then Sand Valley four-ball; Sat Sedge Valley singles. Tie at 5–5 goes to the Captains Shootout on the practice green.
 
-Three tabs: **Scoring · Live · Schedule.** Dark scorecard green, bone, brass; Fraunces / Work Sans / Barlow Condensed; sentence case.
+Three tabs: **Live · Scoring · Schedule.** Dark scorecard green, bone, brass; BIZ UDPMincho (display, self-hosted Latin subset in `public/fonts/`, replaced Fraunces Sep 1) / Work Sans / Barlow Condensed; sentence case.
