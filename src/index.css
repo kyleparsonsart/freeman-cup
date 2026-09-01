@@ -755,9 +755,6 @@ body.light .tg.sel{--bg:var(--sel);background:var(--sel)}
 .tg,.bovr button{position:relative;overflow:hidden;isolation:isolate}
 .ripple{position:absolute;border-radius:50%;background:var(--sel);pointer-events:none;z-index:-1;
   transform:scale(0);animation:ripple .45s cubic-bezier(.2,.6,.3,1) forwards}
-.bovr button[data-w="A"] .ripple{background:var(--red)}
-.bovr button[data-w="H"] .ripple{background:var(--moss)}
-.bovr button[data-w="B"] .ripple{background:var(--blue)}
 @keyframes ripple{0%{transform:scale(0)}100%{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.ripple{animation:none;display:none}}
 /* scorekeeper sits on the scorer's own row, right of the name */
@@ -765,3 +762,25 @@ body.light .tg.sel{--bg:var(--sel);background:var(--sel)}
 .skin svg{width:12px;height:12px;color:var(--brass)}
 .skin .swap{padding:5px 8px;margin-left:2px}
 .brow .picker{margin:0 0 2px;border-top:1px solid var(--line)}
+
+/* ---------- Sep 1: no glyph shift on select; override fill rises ---------- */
+/* the notation ring was a 1.75px border on the 36px mark box; border-box
+   kept the box size but shrank the content area by a fraction, so the
+   glyph re-centred on a half pixel. Inset shadows leave the content alone. */
+.tg.sel .mk.u1{border:none;box-shadow:inset 0 0 0 1.75px var(--mkc)}
+.tg.sel .mk.u2{border:none;box-shadow:inset 0 0 0 1.75px var(--mkc),0 0 0 2px var(--bg),0 0 0 3.5px var(--mkc)}
+.tg.sel .mk.o1{border:none;box-shadow:inset 0 0 0 1.75px var(--mkc)}
+.tg.sel .mk.o2{border:none;box-shadow:inset 0 0 0 1.75px var(--mkc),0 0 0 2px var(--bg),0 0 0 3.5px var(--mkc)}
+.tg.sel .mk.o3{border:none;box-shadow:inset 0 0 0 1.75px var(--mkc),0 0 0 2px var(--bg),0 0 0 3.5px var(--mkc),
+  0 0 0 5px var(--bg),0 0 0 6.5px var(--mkc)}
+/* VIK / Halved / CEL: when a hole is settled the colour rises from the
+   bottom of the button, behind the label. While it rises the button's own
+   background stays neutral; the .sel fill is what remains. */
+.bovr button.sel.rise{background:var(--ink-2)}
+.bovr button .fillup{position:absolute;inset:0;z-index:-1;transform:translateY(100%);
+  animation:fillup .38s cubic-bezier(.2,.7,.2,1) forwards}
+.bovr button[data-w="A"] .fillup{background:var(--red)}
+.bovr button[data-w="H"] .fillup{background:var(--moss)}
+.bovr button[data-w="B"] .fillup{background:var(--blue)}
+@keyframes fillup{to{transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){.bovr button .fillup{animation:none;transform:none}.bovr button.sel.rise{background:inherit}}

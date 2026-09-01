@@ -202,7 +202,13 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
   // from its centre.
   type Ripple = { id: number; x: number; y: number; d: number };
   const [ripples, setRipples] = useState<Record<string, Ripple>>({});
-  const bovrRef = useRef<HTMLDivElement>(null);
+  // the override strip rises instead: one button at a time, restartable
+  const [rise, setRise] = useState<{ w: 'A' | 'B' | 'H'; id: number } | null>(null);
+  const riseOn = useCallback((w: 'A' | 'B' | 'H') => {
+    const id = Date.now() + Math.random();
+    setRise({ w, id });
+    setTimeout(() => setRise(p => (p?.id === id ? null : p)), 450);
+  }, []);
   const rippleAt = useCallback((key: string, el: HTMLElement | null, cx?: number, cy?: number) => {
     if (!el) return;
     const r = el.getBoundingClientRect();
@@ -257,9 +263,9 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
     const prev = lastRes.current;
     lastRes.current = { id: m.id, i, r: h.r };
     if (prev.id === m.id && prev.i === i && prev.r !== h.r && h.r) {
-      rippleAt(`w:${h.r}`, bovrRef.current?.querySelector(`[data-w="${h.r}"]`) as HTMLElement | null);
+      riseOn(h.r);
     }
-  }, [m.id, i, h.r, rippleAt]);
+  }, [m.id, i, h.r, riseOn]);
 
   // Find the scorer for this group
   const scorerKey = s.scorer[m.g];
@@ -412,22 +418,20 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
 
       {/* Override strip */}
       {!bye && (
-        <div className="bovr" ref={bovrRef}>
+        <div className="bovr">
           {(['A', 'H', 'B'] as const).map(w => (
             <button
               key={w}
               data-w={w}
-              className={`${h.r === w ? 'sel' : ''} ${viewOnly ? 'ro' : ''}`}
+              className={`${h.r === w ? 'sel' : ''}${rise?.w === w ? ' rise' : ''} ${viewOnly ? 'ro' : ''}`}
               onPointerDown={tap.onPointerDown}
               onClick={e => {
                 if (!tap.isTap(e)) return;
-                const clearing = h.r === w && !h.d; // same button again clears it: no ripple
-                if (!viewOnly && !clearing) rippleAt(`w:${w}`, e.currentTarget, e.clientX, e.clientY);
                 handleOverride(w);
               }}
             >
               {w === 'A' ? A : w === 'H' ? 'Halved' : B}
-              {ripple(`w:${w}`)}
+              {rise?.w === w && <span key={rise.id} className="fillup" />}
             </button>
           ))}
         </div>
