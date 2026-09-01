@@ -123,17 +123,17 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
         )}
         {data && tab === 'scoring' && (
           <section id="v-scoring" className="view on">
-            <ScoringScreen data={data} reload={reload} />
+            <div className="page"><ScoringScreen data={data} reload={reload} /></div>
           </section>
         )}
         {data && tab === 'live' && (
           <section id="v-live" className="view on">
-            <LiveScreen data={data} strip={false} />
+            <div className="page"><LiveScreen data={data} strip={false} /></div>
           </section>
         )}
         {data && tab === 'schedule' && (
           <section id="v-schedule" className="view on">
-            <ScheduleScreen data={data} />
+            <div className="page"><ScheduleScreen data={data} /></div>
           </section>
         )}
       </div>

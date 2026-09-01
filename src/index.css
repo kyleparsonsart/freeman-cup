@@ -723,3 +723,16 @@ body.light .ftab[aria-selected="true"]{background:var(--ink-2);border-color:var(
 .dayrow{background:transparent;border-bottom:none}
 .mrow2 .cchev{font-size:16px;width:18px}
 .dayhd .chev{font-size:15px}
+
+/* ---------- page card (Sep 1): each tab's content sits in one raised
+   card on the field, 24px of grid on every side. Dado's stamp, nothing
+   inside the card changes. overflow:clip keeps sticky day headers working. */
+:root{--stamp:#030906}
+body.light{--stamp:#CFC6AF}
+.page{margin:0 24px 24px;background:var(--ink);border:1px solid var(--line);border-radius:12px;
+  box-shadow:3px 3px 0 var(--stamp);overflow:clip}
+.page > .hero,.page > .fill > .hero{border-top:none}
+.page .empty{margin:0}
+.hd + .page,.livehd + .page{margin-top:6px}
+.livehd{margin-bottom:24px}
+.view.on{padding-bottom:0}
