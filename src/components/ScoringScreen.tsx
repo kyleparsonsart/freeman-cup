@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { enqueueHoleWrite, getQueuedWrites, onQueueChange } from '../lib/writeQueue';
 import {
@@ -159,8 +159,42 @@ interface HeroCardProps {
   tabbed: boolean;
 }
 
+/**
+ * Safari sometimes fires a click on lift after a thumb-scroll that began on
+ * a picker cell (a horizontal scroll-snap row inside the vertical page
+ * scroller). Tapping the selected score clears it, so a scroll could
+ * "randomly" toggle a score off. Remember where the pointer went down and
+ * the scroll positions; a click that arrives after movement is a scroll.
+ */
+function useTapGuard() {
+  const down = useRef<{ x: number; y: number; sl: number; st: number; t: number } | null>(null);
+  const scrollerOf = (el: HTMLElement | null) => el?.closest('.tgs') as HTMLElement | null;
+  const bodyOf = (el: HTMLElement | null) => el?.closest('.body') as HTMLElement | null;
+  const onPointerDown = (e: React.PointerEvent<HTMLElement>) => {
+    const t = e.currentTarget;
+    down.current = {
+      x: e.clientX, y: e.clientY,
+      sl: scrollerOf(t)?.scrollLeft ?? 0,
+      st: bodyOf(t)?.scrollTop ?? 0,
+      t: Date.now(),
+    };
+  };
+  const isTap = (e: React.MouseEvent<HTMLElement>) => {
+    const d = down.current;
+    down.current = null;
+    if (!d) return true; // keyboard / synthetic click
+    const t = e.currentTarget;
+    const moved = Math.abs(e.clientX - d.x) > 8 || Math.abs(e.clientY - d.y) > 8;
+    const scrolled = (scrollerOf(t)?.scrollLeft ?? 0) !== d.sl || (bodyOf(t)?.scrollTop ?? 0) !== d.st;
+    const held = Date.now() - d.t > 700;
+    return !moved && !scrolled && !held;
+  };
+  return { onPointerDown, isTap };
+}
+
 function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbed }: HeroCardProps) {
   const r = calc(m);
+  const tap = useTapGuard();
   const [pending, setPending] = useState(0);
 
   // How many scores are still waiting to reach the server. Online, a row
@@ -346,7 +380,8 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
               key={w}
               data-w={w}
               className={`${h.r === w ? 'sel' : ''} ${viewOnly ? 'ro' : ''}`}
-              onClick={() => handleOverride(w)}
+              onPointerDown={tap.onPointerDown}
+              onClick={e => { if (tap.isTap(e)) handleOverride(w); }}
             >
               {w === 'A' ? A : w === 'H' ? 'Halved' : B}
             </button>
@@ -403,7 +438,8 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
                   <button
                     key={t.o}
                     className={`tg${on ? ' sel' : ''}${adj ? ' adj' : ''} ${viewOnly ? 'ro' : ''}`}
-                    onClick={() => handleScoreSet(k, val)}
+                    onPointerDown={tap.onPointerDown}
+                    onClick={e => { if (tap.isTap(e)) handleScoreSet(k, val); }}
                   >
                     <span className={`mk ${t.sh}`}>{val}</span>
                     <span className="cap">{t.cap}</span>
