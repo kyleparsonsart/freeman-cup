@@ -792,3 +792,10 @@ body{background:var(--ink)}
 body.light{background:var(--ink)}
 .hd{padding-top:calc(16px + env(safe-area-inset-top))}
 .sethd{padding-top:calc(16px + env(safe-area-inset-top))}
+
+/* ---------- Sep 1: hole number slides away from the tapped arrow ---------- */
+.hnc .hh1.from-right{animation:holeFromRight .26s cubic-bezier(.2,.7,.2,1)}
+.hnc .hh1.from-left{animation:holeFromLeft .26s cubic-bezier(.2,.7,.2,1)}
+@keyframes holeFromRight{from{transform:translateX(26px);opacity:0}to{transform:none;opacity:1}}
+@keyframes holeFromLeft{from{transform:translateX(-26px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.hnc .hh1.from-right,.hnc .hh1.from-left{animation:none}}

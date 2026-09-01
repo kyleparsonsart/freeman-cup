@@ -383,11 +383,12 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
     await postScore(i, newScores, newR, false);
   }, [h, i, keys, m, s.fmt, data, postScore, viewOnly]);
 
+  // the hole number slides in from the tapped arrow's side, i.e. away from it
+  const [slide, setSlide] = useState<{ dir: number; id: number } | null>(null);
   const nav = (dir: number) => {
-    setPinned(prev => ({
-      ...prev,
-      [m.id]: Math.max(0, Math.min(s.holes - 1, i + dir)),
-    }));
+    const next = Math.max(0, Math.min(s.holes - 1, i + dir));
+    if (next !== i) setSlide({ dir, id: Date.now() });
+    setPinned(prev => ({ ...prev, [m.id]: next }));
   };
 
   const A = CFG.teams.a.short;
@@ -403,7 +404,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
           aria-label="Previous hole"
         >&#8249;</button>
         <div className="hnc">
-          <span className="hh1">Hole {i + 1}</span>
+          <span key={slide?.id ?? 'still'} className={`hh1${slide ? (slide.dir > 0 ? ' from-right' : ' from-left') : ''}`}>Hole {i + 1}</span>
           <span className="hh2">
             Par {s.par[i]}{s.si ? ` · SI ${s.si[i]}` : ' · scratch'}
             {pending > 0 ? ` · ${pending} to sync` : data.offline ? ' · offline' : ''}
