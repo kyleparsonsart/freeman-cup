@@ -13,7 +13,7 @@ export function Demo({ title, classes, note, stage = 'plain', children }: {
       <h3 className="ds-h3">{title}</h3>
       {note && <p className="ds-note">{note}</p>}
       {stage === 'none' ? children : (
-        <div className={`ds-stage${stage === 'board' ? ' board' : stage === 'pad' ? ' pad' : ''}`} style={{ marginTop: 12 }}>
+        <div className={`ds-stage${stage === 'pad' ? ' pad' : ''}`} style={{ marginTop: 12 }}>
           {children}
         </div>
       )}

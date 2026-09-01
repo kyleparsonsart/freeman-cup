@@ -226,7 +226,7 @@ export function useEventData() {
       playerMap[key] = {
         n: p.name,
         t: team?.side || 'a',
-        h: p.handicap_index,
+        h: Number(p.handicap_index),
         cap: p.is_captain || undefined,
       };
     });

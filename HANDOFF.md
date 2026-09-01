@@ -48,6 +48,8 @@ SQL that has run, in order: `freeman-cup-schema.sql`, `freeman-cup-auth.sql`, `f
 - **No "Picked up".** Removed Sep 1. Every player holes out or the scorer enters what they would have made; the engine still tolerates an `X` in old rows.
 - **Cup strip lives on Live only**, flush to the top with the gear over it. Scoring's header is `Round 3 · Sand Valley`; Schedule's is `The Freeman Cup 2026`.
 - **The page scroller's indicator is hidden**; it drew behind sticky and side-scrolling children on iOS.
+- **The ruled field is gone** (Sep 1). Page, header and tab bar are plain ink; `board-on` is no longer set on body. `--board` still colours the scorer bar.
+- **Page card tried and reverted** (Sep 1, `4596dee` / `5b19f01`). Full width stays: big targets on the course.
 
 - **Code entry over link tap** for sign-in, because of the iOS storage container. Both are sent; the app asks for the code.
 - **A claimed seat is never rebound automatically.** Commissioner clears `auth_uid` by hand if someone changes address.

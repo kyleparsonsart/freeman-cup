@@ -13,14 +13,14 @@ import * as D from './Demos';
 
 const COLOR_GROUPS: { title: string; blurb: string; tokens: { t: string; n: string; d: string }[] }[] = [
   {
-    title: 'Green', blurb: 'The scorecard. Three steps of the same green carry every surface; the field behind the header and tabs is one step darker again.',
+    title: 'Green', blurb: 'The scorecard. Three steps of the same green carry every surface. The page, the header and the tab bar are all plain ink; nothing sits on a field.',
     tokens: [
       { t: 'ink',   n: 'Ink',     d: 'The page. Cards, the hole card, the phone frame.' },
       { t: 'ink-2', n: 'Ink 2',   d: 'Raised a step: inputs, big feed rows, settings fields, picker cells.' },
       { t: 'ink-3', n: 'Ink 3',   d: 'Raised twice: the derive line, the scorer picker, selected notation cells.' },
-      { t: 'board', n: 'Board',   d: 'The ruled field under header and tabs. Also the scorer bar.' },
+      { t: 'board', n: 'Board',   d: 'The darkest step. The scorer bar under the hole card.' },
       { t: 'line',  n: 'Line',    d: 'Every hairline. 1px, solid; dashed where a section is optional.' },
-      { t: 'rule',  n: 'Rule',    d: 'The grid drawn on the board. Translucent bone, 34px pitch.' },
+      { t: 'rule',  n: 'Rule',    d: 'The grid the field used to draw. Unused since Sep 1; kept so old rules resolve.' },
     ],
   },
   {
@@ -206,7 +206,7 @@ export default function DesignSystem() {
             <div className="ds-grid" style={{ marginTop: 28 }}>
               <a className="ds-card" href="#color" style={{ textDecoration: 'none' }}><div className="n">Color</div><div className="d">12 tokens, one accent, contrast computed on this page</div></a>
               <a className="ds-card" href="#type" style={{ textDecoration: 'none' }}><div className="n">Type</div><div className="d">Fraunces, Work Sans, Barlow Condensed. Every integer is condensed</div></a>
-              <a className="ds-card" href="#form" style={{ textDecoration: 'none' }}><div className="n">Form and layout</div><div className="d">Square corners, one hairline, the ruled field, a 420px frame on desktop only</div></a>
+              <a className="ds-card" href="#form" style={{ textDecoration: 'none' }}><div className="n">Form and layout</div><div className="d">Square corners, one hairline, flat ink, a 420px frame on desktop only</div></a>
               <a className="ds-card" href="#components" style={{ textDecoration: 'none' }}><div className="n">Components</div><div className="d">The strip, the hole card, feed rows, cards, the scorecard, settings</div></a>
               <a className="ds-card" href="#voice" style={{ textDecoration: 'none' }}><div className="n">Voice</div><div className="d">Sentence case, golf words, the app says what it decided and why</div></a>
             </div>
@@ -345,14 +345,10 @@ export default function DesignSystem() {
               <div className="ds-tile"><div style={{ borderTop: '2px solid var(--brass)', margin: '18px 0', width: '33%' }} /><div className="n">Selected</div><div className="d">A 2px brass rule on the selected tab, and a 2px brass focus ring everywhere.</div><span className="ds-code">.tab[aria-selected] · :focus-visible</span></div>
             </div>
 
-            <h3 className="ds-h3">The field</h3>
+            <h3 className="ds-h3">The page</h3>
             <p className="ds-p">
-              A faint ruled grid on the darker green sits behind the header and the tabs, and scrolls with the content (<code>background-attachment: local</code>). The hole card and every other surface sits on plain ink on top of it, so the grid reads as the table, not the card.
+              Plain ink, edge to edge: the page, the header and the tab bar are the same colour, and content runs full width so every tap target gets the whole phone. The prototype drew a ruled field behind the header and tabs; it came out on Sep 1 (<code>body.board-on</code> is no longer set).
             </p>
-            <div className="ds-stage board" style={{ height: 140, maxWidth: '100%' }}>
-              <div style={{ position: 'absolute', left: 18, right: 18, bottom: 0, height: 74, background: 'var(--ink)', borderTop: '1px solid var(--line)' }} />
-            </div>
-            <div style={{ marginTop: 8 }}><span className="ds-code">body.board-on .body</span><span className="ds-code">--board · --rule · 34px pitch</span></div>
 
             <h3 className="ds-h3">Measurements</h3>
             <dl className="ds-kv">
