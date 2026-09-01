@@ -15,7 +15,8 @@ const TIEBREAK = {
   ],
 };
 
-const names = (keys: string[]) => keys.map(k => P[k]?.n || k).join(' / ');
+const fn = (n?: string | null) => (n || '').split(' ')[0];
+const names = (keys: string[]) => keys.map(k => fn(P[k]?.n) || k).join(' / ');
 
 export default function ScheduleScreen({ data }: { data: EventData }) {
   const { scoringSessions: sessions, scoringMatches: matches, players, teams } = data;
@@ -62,7 +63,7 @@ export default function ScheduleScreen({ data }: { data: EventData }) {
               <h4>{team?.name}</h4>
               {ps.map(p => (
                 <div key={p.id} className="pl">
-                  <span>{p.name}{p.is_captain && <span className="cap">C</span>}</span>
+                  <span>{fn(p.name)}{p.is_captain && <span className="cap">C</span>}</span>
                   <span className="hc">{p.handicap_index}</span>
                 </div>
               ))}
@@ -121,7 +122,7 @@ function RoundCard({ s, ms, isOpen, toggle }: RoundCardProps) {
           <div className="t1">{s.course}</div>
           <div className="t2">{s.rd} · {s.fmt} · {s.holes} holes</div>
           <div className="t3">
-            Tees {s.tees.join(' and ')} · {s.scorer.map(k => P[k]?.n || 'nobody').join(' and ')} scoring
+            Tees {s.tees.join(' and ')} · {s.scorer.map(k => fn(P[k]?.n) || 'nobody').join(' and ')} scoring
           </div>
         </div>
         <div className="rright">{pill}{scoreline}</div>

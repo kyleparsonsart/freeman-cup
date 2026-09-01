@@ -47,14 +47,14 @@ const COLOR_GROUPS: { title: string; blurb: string; tokens: { t: string; n: stri
 ];
 
 const CONTRAST_PAIRS: { fg: string; bg: string; label: string; why: string; sample: string }[] = [
-  { fg: 'bone', bg: 'ink', label: 'bone on ink', why: 'body text, headings', sample: 'Griffin S. 3 up' },
-  { fg: 'bone', bg: 'ink-2', label: 'bone on ink 2', why: 'text on raised surfaces', sample: 'Griffin S. 3 up' },
+  { fg: 'bone', bg: 'ink', label: 'bone on ink', why: 'body text, headings', sample: 'Griffin 3 up' },
+  { fg: 'bone', bg: 'ink-2', label: 'bone on ink 2', why: 'text on raised surfaces', sample: 'Griffin 3 up' },
   { fg: 'moss', bg: 'ink', label: 'moss on ink', why: 'secondary copy, feed bodies', sample: 'won 7 with a birdie' },
   { fg: 'moss-dim', bg: 'ink', label: 'moss dim on ink', why: 'hints and timestamps; small, never load-bearing', sample: 'Par 5 · SI 1' },
   { fg: 'brass', bg: 'ink', label: 'brass on ink', why: 'Switch, links, group labels', sample: 'Switch' },
   { fg: 'brass', bg: 'board', label: 'brass on board', why: 'the jug and its label over the field', sample: 'The Lassie' },
-  { fg: 'red', bg: 'ink', label: 'red on ink', why: 'Vikes names as text', sample: 'Griffin S.' },
-  { fg: 'blue', bg: 'ink', label: 'blue on ink', why: 'Celts names as text', sample: 'Kyle P.' },
+  { fg: 'red', bg: 'ink', label: 'red on ink', why: 'Vikes names as text', sample: 'Griffin' },
+  { fg: 'blue', bg: 'ink', label: 'blue on ink', why: 'Celts names as text', sample: 'Kyle' },
   { fg: 'ink', bg: 'brass', label: 'ink on brass', why: 'the primary button label, Final chip', sample: 'Email me a code' },
   { fg: 'ink', bg: 'bone', label: 'ink on bone', why: 'the lead-change row', sample: 'Vikes lead' },
   { fg: '#FFFFFF', bg: 'red', label: 'white on red', why: 'a Vikes win row, the VIK override when set', sample: 'Match final' },
@@ -317,9 +317,9 @@ export default function DesignSystem() {
             <div className="ds-spec"><div className="m"><b>Section</b><code>.sh h2</code></div><div className="sh" style={{ padding: 0 }}><h2>If we finish level</h2></div></div>
             <div className="ds-spec"><div className="m"><b>Cup points</b><code>.sside .pt</code></div><div className="sside a" style={{ display: 'flex', gap: 12, alignItems: 'baseline' }}><span className="pt">3½</span><span className="nm">Vikes</span></div></div>
             <div className="ds-spec"><div className="m"><b>Hole number</b><code>.hnav .hh1</code></div><div className="hnav" style={{ border: 'none' }}><div className="hnc" style={{ alignItems: 'flex-start', padding: 0 }}><span className="hh1">Hole 7</span><span className="hh2">Par 5 · SI 1</span></div></div></div>
-            <div className="ds-spec"><div className="m"><b>Player</b><code>.brow .bn</code></div><div className="brow" style={{ padding: 0 }}><span className="bn a">Griffin S.<span className="hcp"> (15)</span></span></div></div>
+            <div className="ds-spec"><div className="m"><b>Player</b><code>.brow .bn</code></div><div className="brow" style={{ padding: 0 }}><span className="bn a">Griffin<span className="hcp"> (15)</span></span></div></div>
             <div className="ds-spec"><div className="m"><b>Body</b><code>body · 17px</code></div><div style={{ maxWidth: '54ch' }}>Each tee time elects a scorer on the first tee. That person enters every hole for everyone in the group, which is how a paper card already works.</div></div>
-            <div className="ds-spec"><div className="m"><b>Feed body</b><code>.ev .bd</code></div><div className="ev" style={{ padding: 0, border: 'none' }}><div className="bd"><span className="tag gold">Birdie</span><span className="who b">Kyle P.</span> won 11 with a birdie.<span className="sub2">Griffin S. v Kyle P. · 3 up</span></div></div></div>
+            <div className="ds-spec"><div className="m"><b>Feed body</b><code>.ev .bd</code></div><div className="ev" style={{ padding: 0, border: 'none' }}><div className="bd"><span className="tag gold">Birdie</span><span className="who b">Kyle</span> won 11 with a birdie.<span className="sub2">Griffin v Kyle · 3 up</span></div></div></div>
             <div className="ds-spec"><div className="m"><b>Subtitle</b><code>.hd .sub</code></div><div className="hd" style={{ padding: 0 }}><div className="sub" style={{ marginTop: 0 }}>5th Annual · Sand Valley · Oct 2026</div></div></div>
           </section>
 
@@ -389,10 +389,10 @@ export default function DesignSystem() {
                 <D.HoleNav />
                 <D.Override />
                 <D.Legend />
-                <D.PlayerRow name="Griffin S." side="a" hcp={15} par={5} picked={5} stroke scorer />
-                <D.PlayerRow name="Matt J." side="a" hcp={15} par={5} picked={7} stroke />
-                <D.PlayerRow name="Kyle P." side="b" hcp={15} par={5} picked={5} />
-                <D.PlayerRow name="JT W." side="b" hcp={15} par={5} />
+                <D.PlayerRow name="Griffin" side="a" hcp={15} par={5} picked={5} stroke scorer />
+                <D.PlayerRow name="Matt" side="a" hcp={15} par={5} picked={7} stroke />
+                <D.PlayerRow name="Kyle" side="b" hcp={15} par={5} picked={5} />
+                <D.PlayerRow name="JT" side="b" hcp={15} par={5} />
                 <D.Derived kind="derived" />
                 <D.HoleFoot />
               </div>
@@ -461,8 +461,8 @@ export default function DesignSystem() {
             <dl className="ds-kv">
               <dt>Sentence case</dt><dd>Everywhere, including tags, buttons and eyebrows. “Match final”, not “MATCH FINAL”. The exceptions are the team tags VIK and CEL, which are abbreviations.</dd>
               <dt>Golf words</dt><dd>4 &amp; 3, 1 up, all square, halved, dormie, bye hole. Never “won by 3”. A match won on the last hole reads “1 up”, never “1 &amp; 0”.</dd>
-              <dt>Names</dt><dd>First name and initial: Griffin S. Sides joined with a slash: Griffin S. / Matt J. First names alone only in a crowded sub-line.</dd>
-              <dt>Show the work</dt><dd>Every derived hole says why: “Griffin S. net 4 against Kyle P. net 5.” Every manual one says who: “Set by hand by Griffin S.”</dd>
+              <dt>Names</dt><dd>First names only, everywhere: Griffin, never Griffin S. Sides joined with a slash: Griffin / Matt.</dd>
+              <dt>Show the work</dt><dd>Every derived hole says why: “Griffin net 4 against Kyle net 5.” Every manual one says who: “Set by hand by Griffin”</dd>
               <dt>State what is missing</dt><dd>“Waiting on Kyle, JT.” beats a blank. “Nobody is scoring this group” beats an empty banner.</dd>
               <dt>Times</dt><dd>12:00 PM in tee times; a bare 3:42 in the feed where the day header carries the date.</dd>
               <dt>Numbers</dt><dd>Half points as ½. Condensed type for every integer, so 3½ of 10 lines up with 5½ to clinch.</dd>

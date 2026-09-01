@@ -113,7 +113,7 @@ export function Override({ sel }: { sel?: 'A' | 'H' | 'B' }) {
 export function Legend() {
   return (
     <div className="legend">
-      <i className="ldot" /><b>Griffin S. and Matt J.</b> get a shot on this hole. The gold underline marks the score it plays as.
+      <i className="ldot" /><b>Griffin and Matt</b> get a shot on this hole. The gold underline marks the score it plays as.
     </div>
   );
 }
@@ -149,12 +149,12 @@ export function PlayerRow({ name, side, hcp, par, picked, stroke, scorer }: {
 
 export function Derived({ kind }: { kind: 'waiting' | 'derived' | 'manual' | 'bye' }) {
   if (kind === 'waiting') return <div className="bder"><span className="tag">Hole not complete</span>Waiting on Kyle, JT.</div>;
-  if (kind === 'manual') return <div className="bder"><span className="tag">Tapped, not computed</span>Set by hand by Griffin S.</div>;
+  if (kind === 'manual') return <div className="bder"><span className="tag">Tapped, not computed</span>Set by hand by Griffin</div>;
   if (kind === 'bye') return <div className="byebar">Bye hole · match closed on 15 · recorded but does not count</div>;
   return (
     <div className="bder">
       <span className="tag">Decided by the app</span>
-      <b>Griffin S.</b> net 4 against <b>Kyle P.</b> net 5. Vikes win the hole.
+      <b>Griffin</b> net 4 against <b>Kyle</b> net 5. Vikes win the hole.
     </div>
   );
 }
@@ -162,7 +162,7 @@ export function Derived({ kind }: { kind: 'waiting' | 'derived' | 'manual' | 'by
 export function HoleFoot() {
   return (
     <div className="hfoot">
-      <span>3 up after 7 · Griffin S.</span>
+      <span>3 up after 7 · Griffin</span>
       <button className="lnk">Next hole ›</button>
     </div>
   );
@@ -173,17 +173,17 @@ export function HoleFoot() {
 export function ScorerBar({ picking }: { picking?: boolean }) {
   return (
     <>
-      <div className="holine">Taken over from Matt J. by Griffin S., 12 min ago</div>
+      <div className="holine">Taken over from Matt by Griffin, 12 min ago</div>
       {picking && (
         <div className="picker">
-          <button className="sel">Griffin S. (you)</button>
-          <button>Matt J.</button>
-          <button>Kyle P.</button>
-          <button>JT W.</button>
+          <button className="sel">Griffin (you)</button>
+          <button>Matt</button>
+          <button>Kyle</button>
+          <button>JT</button>
         </div>
       )}
       <div className="scbar bottom">
-        <span className="scin"><Pencil /><b>Griffin S.</b> is scoring this group</span>
+        <span className="scin"><Pencil /><b>Griffin</b> is scoring this group</span>
         <button className="swap">{picking ? 'Cancel' : 'Switch'}</button>
       </div>
     </>
@@ -208,8 +208,8 @@ export function FeedRows() {
       <div className="ev a win big">
         <div className="t">3:41</div>
         <div className="bd">
-          <div className="hl"><span className="tag">Match final</span>Griffin S. / Matt J. win 4 &amp; 3</div>
-          Over Kyle P. / JT W.
+          <div className="hl"><span className="tag">Match final</span>Griffin / Matt win 4 &amp; 3</div>
+          Over Kyle / JT
         </div>
       </div>
       <div className="ev a">
@@ -221,8 +221,8 @@ export function FeedRows() {
       <div className="ev b">
         <div className="t">2:31</div>
         <div className="bd">
-          <span className="tag gold">Birdie</span><span className="who b">Kyle P.</span> won 11 with a birdie.
-          <span className="sub2">Griffin S. v Kyle P. · 3 up</span>
+          <span className="tag gold">Birdie</span><span className="who b">Kyle</span> won 11 with a birdie.
+          <span className="sub2">Griffin v Kyle · 3 up</span>
         </div>
       </div>
       <div className="ev">
@@ -250,16 +250,16 @@ export function RoundCardDemo() {
           <div className="rleft">
             <div className="t1">Mammoth Dunes</div>
             <div className="t2">Round 1 · Four-ball · 18 holes</div>
-            <div className="t3">Tees 12:00 PM and 12:10 PM · Griffin S. and Justin D. scoring</div>
+            <div className="t3">Tees 12:00 PM and 12:10 PM · Griffin and Justin scoring</div>
           </div>
           <div className="rright"><span className="spill live"><i className="pulse" />Live</span><div className="rscore live">1 of 2 in</div></div>
         </div>
         <button className="mrow2 ax" aria-expanded={false}>
-          <span className="p"><span className="a">Griffin S. / Matt J.</span><span className="v">V</span><span className="b">Kyle P. / JT W.</span></span>
+          <span className="p"><span className="a">Griffin / Matt</span><span className="v">V</span><span className="b">Kyle / JT</span></span>
           <span className="s a">VIK 4 &amp; 3</span><span className="cchev">▾</span>
         </button>
         <button className="mrow2 ax" aria-expanded={false}>
-          <span className="p"><span className="a">Devin E. / Brian K.</span><span className="v">V</span><span className="b">Phil J. / Justin D.</span></span>
+          <span className="p"><span className="a">Devin / Brian</span><span className="v">V</span><span className="b">Phil / Justin</span></span>
           <span className="s n">All square</span><span className="cchev">▾</span>
         </button>
       </div>
@@ -268,12 +268,12 @@ export function RoundCardDemo() {
           <div className="rleft">
             <div className="t1">Sedge Valley</div>
             <div className="t2">Round 4 · Singles · 18 holes</div>
-            <div className="t3">Tees 10:10 AM and 10:30 AM · Devin E. and Phil J. scoring</div>
+            <div className="t3">Tees 10:10 AM and 10:30 AM · Devin and Phil scoring</div>
           </div>
           <div className="rright"><span className="spill up">To play</span><div className="rscore up">4 points</div></div>
         </div>
         <button className="mrow2">
-          <span className="p"><span className="a">Griffin S.</span><span className="v">V</span><span className="b">Kyle P.</span></span>
+          <span className="p"><span className="a">Griffin</span><span className="v">V</span><span className="b">Kyle</span></span>
           <span className="s n">10:10 AM</span>
         </button>
         <div className="rfoot"><span>Pairings set. Cards handed in the night before.</span></div>
@@ -300,7 +300,7 @@ export function SettingsDemo() {
       <div className="grp"><h3>Scorers</h3></div>
       <div className="fld">
         <label>Round 1 · 12:00 PM<span className="sub2">Griffin, Matt, Kyle, JT</span></label>
-        <select defaultValue="g"><option value="g">Griffin S.</option><option>Matt J.</option><option>Kyle P.</option><option>JT W.</option></select>
+        <select defaultValue="g"><option value="g">Griffin</option><option>Matt</option><option>Kyle</option><option>JT</option></select>
       </div>
       <div className="grp"><h3>Danger</h3><div className="hint">Cannot be undone. Do this once, before Thursday.</div></div>
       <div className="danger"><button className="dbtn">Clear all scores</button></div>

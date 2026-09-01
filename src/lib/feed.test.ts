@@ -60,7 +60,7 @@ describe('buildFeed', () => {
     expect(keys[0]).toBe('h:m1:2');          // hole 3 won, newest
     expect(keys[keys.length - 1]).toBe('open'); // cup under way, oldest
     const h1 = day.items.find(i => i.key === 'h:m1:0')!;
-    expect(h1.who).toEqual({ side: 'a', name: 'Griffin S.' });
+    expect(h1.who).toEqual({ side: 'a', name: 'Griffin' });
     expect(h1.tag).toBe('Birdie');           // 3 on a par 4
     expect(h1.text).toContain('won 1 with a birdie');
   });
@@ -81,7 +81,7 @@ describe('buildFeed', () => {
     const fin = day.items.find(i => i.key === 'f:m1')!;
     expect(fin.big).toBe(true);
     expect(fin.side).toBe('a win');
-    expect(fin.hl).toContain('Griffin S. win');
+    expect(fin.hl).toContain('Griffin win');
   });
 
   it('reports a lead change when the first match lands, not again while the lead holds', () => {
@@ -114,8 +114,8 @@ describe('buildFeed', () => {
     const input = { ...base([m], [sw]), playerById: { p1: { name: 'Griffin S.' }, p2: { name: 'Kyle P.' } } as never };
     const [day] = buildFeed(input);
     const s = day.items.find(i => i.key === 's:1')!;
-    expect(s.text).toContain('Kyle P.');
+    expect(s.text).toContain('Kyle');
     expect(s.text).toContain('Group A');
-    expect(s.text).toContain('from Griffin S.');
+    expect(s.text).toContain('from Griffin');
   });
 });

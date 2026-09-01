@@ -73,6 +73,7 @@ export default function SettingsSheet({ data, open, onClose, reload, signOut }: 
     return data.players.filter(p => p.team_id === t?.id);
   };
   const first = (id: string) => data.playerById[id]?.name.split(' ')[0] || '?';
+  const fname = (n?: string | null) => (n || '').split(' ')[0];
 
   const tgsOfRound = (roundId: string) =>
     data.teeGroups.filter(t => t.round_id === roundId).sort((a, b) => a.seq - b.seq);
@@ -112,7 +113,7 @@ export default function SettingsSheet({ data, open, onClose, reload, signOut }: 
         <div className="grp"><h3>Account</h3></div>
         <div className="fld">
           <label>
-            {me?.name ?? 'Signed in'}
+            {fname(me?.name) || 'Signed in'}
             <span className="sub2">{commish ? 'Commissioner' : 'Player'}</span>
           </label>
           <button className="aghost" onClick={signOut}>Sign out</button>
@@ -169,7 +170,7 @@ export default function SettingsSheet({ data, open, onClose, reload, signOut }: 
                     >
                       {!tg.scorer_player_id && <option value="">Nobody</option>}
                       {gp.map(id => (
-                        <option key={id} value={id}>{data.playerById[id]?.name}</option>
+                        <option key={id} value={id}>{first(id)}</option>
                       ))}
                     </select>
                   </div>
@@ -227,7 +228,7 @@ export default function SettingsSheet({ data, open, onClose, reload, signOut }: 
                                 >
                                   {!ids[k] && <option value="">—</option>}
                                   {playersOf(side).map(p => (
-                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                    <option key={p.id} value={p.id}>{fname(p.name)}</option>
                                   ))}
                                 </select>
                               ))}
@@ -248,7 +249,7 @@ export default function SettingsSheet({ data, open, onClose, reload, signOut }: 
                                 >
                                   <option value="">Tees off odd holes…</option>
                                   {ids.map(id => (
-                                    <option key={id} value={id}>{data.playerById[id]?.name}</option>
+                                    <option key={id} value={id}>{first(id)}</option>
                                   ))}
                                 </select>
                               );

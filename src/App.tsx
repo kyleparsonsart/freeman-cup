@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useEventData } from './hooks/useEventData';
 import ScoringScreen, { currentRound } from './components/ScoringScreen';
-import { half } from './lib/scoring';
+import { half, roundState } from './lib/scoring';
 import LiveScreen from './components/LiveScreen';
 import ScheduleScreen from './components/ScheduleScreen';
 import SignInScreen from './components/SignInScreen';
@@ -89,7 +89,8 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
   const { data, loading, error, reload } = useEventData();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [tab, setTab] = useState<'scoring' | 'live' | 'schedule'>('scoring');
-  const anyLive = !!data?.rounds.some(r => r.state === 'live');
+  // pulse when a round is actually mid-play, not only when set live
+  const anyLive = !!data && data.scoringSessions.some(s => roundState(s) === 'live');
 
   if (data?.unclaimed) {
     return (
@@ -130,7 +131,7 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
     : null;
   const header = !data ? <Header right={cog} />
     : tab === 'scoring' ? <Header title={round ? round.course : 'The Freeman Cup 2026'} sub={scoringSub} right={cog} />
-    : tab === 'schedule' ? <Header title="The Freeman Cup 2026" sub={null} right={cog} />
+    : tab === 'schedule' ? <Header title="The Freeman Cup 2026" sub="5th Annual Invitational" right={cog} />
     : <Header title={`The Road to ${half(Number(data.event.clinch_points) || 5.5)}`} sub={lastSync(data)} right={cog} />;
 
   return (

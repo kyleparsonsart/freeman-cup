@@ -814,10 +814,10 @@ body.light{background:var(--ink)}
 .tug .f{transition:width .9s cubic-bezier(.22,.7,.25,1)}
 .tug .live{transition:left .9s cubic-bezier(.22,.7,.25,1),right .9s cubic-bezier(.22,.7,.25,1)}
 @media (prefers-reduced-motion:reduce){.tug .f,.tug .live{transition:none}}
-/* each group tab holds a third of the row at minimum and the row scrolls,
-   so four groups at singles stop squeezing to quarters */
+/* each group tab holds 40% of the row at minimum (about 2½ in view) and
+   the row scrolls, so four groups at singles stop squeezing to quarters */
 .ftabs{overflow-x:auto;scrollbar-width:none;scroll-snap-type:x proximity}
-.ftab{flex:1 0 33.333%;scroll-snap-align:start}
+.ftab{flex:1 0 40%;scroll-snap-align:start}
 /* gross so far today, beside the name and index */
 .btot{font-family:var(--num);font-size:16px;font-weight:600;letter-spacing:0;color:var(--moss);
   margin-left:7px;font-variant-numeric:tabular-nums}

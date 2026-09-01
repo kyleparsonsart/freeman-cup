@@ -9,6 +9,9 @@ import {
 } from '../lib/scoring';
 import type { EventData } from '../hooks/useEventData';
 
+/** Display rule: first names only, everywhere. */
+const fn = (name?: string | null) => (name || '').split(' ')[0];
+
 const NOTE = [
   { o: -2, sh: 'u2', cap: 'Eagle' },
   { o: -1, sh: 'u1', cap: 'Birdie' },
@@ -460,7 +463,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
       {/* Player rows with notation cells */}
       {keys.map(k => {
         const side = s.fmt === 'Foursomes' ? k : P[k]?.t || 'a';
-        const pnm = s.fmt === 'Foursomes' ? CFG.teams[k].name : (P[k]?.n || k);
+        const pnm = s.fmt === 'Foursomes' ? CFG.teams[k].name : (fn(P[k]?.n) || k);
         const hcp = s.fmt === 'Foursomes' ? null : P[k]?.h;
         const g = h.sc[k];
         const st = getsStroke(m, k, i);
@@ -499,7 +502,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
               <div className="picker">
                 {groupKeys.map(gk => (
                   <button key={gk} className={gk === scorerKey ? 'sel' : ''} onClick={() => switchScorer(gk)}>
-                    {P[gk]?.n || gk}{gk === data.meKey ? ' (you)' : ''}
+                    {fn(P[gk]?.n) || gk}{gk === data.meKey ? ' (you)' : ''}
                   </button>
                 ))}
               </div>
@@ -593,7 +596,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
             <div className="picker">
               {groupKeys.map(k => (
                 <button key={k} className={k === scorerKey ? 'sel' : ''} onClick={() => switchScorer(k)}>
-                  {P[k]?.n || k}{k === data.meKey ? ' (you)' : ''}
+                  {fn(P[k]?.n) || k}{k === data.meKey ? ' (you)' : ''}
                 </button>
               ))}
             </div>
@@ -603,7 +606,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>
               </svg>
-              <b>{P[scorerKey]?.n || 'Nobody'}</b> is scoring this group
+              <b>{fn(P[scorerKey]?.n) || 'Nobody'}</b> is scoring this group
             </span>
             {canSwap && (
               <button className="swap" onClick={() => { setPicking(p => !p); setSwapErr(null); }}>
@@ -622,7 +625,7 @@ function StrokeLegend({ match: m, holeIdx: i, session: s }: { match: Match; hole
   const keys = holeKeys(m).filter(k => getsStroke(m, k, i));
   if (!keys.length) return null;
 
-  const label = (k: string) => s.fmt === 'Foursomes' ? CFG.teams[k].name : (P[k]?.n || k);
+  const label = (k: string) => s.fmt === 'Foursomes' ? CFG.teams[k].name : (fn(P[k]?.n) || k);
   const who = keys.length === 1
     ? label(keys[0])
     : keys.slice(0, -1).map(label).join(', ') + ' and ' + label(keys[keys.length - 1]);
@@ -648,7 +651,7 @@ function groupPlayers(sessionId: string, g: number, matches: Match[]): string[] 
 
 function playerName(id: string | null, data: EventData): string {
   if (!id) return 'nobody';
-  return data.playerById[id]?.name || 'someone';
+  return fn(data.playerById[id]?.name) || 'someone';
 }
 
 function ago(iso: string): string {

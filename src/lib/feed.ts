@@ -45,8 +45,9 @@ export interface FeedInput {
   clinchPoints: number;
 }
 
-const names = (keys: string[]) => keys.map(k => P[k]?.n || k).join(' / ');
-const firstOf = (keys: string[]) => P[keys[0]]?.n || keys[0] || '';
+const fn = (n?: string | null) => (n || '').split(' ')[0];
+const names = (keys: string[]) => keys.map(k => fn(P[k]?.n) || k).join(' / ');
+const firstOf = (keys: string[]) => fn(P[keys[0]]?.n) || keys[0] || '';
 
 /** Lowest net score on the winning side: whose hole it was. */
 export function bestName(m: Match, s: Session, i: number, side: 'a' | 'b'): { k: string; n: string } | null {
@@ -58,7 +59,7 @@ export function bestName(m: Match, s: Session, i: number, side: 'a' | 'b'): { k:
     const n = g - getsStroke(m, x, i);
     if (n < bn) { bn = n; k = x; }
   });
-  return k ? { k, n: P[k]?.n || k } : null;
+  return k ? { k, n: fn(P[k]?.n) || k } : null;
 }
 
 export function buildFeed(input: FeedInput): FeedDay[] {
@@ -196,7 +197,7 @@ export function buildFeed(input: FeedInput): FeedDay[] {
   });
 
   // Scorer switches, from the feed table
-  const byId = (id: unknown) => (typeof id === 'string' && playerById[id]?.name) || 'someone';
+  const byId = (id: unknown) => (typeof id === 'string' && fn(playerById[id]?.name)) || 'someone';
   switches.forEach(ev => {
     const s = sessions.find(x => x.id === ev.round_id);
     if (!s) return;
