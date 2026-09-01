@@ -794,11 +794,10 @@ body.light{background:var(--ink)}
 .sethd{padding-top:calc(16px + env(safe-area-inset-top))}
 
 /* ---------- Sep 1: hole number slides away from the tapped arrow ---------- */
-.hnc .hh1.from-right{animation:holeFromRight .3s cubic-bezier(.2,.7,.2,1),holeFade .42s ease-out}
-.hnc .hh1.from-left{animation:holeFromLeft .3s cubic-bezier(.2,.7,.2,1),holeFade .42s ease-out}
-@keyframes holeFromRight{from{transform:translateX(26px)}to{transform:none}}
-@keyframes holeFromLeft{from{transform:translateX(-26px)}to{transform:none}}
-@keyframes holeFade{0%{opacity:0}35%{opacity:0}100%{opacity:1}}
+.hnc .hh1.from-right{animation:holeFromRight .42s cubic-bezier(.2,.7,.2,1)}
+.hnc .hh1.from-left{animation:holeFromLeft .42s cubic-bezier(.2,.7,.2,1)}
+@keyframes holeFromRight{from{transform:translateX(30px)}to{transform:none}}
+@keyframes holeFromLeft{from{transform:translateX(-30px)}to{transform:none}}
 @media (prefers-reduced-motion:reduce){.hnc .hh1.from-right,.hnc .hh1.from-left{animation:none}}
 
 /* ---------- Sep 1: player names in Fraunces ---------- */
