@@ -1,14 +1,14 @@
-/* display face: BIZ UDPMincho (Morisawa, SIL OFL), self-hosted Latin subset */
-@font-face{font-family:'BIZ UDPMincho';font-style:normal;font-weight:400;font-display:swap;
-  src:url('/fonts/BIZUDPMincho-Regular.woff2') format('woff2')}
-@font-face{font-family:'BIZ UDPMincho';font-style:normal;font-weight:700;font-display:swap;
-  src:url('/fonts/BIZUDPMincho-Bold.woff2') format('woff2')}
+/* display face: Young Serif (SIL OFL), self-hosted Latin subset. One weight
+   only; declared across the whole range so no weight request ever
+   synthesises a fake bold, and font-synthesis is off for good measure. */
+@font-face{font-family:'Young Serif';font-style:normal;font-weight:100 900;font-display:swap;
+  src:url('/fonts/YoungSerif-Regular.woff2') format('woff2')}
 :root{
   --ink:#0F1E19; --ink-2:#172B24; --ink-3:#1E362D; --line:#26443A;
   --bone:#F0EBDC; --moss:#8CA79B; --moss-dim:#5D7268;
   --red:#C8402F; --blue:#4C86C4; --brass:#D8A93F;
   --board:#0A1712; --rule:rgba(240,235,220,.055);
-  --display:'BIZ UDPMincho',Georgia,'Times New Roman',serif;
+  --display:'Young Serif',Georgia,'Times New Roman',serif;
   --body:'Work Sans Variable','Work Sans',system-ui,sans-serif;
   --clock:'Barlow Condensed',system-ui,sans-serif;
   --num:var(--clock);
@@ -809,3 +809,7 @@ body.light{background:var(--ink)}
 .brow .bn{font-family:var(--display);font-size:21px;font-weight:600;letter-spacing:-.015em;
   font-variation-settings:'opsz' 32,'SOFT' 30,'WONK' 0}
 .brow .bn .hcp{font-family:var(--num)}
+
+/* ---------- Sep 1: Young Serif is one weight ---------- */
+.hd h1,.sh h2,.sethd h2,.ghead .gt,.dsec h5,.grp h3,.day h3,.rcol h4,.empty b,.tab,.dbtn,
+.dayhd .n,.dayrow .n,.rtop .t1,.brow .bn,.auth h2,.juglbl{font-synthesis:none}
