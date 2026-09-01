@@ -139,10 +139,10 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
       </div>
 
       <nav className="tabs" role="tablist">
-        <button className="tab" role="tab" aria-selected={tab === 'scoring'} onClick={() => setTab('scoring')}>Scoring</button>
         <button className="tab" role="tab" aria-selected={tab === 'live'} onClick={() => setTab('live')}>
           Live{anyLive && <span className="pulse" />}
         </button>
+        <button className="tab" role="tab" aria-selected={tab === 'scoring'} onClick={() => setTab('scoring')}>Scoring</button>
         <button className="tab" role="tab" aria-selected={tab === 'schedule'} onClick={() => setTab('schedule')}>Schedule</button>
       </nav>
 

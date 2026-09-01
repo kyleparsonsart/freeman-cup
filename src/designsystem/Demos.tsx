@@ -38,8 +38,8 @@ const NOTE = [
 export function Tabs() {
   return (
     <nav className="tabs" role="tablist">
-      <button className="tab" role="tab" aria-selected={true}>Scoring</button>
       <button className="tab" role="tab" aria-selected={false}>Live<span className="pulse" /></button>
+      <button className="tab" role="tab" aria-selected={true}>Scoring</button>
       <button className="tab" role="tab" aria-selected={false}>Schedule</button>
     </nav>
   );

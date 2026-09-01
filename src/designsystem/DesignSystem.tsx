@@ -124,7 +124,7 @@ const TYPE_ROLES: { role: string; where: string; size: string; spec: string; cls
   { role: 'Round title', where: 'Course name on a round card', size: '19', spec: 'Fraunces 600 · −0.015em', cls: '.rtop .t1' },
   { role: 'Day', where: 'Feed and schedule day headers', size: '17 / 18', spec: 'Fraunces 600 · −0.015em', cls: '.dayhd .n · .dayrow .n' },
   { role: 'Group label', where: 'Settings sections', size: '16', spec: 'Fraunces 600 · brass', cls: '.grp h3' },
-  { role: 'Tab', where: 'Scoring · Live · Schedule', size: '16', spec: 'Fraunces 600', cls: '.tab' },
+  { role: 'Tab', where: 'Live · Scoring · Schedule', size: '16', spec: 'Fraunces 600', cls: '.tab' },
   { role: 'Player', where: 'Name on the hole card', size: '20', spec: 'Work Sans 600 · −0.01em · team colour', cls: '.brow .bn' },
   { role: 'Body', where: 'Everything you read', size: '17', spec: 'Work Sans 400 · 1.6', cls: 'body' },
   { role: 'Feed body', where: 'Feed rows', size: '15 / 13', spec: 'Work Sans · moss, sub-line moss dim', cls: '.ev .bd · .sub2' },
@@ -379,7 +379,7 @@ export default function DesignSystem() {
             </D.Demo>
 
             <D.Demo title="Group tabs" classes={['.ftabs', '.ftab', '.av', '.ft2', '.yo']} stage="board"
-              note={<>When a round has more than one group, these switch the hole card. Avatars carry the team colour; the state is condensed and coloured by who leads.</>}>
+              note={<>When a round has more than one group, this full-width segmented control switches the hole card. Avatars carry the team colour; the state is condensed and coloured by who leads.</>}>
               <D.GroupTabs />
             </D.Demo>
 
