@@ -466,6 +466,11 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
         const st = getsStroke(m, k, i);
         const isX = g === 'X';
         const isScorerRow = k === scorerKey;
+        let dayTotal = 0;
+        for (let hh = 0; hh < s.holes; hh++) {
+          const v = m.hs[hh]?.sc[k];
+          if (typeof v === 'number') dayTotal += v;
+        }
 
         return (
           <div key={k} className="brow">
@@ -473,6 +478,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
               <span className={`bn ${side}`}>
                 {pnm}
                 {hcp != null && <span className="hcp"> ({hcp})</span>}
+                {dayTotal > 0 && <span className="btot">{dayTotal}</span>}
                 {st ? <i className="sdot2" /> : null}
               </span>
               {isScorerRow && (

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useEventData } from './hooks/useEventData';
 import ScoringScreen, { currentRound } from './components/ScoringScreen';
-import CupStrip from './components/CupStrip';
+import { half } from './lib/scoring';
 import LiveScreen from './components/LiveScreen';
 import ScheduleScreen from './components/ScheduleScreen';
 import SignInScreen from './components/SignInScreen';
@@ -44,6 +44,32 @@ export default function App() {
       )}
     </div>
   );
+}
+
+/** '1:10 PM','1:20 PM' -> '1:10/1:20pm'; mixed meridiems keep both. */
+function teeLine(tees: string[]): string {
+  if (!tees.length) return '';
+  const ap = tees.map(t => (/pm/i.test(t) ? 'pm' : 'am'));
+  const bare = tees.map(t => t.replace(/\s*(AM|PM)/i, ''));
+  const same = ap.every(x => x === ap[0]);
+  return same ? `${bare.join('/')}${ap[0]}` : tees.map((_, ix) => `${bare[ix]}${ap[ix]}`).join('/');
+}
+
+function lastSync(data: import('./hooks/useEventData').EventData): string {
+  let latest: { at: number; by: string | null } | null = null;
+  data.matchHoles.forEach(h => {
+    const at = new Date(h.updated_at).getTime();
+    if (!latest || at > latest.at) latest = { at, by: h.entered_by };
+  });
+  if (!latest) return 'No scores yet';
+  const l: { at: number; by: string | null } = latest;
+  const d = new Date(l.at);
+  let hr = d.getHours();
+  const ap = hr >= 12 ? 'pm' : 'am';
+  hr = ((hr + 11) % 12) + 1;
+  const t = `${hr}:${String(d.getMinutes()).padStart(2, '0')}${ap}`;
+  const who = l.by ? (data.playerById[l.by]?.name.split(' ')[0] || 'someone') : 'someone';
+  return `Last sync: ${t} by ${who}`;
 }
 
 function Header({ title, sub, right }: { title?: string; sub?: string | null; right?: React.ReactNode }) {
@@ -96,19 +122,16 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
     </button>
   );
 
-  // Header per tab, as the prototype does it: the round on Scoring, the
-  // event on Schedule, and on Live the cup strip itself takes the top with
-  // the gear floating over it.
+  // Header per tab: the course on Scoring, the event on Schedule, the road
+  // to the clinch on Live with the last sync underneath.
   const round = data ? currentRound(data) : undefined;
+  const scoringSub = round
+    ? `${round.rd} · ${round.fmt} · ${teeLine(round.tees)}`
+    : null;
   const header = !data ? <Header right={cog} />
-    : tab === 'scoring' ? <Header title={round ? `${round.rd} · ${round.course}` : 'The Freeman Cup 2026'} sub={null} right={cog} />
+    : tab === 'scoring' ? <Header title={round ? round.course : 'The Freeman Cup 2026'} sub={scoringSub} right={cog} />
     : tab === 'schedule' ? <Header title="The Freeman Cup 2026" sub={null} right={cog} />
-    : (
-      <div className="livehd">
-        <CupStrip />
-        <div className="livecog">{cog}</div>
-      </div>
-    );
+    : <Header title={`The Road to ${half(Number(data.event.clinch_points) || 5.5)}`} sub={lastSync(data)} right={cog} />;
 
   return (
     <>
@@ -128,7 +151,7 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
         )}
         {data && tab === 'live' && (
           <section id="v-live" className="view on">
-            <LiveScreen data={data} strip={false} />
+            <LiveScreen data={data} />
           </section>
         )}
         {data && tab === 'schedule' && (

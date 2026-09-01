@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { totals, half, CFG, MATCHES } from '../lib/scoring';
 
 /** Cup score strip: points each side, the jug, the tug bar, clinch ticks. */
@@ -7,6 +8,14 @@ export default function CupStrip() {
   const C = Math.floor(T / 2) + 0.5;
   const pa = a / T * 100, pb = b / T * 100, cp = C / T * 100;
   const lead = a === b ? 'All square' : `${a > b ? CFG.teams.a.name : CFG.teams.b.name} lead`;
+
+  // the bars grow in from zero on mount (CSS transitions the widths)
+  const [grown, setGrown] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => requestAnimationFrame(() => setGrown(true)));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  const paw = grown ? pa : 0, pbw = grown ? pb : 0;
 
   return (
     <div className="strip">
@@ -25,9 +34,9 @@ export default function CupStrip() {
         </div>
       </div>
       <div className="tug">
-        <div className="f fa" style={{ width: `${pa}%` }} />
-        <div className="f fb" style={{ width: `${pb}%` }} />
-        <div className="live" style={{ left: `${pa}%`, right: `${pb}%` }} />
+        <div className="f fa" style={{ width: `${paw}%` }} />
+        <div className="f fb" style={{ width: `${pbw}%` }} />
+        <div className="live" style={{ left: `${paw}%`, right: `${pbw}%` }} />
         <div className="tick" style={{ left: `${cp}%` }} />
         <div className="tick" style={{ right: `${cp}%` }} />
       </div>
