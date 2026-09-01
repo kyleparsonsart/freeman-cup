@@ -196,10 +196,34 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
   const r = calc(m);
   const tap = useTapGuard();
 
-  // one-shot pulses: the cell just tapped, and the override button that
-  // lit when a hole was decided (not when navigating onto a decided hole)
-  const [pop, setPop] = useState<{ k: string; val: number } | null>(null);
-  const [popW, setPopW] = useState<'A' | 'B' | 'H' | null>(null);
+  // Ripples: a light disc spreads from the tap point across the cell and
+  // fades as the selected fill takes over. One per element, keyed so a
+  // second tap restarts it. Auto-decided holes ripple the override button
+  // from its centre.
+  type Ripple = { id: number; x: number; y: number; d: number };
+  const [ripples, setRipples] = useState<Record<string, Ripple>>({});
+  const bovrRef = useRef<HTMLDivElement>(null);
+  const rippleAt = useCallback((key: string, el: HTMLElement | null, cx?: number, cy?: number) => {
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const x = cx === undefined ? r.width / 2 : cx - r.left;
+    const y = cy === undefined ? r.height / 2 : cy - r.top;
+    const d = 2 * Math.hypot(Math.max(x, r.width - x), Math.max(y, r.height - y));
+    const id = Date.now() + Math.random();
+    setRipples(p => ({ ...p, [key]: { id, x, y, d } }));
+    setTimeout(() => setRipples(p => {
+      if (p[key]?.id !== id) return p;
+      const n = { ...p }; delete n[key]; return n;
+    }), 700);
+  }, []);
+  // plain function, not a component: a nested component would remount on
+  // every re-render (each tap reloads data) and restart the animation
+  const ripple = (k: string) => {
+    const rp = ripples[k];
+    return rp ? (
+      <span key={rp.id} className="ripple" style={{ left: rp.x - rp.d / 2, top: rp.y - rp.d / 2, width: rp.d, height: rp.d }} />
+    ) : null;
+  };
   const [pending, setPending] = useState(0);
 
   // How many scores are still waiting to reach the server. Online, a row
@@ -233,16 +257,9 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
     const prev = lastRes.current;
     lastRes.current = { id: m.id, i, r: h.r };
     if (prev.id === m.id && prev.i === i && prev.r !== h.r && h.r) {
-      setPopW(h.r);
-      const t = setTimeout(() => setPopW(null), 600);
-      return () => clearTimeout(t);
+      rippleAt(`w:${h.r}`, bovrRef.current?.querySelector(`[data-w="${h.r}"]`) as HTMLElement | null);
     }
-  }, [m.id, i, h.r]);
-  useEffect(() => {
-    if (!pop) return;
-    const t = setTimeout(() => setPop(null), 600);
-    return () => clearTimeout(t);
-  }, [pop]);
+  }, [m.id, i, h.r, rippleAt]);
 
   // Find the scorer for this group
   const scorerKey = s.scorer[m.g];
@@ -395,16 +412,21 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
 
       {/* Override strip */}
       {!bye && (
-        <div className="bovr">
+        <div className="bovr" ref={bovrRef}>
           {(['A', 'H', 'B'] as const).map(w => (
             <button
               key={w}
               data-w={w}
-              className={`${h.r === w ? 'sel' : ''}${popW === w ? ' pop' : ''} ${viewOnly ? 'ro' : ''}`}
+              className={`${h.r === w ? 'sel' : ''} ${viewOnly ? 'ro' : ''}`}
               onPointerDown={tap.onPointerDown}
-              onClick={e => { if (tap.isTap(e)) handleOverride(w); }}
+              onClick={e => {
+                if (!tap.isTap(e)) return;
+                if (!viewOnly) rippleAt(`w:${w}`, e.currentTarget, e.clientX, e.clientY);
+                handleOverride(w);
+              }}
             >
               {w === 'A' ? A : w === 'H' ? 'Halved' : B}
+              {ripple(`w:${w}`)}
             </button>
           ))}
         </div>
@@ -479,12 +501,17 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
                 return (
                   <button
                     key={t.o}
-                    className={`tg${on ? ' sel' : ''}${adj ? ' adj' : ''}${pop && pop.k === k && pop.val === val && on ? ' pop' : ''} ${viewOnly ? 'ro' : ''}`}
+                    className={`tg${on ? ' sel' : ''}${adj ? ' adj' : ''} ${viewOnly ? 'ro' : ''}`}
                     onPointerDown={tap.onPointerDown}
-                    onClick={e => { if (tap.isTap(e)) { setPop({ k, val }); handleScoreSet(k, val); } }}
+                    onClick={e => {
+                      if (!tap.isTap(e)) return;
+                      if (!viewOnly) rippleAt(`tg:${k}:${val}`, e.currentTarget, e.clientX, e.clientY);
+                      handleScoreSet(k, val);
+                    }}
                   >
                     <span className={`mk ${t.sh}`}>{val}</span>
                     <span className="cap">{t.cap}</span>
+                    {ripple(`tg:${k}:${val}`)}
                   </button>
                 );
               })}

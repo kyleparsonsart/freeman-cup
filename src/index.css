@@ -741,18 +741,16 @@ body.light .ftab[aria-selected="true"]{background:var(--ink-2);border-color:var(
 body.light .ftab{background:transparent;border-color:var(--line)}
 body.light .ftab[aria-selected="true"]{background:var(--ink-3)}
 
-/* ---------- Sep 1: pulses and the inline scorekeeper ---------- */
-/* a ring that starts at the cell edge and drifts outward, once, on tap;
-   the same when a hole is decided and the VIK / CEL button lights */
-.tg,.bovr button{position:relative}
-.tg.pop,.bovr button.pop{z-index:2}
-.tg.pop::after,.bovr button.pop::after{content:"";position:absolute;inset:0;border:2px solid var(--bone);
-  border-radius:2px;pointer-events:none;animation:ringout .55s ease-out forwards}
-.bovr button.pop[data-w="A"]::after{border-color:var(--red)}
-.bovr button.pop[data-w="B"]::after{border-color:var(--blue)}
-.bovr button.pop[data-w="H"]::after{border-color:var(--moss)}
-@keyframes ringout{0%{transform:scale(1);opacity:.85}100%{transform:scale(1.14);opacity:0}}
-@media (prefers-reduced-motion:reduce){.tg.pop::after,.bovr button.pop::after{animation:none}}
+/* ---------- Sep 1: ripple on select, and the inline scorekeeper ---------- */
+/* a light disc grows from the tap point to cover the cell and fades; the
+   selected fill is what remains. Auto-decided holes ripple the override
+   button from its centre. */
+.tg,.bovr button{position:relative;overflow:hidden}
+.ripple{position:absolute;border-radius:50%;background:var(--bone);pointer-events:none;
+  transform:scale(0);animation:ripple .6s cubic-bezier(.2,.6,.3,1) forwards}
+.bovr button .ripple{background:#fff}
+@keyframes ripple{0%{transform:scale(0);opacity:.32}60%{opacity:.18}100%{transform:scale(1);opacity:0}}
+@media (prefers-reduced-motion:reduce){.ripple{animation:none;display:none}}
 /* scorekeeper sits on the scorer's own row, right of the name */
 .skin{display:inline-flex;align-items:center;gap:6px;flex:none;font-size:12px;color:var(--moss);white-space:nowrap}
 .skin svg{width:12px;height:12px;color:var(--brass)}
