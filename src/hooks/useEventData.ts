@@ -356,6 +356,7 @@ export function useEventData() {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'feed_event' }, () => { load(); })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'round' }, () => { load(); })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'match' }, () => { load(); })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'event' }, () => { load(); })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };

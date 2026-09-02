@@ -1,16 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { getTheme, setTheme, type Theme } from '../lib/theme';
+import { TIEBREAK, type MomentsState } from '../lib/moments';
 import type { EventData } from '../hooks/useEventData';
 import type { DbPlayer } from '../lib/types';
 
 interface Props {
   data: EventData;
+  moments?: MomentsState | null;
   open: boolean;
   onClose: () => void;
   reload: () => void;
   signOut: () => Promise<void>;
 }
+
+type ShootoutDraft = { a: (number | '')[]; b: (number | '')[] };
+const draftFrom = (sh: { a?: number[]; b?: number[] } | null | undefined): ShootoutDraft => ({
+  a: [0, 1, 2].map(i => sh?.a?.[i] ?? ''),
+  b: [0, 1, 2].map(i => sh?.b?.[i] ?? ''),
+});
 
 const STATES: ReadonlyArray<readonly [string, string]> = [
   ['upcoming', 'Not started'],
@@ -26,7 +34,7 @@ type Outcome = PromiseLike<{ error: { message: string } | null }>;
  * control writes straight to Supabase through the commissioner policies
  * and reloads; realtime carries the change to the other phones.
  */
-export default function SettingsSheet({ data, open, onClose, reload, signOut }: Props) {
+export default function SettingsSheet({ data, moments = null, open, onClose, reload, signOut }: Props) {
   const [err, setErr] = useState<string | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
   const [cleared, setCleared] = useState(false);
@@ -55,6 +63,17 @@ export default function SettingsSheet({ data, open, onClose, reload, signOut }: 
     run(supabase.from('match').update({ [`side_${side}`]: ids }).eq('id', matchId));
   const setOdds = (matchId: string, side: 'a' | 'b', pid: string) =>
     run(supabase.from('match').update({ [`odds_${side}`]: pid || null }).eq('id', matchId));
+
+  // Captains Shootout draft; re-seeded from the server row whenever the
+  // sheet opens or another phone saves one.
+  const [sh, setSh] = useState<ShootoutDraft>(() => draftFrom(data.event.shootout));
+  useEffect(() => { setSh(draftFrom(data.event.shootout)); }, [open, data.event.shootout]);
+  const shReady = [...sh.a, ...sh.b].every(v => typeof v === 'number');
+  const shTa = sh.a.reduce<number>((t, x) => t + (Number(x) || 0), 0);
+  const shTb = sh.b.reduce<number>((t, x) => t + (Number(x) || 0), 0);
+  const saveShootout = () =>
+    run(supabase.rpc('set_shootout', { s: { a: sh.a, b: sh.b, done: true } }));
+  const clearShootout = () => run(supabase.rpc('set_shootout', { s: null }));
 
   const clearAll = async () => {
     if (!confirmClear) { setConfirmClear(true); return; }
@@ -262,6 +281,70 @@ export default function SettingsSheet({ data, open, onClose, reload, signOut }: 
                 </div>
               );
             })}
+
+            {/* ---- Captains Shootout ---- */}
+            {(moments?.tie || data.event.shootout) && (
+              <>
+                <div className="grp">
+                  <h3>{TIEBREAK.name}</h3>
+                  <div className="hint">
+                    Strokes per hole for each captain, entered here once the
+                    putts have actually dropped. Saving decides the cup on
+                    every phone. Clear puts the jug back on the line.
+                  </div>
+                </div>
+                {(['a', 'b'] as const).map(side => {
+                  const team = teamOf(side);
+                  const cap = moments?.captains[side] || team?.name || side;
+                  return (
+                    <div key={side} className="rdrow">
+                      <div className="r1">
+                        <span className="nm2">{cap}</span>
+                        <span className="cs" style={{ color: `var(--${side === 'a' ? 'red' : 'blue'})` }}>{team?.name}</span>
+                      </div>
+                      <div className="r2">
+                        {TIEBREAK.stations.map((st, i) => (
+                          <select
+                            key={i}
+                            aria-label={`${cap} · ${st.n}`}
+                            value={sh[side][i]}
+                            onChange={e => setSh(d => {
+                              const next = { a: [...d.a], b: [...d.b] };
+                              next[side][i] = e.target.value === '' ? '' : Number(e.target.value);
+                              return next;
+                            })}
+                          >
+                            <option value="">{st.d}ft…</option>
+                            {Array.from({ length: TIEBREAK.maxStrokes }, (_, n) => (
+                              <option key={n + 1} value={n + 1}>{n + 1}</option>
+                            ))}
+                          </select>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+                {shReady && (
+                  <div className="hint" style={{ padding: '0 18px 8px' }}>
+                    {shTa === shTb
+                      ? `Level at ${shTa}. Replay ${TIEBREAK.stations[2].n} until someone blinks, then change hole 3.`
+                      : `${shTa < shTb ? moments?.captains.a || 'Red' : moments?.captains.b || 'Blue'} takes it, ${Math.min(shTa, shTb)}–${Math.max(shTa, shTb)}.`}
+                  </div>
+                )}
+                <div className="fld">
+                  <label>
+                    {data.event.shootout ? 'On the books' : 'Not yet decided'}
+                    {data.event.shootout && <span className="sub2">Saved to every phone</span>}
+                  </label>
+                  {data.event.shootout && (
+                    <button className="aghost" onClick={clearShootout}>Clear</button>
+                  )}
+                  <button className="abtn" style={{ width: 'auto', padding: '10px 16px' }} disabled={!shReady} onClick={saveShootout}>
+                    {data.event.shootout ? 'Save again' : 'Save the shootout'}
+                  </button>
+                </div>
+              </>
+            )}
 
             {/* ---- Danger ---- */}
             <div className="grp">

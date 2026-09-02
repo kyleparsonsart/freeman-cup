@@ -821,3 +821,100 @@ body.light{background:var(--ink)}
 /* gross so far today, beside the name and index */
 .btot{font-family:var(--num);font-size:16px;font-weight:600;letter-spacing:0;color:var(--moss);
   margin-left:7px;font-variant-numeric:tabular-nums}
+
+/* ============ recap moments (Sep 2 2026) ============
+   Full-screen takeovers for the three moments — day in the book, cup
+   won, Captains Shootout — plus their standing homes: the pinned
+   shootout banner, the trophy-case strip, feed cards and Schedule
+   Recap chips. The finale is the app's one inversion: bone ground in
+   both themes, so the literals below are deliberate. */
+.moment{position:absolute;inset:0;z-index:26;background:var(--ink);overflow-y:auto;
+  overscroll-behavior:contain;display:flex;flex-direction:column;
+  animation:moRise .38s cubic-bezier(.22,.8,.3,1)}
+@keyframes moRise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+.mo{flex:1;display:flex;flex-direction:column;min-height:100%;
+  padding:calc(env(safe-area-inset-top,0px) + 30px) 22px 26px}
+.mo .kick{font-family:var(--clock);font-size:14px;letter-spacing:.05em;color:var(--moss);margin-bottom:10px}
+.mo h1{font-family:var(--display);font-size:42px;line-height:1;letter-spacing:-.02em;
+  color:var(--bone);margin:0 0 10px;font-synthesis:none}
+.mo .sub{font-size:15px;line-height:1.5;color:var(--moss);max-width:34ch}
+.mo .rule{border-top:1px solid var(--line);margin:18px 0}
+.mo .score{display:flex;align-items:baseline;gap:14px;margin:6px 0 10px}
+.mo .score .pt{font-family:var(--num);font-size:62px;font-weight:600;line-height:1}
+.mo .score .pt.a{color:var(--red)} .mo .score .pt.b{color:var(--blue)}
+.mo .score .d{font-family:var(--num);font-size:32px;color:var(--moss-dim)}
+.mo .score .nm{font-size:13px;color:var(--moss);align-self:center}
+.mo .cupline{display:flex;justify-content:space-between;gap:10px;margin-top:14px;
+  font-size:11.5px;color:var(--moss)}
+.mrow3{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  padding:12px 0;border-bottom:1px solid var(--line);font-size:15px}
+.mrow3 .p{color:var(--bone)} .mrow3 .p .vv{color:var(--moss-dim);font-size:12px;padding:0 6px}
+.mrow3 .s{font-family:var(--num);font-weight:600;font-size:17px;flex:none}
+.mrow3 .s.a{color:var(--red)} .mrow3 .s.b{color:var(--blue)} .mrow3 .s.h{color:var(--moss)}
+.mo .next{margin-top:auto;padding-top:18px}
+.mo .nextcard{border:1px solid var(--line);padding:14px;background:var(--ink-2);margin-bottom:14px}
+.mo .nextcard .t1{font-family:var(--display);font-size:18px;color:var(--bone);font-synthesis:none}
+.mo .nextcard .t2{font-size:13px;color:var(--moss);margin-top:3px}
+.mo .aghost{display:block;margin:12px auto 0;align-self:center}
+
+/* cup won: the one inversion, pinned to bone in both themes */
+.mo.won{background:#F0EBDC}
+.mo.won .kick{color:#5D7268}
+.mo.won h1{color:#0F1E19}
+.mo.won .sub{color:#44554C}
+.mo.won .rule{border-color:rgba(15,30,25,.18)}
+.jugbig{display:block;margin:6px 0 14px}
+.jugbig .jug{width:92px;height:auto;color:var(--brass)}
+.mo.won .final{display:flex;gap:14px;align-items:baseline;margin:2px 0 8px}
+.mo.won .final .pt{font-family:var(--num);font-size:74px;font-weight:600;line-height:1}
+.mo.won .final .pt.a{color:var(--red)} .mo.won .final .pt.b{color:var(--blue)}
+.mo.won .final .d{font-family:var(--num);font-size:36px;color:#8A9890}
+.mo.won .shline{font-family:var(--clock);font-size:14px;color:#44554C;margin-bottom:8px}
+.mo.won .mvp{font-size:14px;color:#44554C;line-height:1.6}
+.mo.won .mvp b{color:#0F1E19}
+.mo.won .abtn{background:#0F1E19;color:#F0EBDC}
+.mo.won .aghost{color:#5D7268}
+
+/* shootout intro */
+.mo.duel{border-top:3px solid var(--brass)}
+.mo.duel h1{color:var(--brass)}
+.caps{display:flex;align-items:center;gap:14px;margin:16px 0 4px}
+.caps .cap2{flex:1;border:1px solid var(--line);padding:12px;text-align:center;background:var(--ink-2)}
+.caps .cap2 .nm2{font-family:var(--display);font-size:20px;color:var(--bone);font-synthesis:none}
+.caps .cap2 .tm{font-size:11.5px;margin-top:2px}
+.caps .cap2 .tm.a{color:var(--red)} .caps .cap2 .tm.b{color:var(--blue)}
+.caps .vs{font-family:var(--num);font-size:15px;color:var(--moss-dim)}
+.stn2{display:flex;align-items:baseline;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.stn2 .n3{font-family:var(--clock);font-size:13px;color:var(--moss-dim);width:44px;flex:none}
+.stn2 .ft{font-family:var(--num);font-size:24px;font-weight:600;color:var(--bone);width:56px;flex:none}
+.stn2 .ft i{font-style:normal;font-size:13px;color:var(--moss-dim);margin-left:2px}
+.stn2 .nm3{font-family:var(--display);font-size:16px;color:var(--bone);font-synthesis:none}
+.stn2 .hint2{font-size:12px;color:var(--moss);margin-left:auto;text-align:right;max-width:14ch}
+.fineprint{font-size:12.5px;color:var(--moss-dim);line-height:1.6;margin-top:12px}
+
+/* the pending shootout's standing door, pinned under the strip */
+.duelbar{display:flex;align-items:center;gap:10px;padding:12px 16px;width:100%;text-align:left;
+  background:rgba(216,169,63,.10);border-bottom:1px solid rgba(216,169,63,.45)}
+.duelbar .pulse{flex:none}
+.duelbar .t{flex:1;font-size:13.5px;line-height:1.4;color:var(--bone)}
+.duelbar .t b{color:var(--brass);font-weight:600}
+.duelbar .go{font-family:var(--num);font-size:15px;color:var(--brass);flex:none}
+
+/* the strip as trophy case once the cup is decided */
+.strip.final2{border-bottom:2px solid var(--brass);cursor:pointer}
+.strip.final2 .juglbl{white-space:normal;text-align:center;line-height:1.2}
+.striptap{display:flex;justify-content:center;gap:6px;margin-top:9px;font-size:11.5px;color:var(--brass)}
+
+/* recap chip on finished Schedule day rows */
+.rchip{margin-left:10px;flex:none;font-size:11.5px;font-weight:600;color:var(--brass);
+  border:1px solid rgba(216,169,63,.45);border-radius:20px;padding:3px 9px}
+
+/* feed cards that reopen a moment */
+.ev.go{cursor:pointer}
+
+/* light mode: the cup card's ground flips dark with the token, so its
+   ink literals flip to bone (found when the finale card joined the feed) */
+body.light .ev.cup .t{color:rgba(240,235,220,.55)}
+body.light .ev.cup .bd,body.light .ev.cup .bd b,body.light .ev.cup .hl{color:#F0EBDC}
+body.light .ev.cup .tag{border-color:rgba(240,235,220,.35);color:rgba(240,235,220,.8)}
+body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}

@@ -356,3 +356,69 @@ export function Empty() {
     </div>
   );
 }
+
+/* ---------------- recap moments ---------------- */
+
+export function MomentOpenDemo() {
+  return (
+    <div className="mo" style={{ padding: 22, minHeight: 0, flex: 'none' }}>
+      <div className="kick">Thursday · Mammoth Dunes · in the book</div>
+      <h1>Vikes take the opening day</h1>
+      <div className="score">
+        <span className="pt a">1½</span><span className="d">–</span>
+        <span className="pt b">½</span><span className="nm">today</span>
+      </div>
+      <div className="rule" />
+      <div className="mrow3">
+        <span className="p">Griffin / Matt<span className="vv">V</span>Kyle / JT</span>
+        <span className="s a">VIK 4 &amp; 3</span>
+      </div>
+      <div className="mrow3">
+        <span className="p">Devin / Brian<span className="vv">V</span>Phil / Justin</span>
+        <span className="s h">Halved</span>
+      </div>
+    </div>
+  );
+}
+
+export function DuelbarDemo() {
+  return (
+    <button className="duelbar">
+      <span className="pulse" />
+      <span className="t"><b>Captains Shootout.</b> The Lassie is on the practice green.</span>
+      <span className="go">Open ›</span>
+    </button>
+  );
+}
+
+export function MomentCardsDemo() {
+  return (
+    <>
+      <div className="ev cup big go">
+        <div className="t">2:41</div>
+        <div className="bd">
+          <div className="hl"><span className="tag">The Lassie</span>Celts win The Lassie</div>
+          Won on the practice green. Tap for the finale.
+        </div>
+      </div>
+      <div className="ev big go">
+        <div className="t">7:55</div>
+        <div className="bd">
+          <div className="hl"><span className="tag">Day recap</span>Saturday, in the book</div>
+          Tap for the recap.
+        </div>
+      </div>
+    </>
+  );
+}
+
+export function RchipDemo() {
+  return (
+    <div className="dayrow" style={{ borderTop: 'none' }}>
+      <span className="n">Thu</span>
+      <span className="d">Oct 8</span>
+      <span className="h">1 round · 18 holes</span>
+      <button className="rchip">Recap ›</button>
+    </div>
+  );
+}

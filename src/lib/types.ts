@@ -1,5 +1,12 @@
 /** Database row types matching the Supabase schema */
 
+/** Captains Shootout, entered by the commissioner after the putts drop. */
+export interface ShootoutJson {
+  a: number[];   // captain A's strokes on the three practice-green holes
+  b: number[];
+  done?: boolean;
+}
+
 export interface DbEvent {
   id: string;
   name: string;
@@ -7,6 +14,8 @@ export interface DbEvent {
   trophy: string;
   venue: string;
   clinch_points: number;
+  /** null until a 5-5 cup goes to the practice green (older snapshots omit it) */
+  shootout?: ShootoutJson | null;
 }
 
 export interface DbTeam {

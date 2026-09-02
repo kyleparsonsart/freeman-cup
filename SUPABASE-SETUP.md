@@ -9,7 +9,10 @@ Do these in order. Items 1–3 now; 4–6 before invites go out Sep 27.
    scorer switch to the feed and turns on realtime for `tee_group` and
    `feed_event`. Then `freeman-cup-commish.sql` → run once: adds
    `round.state` (Not started / Live / Complete) and the commissioner-only
-   `reset_event()` behind "Clear all scores".
+   `reset_event()` behind "Clear all scores". Then `freeman-cup-shootout.sql`
+   → run once: adds `event.shootout` (jsonb) with the commissioner-only
+   `set_shootout()` RPC for the Captains Shootout, teaches `reset_event()`
+   to clear it, and turns on realtime for `event`.
 
 1b. **Site URL.** Authentication → URL Configuration → Site URL
    `https://freeman-cup.vercel.app`, and add `http://localhost:5173` to

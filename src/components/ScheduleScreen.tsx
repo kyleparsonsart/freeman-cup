@@ -1,24 +1,17 @@
 import { useState } from 'react';
 import { calc, roundState, half, P, CFG, type Match, type Session } from '../lib/scoring';
 import Scorecard from './Scorecard';
+import { TIEBREAK, type MomentsState } from '../lib/moments';
 import type { EventData } from '../hooks/useEventData';
-
-/* The Captains Shootout, as decided. Copy lives here until a settings
-   screen needs to edit it. */
-const TIEBREAK = {
-  name: 'Captains Shootout',
-  where: 'practice green',
-  stations: [
-    { d: 30, n: 'The Long Rail' },
-    { d: 15, n: 'The Fringe' },
-    { d: 5, n: 'The Knee Knocker' },
-  ],
-};
 
 const fn = (n?: string | null) => (n || '').split(' ')[0];
 const names = (keys: string[]) => keys.map(k => fn(P[k]?.n) || k).join(' / ');
 
-export default function ScheduleScreen({ data }: { data: EventData }) {
+export default function ScheduleScreen({ data, moments = null, onMoment }: {
+  data: EventData;
+  moments?: MomentsState | null;
+  onMoment?: (key: string) => void;
+}) {
   const { scoringSessions: sessions, scoringMatches: matches, players, teams } = data;
   // which scorecards are open; cards in the live round open by default
   const [cards, setCards] = useState<Record<string, boolean>>({});
@@ -33,12 +26,16 @@ export default function ScheduleScreen({ data }: { data: EventData }) {
         const rs = sessions.filter(x => x.day === d);
         const holes = rs.reduce((a, x) => a + x.holes, 0);
         const [dow, ...rest] = d.split(' ');
+        const dm = moments?.days.find(x => x.day === d);
         return (
           <div key={d}>
             <div className="dayrow">
               <span className="n">{dow}</span>
               <span className="d">{rest.join(' ')}</span>
               <span className="h">{rs.length} round{rs.length > 1 ? 's' : ''} · {holes} holes</span>
+              {dm && onMoment && (
+                <button className="rchip" onClick={() => onMoment(dm.key)}>Recap ›</button>
+              )}
             </div>
             {rs.map(x => (
               <RoundCard

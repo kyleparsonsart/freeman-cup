@@ -1,8 +1,15 @@
 import { useEffect, useState } from 'react';
 import { totals, half, CFG, MATCHES } from '../lib/scoring';
 
-/** Cup score strip: points each side, the jug, the tug bar, clinch ticks. */
-export default function CupStrip() {
+/**
+ * Cup score strip: points each side, the jug, the tug bar, clinch ticks.
+ * Once the cup is decided it becomes the trophy case: the winner under
+ * the jug, a brass rule, and a tap that reopens the finale.
+ */
+export default function CupStrip({ decided = null, onOpenFinale }: {
+  decided?: { label: string } | null;
+  onOpenFinale?: () => void;
+} = {}) {
   const { a, b } = totals();
   const T = MATCHES.length || 1;
   const C = Math.floor(T / 2) + 0.5;
@@ -17,8 +24,15 @@ export default function CupStrip() {
   }, []);
   const paw = grown ? pa : 0, pbw = grown ? pb : 0;
 
+  const open = decided && onOpenFinale ? onOpenFinale : undefined;
   return (
-    <div className="strip">
+    <div
+      className={`strip${decided ? ' final2' : ''}`}
+      onClick={open}
+      role={open ? 'button' : undefined}
+      tabIndex={open ? 0 : undefined}
+      onKeyDown={open ? e => { if (e.key === 'Enter' || e.key === ' ') open(); } : undefined}
+    >
       <div className="striptop">
         <div className="sside a">
           <span className="pt">{half(a)}</span>
@@ -26,7 +40,7 @@ export default function CupStrip() {
         </div>
         <div className="jugwrap">
           <TrophySvg />
-          <span className="juglbl">{CFG.trophy}</span>
+          <span className="juglbl">{decided ? decided.label : CFG.trophy}</span>
         </div>
         <div className="sside r b">
           <span className="nm">{CFG.teams.b.name}</span>
@@ -36,14 +50,18 @@ export default function CupStrip() {
       <div className="tug">
         <div className="f fa" style={{ width: `${paw}%` }} />
         <div className="f fb" style={{ width: `${pbw}%` }} />
-        <div className="live" style={{ left: `${paw}%`, right: `${pbw}%` }} />
+        {!decided && <div className="live" style={{ left: `${paw}%`, right: `${pbw}%` }} />}
         <div className="tick" style={{ left: `${cp}%` }} />
         <div className="tick" style={{ right: `${cp}%` }} />
       </div>
-      <div className="striplbl">
-        <span>{half(a + b)} of {T} decided</span>
-        <span>{lead} · {half(C - Math.max(a, b))} to clinch</span>
-      </div>
+      {decided ? (
+        <div className="striptap">Tap for the finale ›</div>
+      ) : (
+        <div className="striplbl">
+          <span>{half(a + b)} of {T} decided</span>
+          <span>{lead} · {half(C - Math.max(a, b))} to clinch</span>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useEventData } from './hooks/useEventData';
 import ScoringScreen, { currentRound } from './components/ScoringScreen';
 import { half, roundState } from './lib/scoring';
+import { deriveMoments, nextUnseen, markSeen } from './lib/moments';
 import LiveScreen from './components/LiveScreen';
+import MomentOverlay from './components/Moments';
 import ScheduleScreen from './components/ScheduleScreen';
 import SignInScreen from './components/SignInScreen';
 import SettingsSheet from './components/SettingsSheet';
@@ -92,6 +94,31 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
   // pulse when a round is actually mid-play, not only when set live
   const anyLive = !!data && data.scoringSessions.some(s => roundState(s) === 'live');
 
+  // Recap moments: derived like the feed, auto-opened once per device.
+  const moments = useMemo(() => data ? deriveMoments({
+    sessions: data.scoringSessions,
+    matches: data.scoringMatches,
+    matchHoles: data.matchHoles,
+    clinchPoints: Number(data.event.clinch_points) || 5.5,
+    shootout: data.event.shootout ?? null,
+    players: data.players,
+    teams: data.teams,
+  }) : null, [data]);
+  const [moKey, setMoKey] = useState<string | null>(null);
+  const autoShown = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!moments || moKey) return;
+    const k = nextUnseen(moments);
+    if (k && !autoShown.current.has(k)) {
+      autoShown.current.add(k);
+      setMoKey(k);
+    }
+  }, [moments, moKey]);
+  const closeMoment = () => {
+    if (moKey) markSeen(moKey);
+    setMoKey(null);
+  };
+
   if (data?.unclaimed) {
     return (
       <div className="body">
@@ -152,12 +179,12 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
         )}
         {data && tab === 'live' && (
           <section id="v-live" className="view on">
-            <LiveScreen data={data} />
+            <LiveScreen data={data} moments={moments} onMoment={setMoKey} />
           </section>
         )}
         {data && tab === 'schedule' && (
           <section id="v-schedule" className="view on">
-            <ScheduleScreen data={data} />
+            <ScheduleScreen data={data} moments={moments} onMoment={setMoKey} />
           </section>
         )}
       </div>
@@ -170,9 +197,21 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
         <button className="tab" role="tab" aria-selected={tab === 'schedule'} onClick={() => setTab('schedule')}>Schedule</button>
       </nav>
 
+      {data && moments && moKey && (
+        <MomentOverlay
+          ms={moments}
+          openKey={moKey}
+          commissioner={data.meIsCommissioner}
+          onClose={closeMoment}
+          onSeeLive={() => { setTab('live'); closeMoment(); }}
+          onEnterScores={() => { closeMoment(); setSettingsOpen(true); }}
+        />
+      )}
+
       {data && (
         <SettingsSheet
           data={data}
+          moments={moments}
           open={settingsOpen}
           onClose={() => setSettingsOpen(false)}
           reload={reload}

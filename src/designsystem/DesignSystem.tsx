@@ -190,7 +190,7 @@ export default function DesignSystem() {
         <nav className="ds-nav" aria-label="Sections">
           <div className="g"><div className="k">Start</div><a href="#overview">Overview</a></div>
           <div className="g"><div className="k">Foundations</div><a href="#color">Color</a><a href="#type">Type</a><a href="#form">Form and layout</a></div>
-          <div className="g"><div className="k">Patterns</div><a href="#components">Components</a><a href="#voice">Voice</a></div>
+          <div className="g"><div className="k">Patterns</div><a href="#components">Components</a><a href="#moments">Moments</a><a href="#voice">Voice</a></div>
           <div className="g"><div className="k">Upkeep</div><a href="#true">How this stays true</a></div>
         </nav>
 
@@ -453,9 +453,52 @@ export default function DesignSystem() {
             </D.Demo>
           </section>
 
+          {/* ---------------- Moments ---------------- */}
+          <section className="ds-sec" id="moments">
+            <span className="ds-eyebrow">Patterns · 02</span>
+            <h2 className="ds-h1">Moments</h2>
+            <p className="ds-lead">
+              Three things earn a full-screen takeover: a day going in the book, the cup
+              being won, and a 5–5 finish sending the captains to the practice green.
+              Each opens once per phone, and dismissing it never loses it — a live moment
+              falls back to the pinned banner, a finished one lives in the feed forever.
+            </p>
+
+            <D.Demo title="Moment overlay" classes={['.moment', '.mo', '.mo .kick', '.mo h1', '.mo .score', '.mrow3']} stage="board"
+              note={<>Condensed kick line, a display headline that states the outcome, the score in
+                numerals, then the matches as rows. The finale inverts to bone — the app's one
+                inversion — and the shootout intro takes a brass rule and headline.</>}>
+              <D.MomentOpenDemo />
+            </D.Demo>
+
+            <D.Demo title="Shootout banner" classes={['.duelbar', '.duelbar .t', '.duelbar .go']} stage="plain"
+              note={<>Pinned under the strip while the shootout is unresolved, so nobody who swiped
+                the intro away can lose the door back in. Gone the moment the putts are entered.</>}>
+              <D.DuelbarDemo />
+            </D.Demo>
+
+            <D.Demo title="Feed cards" classes={['.ev.go', '.ev.cup.big', '.ev.big']} stage="plain"
+              note={<>The permanent record. Big cards for the finale and each day recap reopen
+                their moment; “Tap for the …” names the door.</>}>
+              <D.MomentCardsDemo />
+            </D.Demo>
+
+            <D.Demo title="Recap chip" classes={['.rchip']} stage="plain"
+              note={<>Finished Schedule days grow a brass chip; live and future days never do.</>}>
+              <D.RchipDemo />
+            </D.Demo>
+
+            <dl className="ds-kv">
+              <dt>Once per phone</dt><dd>A moment auto-opens the first time this device sees it and never again; localStorage keeps the seen keys. Reopening from a home is always free.</dd>
+              <dt>One at a time</dt><dd>If several are unseen, weight decides: the cup, then the shootout, then only the latest finished day. Miss two days and you get one recap, not a queue.</dd>
+              <dt>Derived, like the feed</dt><dd>Moments are a pure function of the tables. Correct a score and the recap corrects itself; there is nothing stored to go stale.</dd>
+              <dt>The strip is the trophy case</dt><dd>Once the cup is decided the strip drops its live nub, names the winner under the jug, takes a brass rule and opens the finale on tap.</dd>
+            </dl>
+          </section>
+
           {/* ---------------- Voice ---------------- */}
           <section className="ds-sec" id="voice">
-            <span className="ds-eyebrow">Patterns · 02</span>
+            <span className="ds-eyebrow">Patterns · 03</span>
             <h2 className="ds-h1">Voice</h2>
             <p className="ds-lead">The app talks like a good scorer: says what happened, says what it decided, and does not shout.</p>
             <dl className="ds-kv">
