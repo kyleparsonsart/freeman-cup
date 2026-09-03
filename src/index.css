@@ -1091,3 +1091,9 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .bootsub{font-family:var(--clock);font-size:13.5px;letter-spacing:.1em;color:var(--moss-dim);text-transform:uppercase}
 @keyframes bootIn{from{opacity:0}to{opacity:1}}
 @keyframes bootPulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* settings tabs: the commissioner's controls grouped by job */
+.stabs{display:flex;border-bottom:1px solid var(--line);flex:none;background:var(--ink)}
+.stabs button{flex:1;padding:12px 4px;font-size:14px;font-weight:600;color:var(--moss-dim);
+  border-bottom:2px solid transparent;margin-bottom:-1px}
+.stabs button[aria-selected="true"]{color:var(--bone);border-bottom-color:var(--brass)}

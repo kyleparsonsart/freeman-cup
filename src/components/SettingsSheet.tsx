@@ -143,6 +143,17 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
 
   const desk: DeskState | null = commish ? deskFor(data) : null;
 
+  // The commissioner's controls, grouped by job under tabs.
+  const [stab, setStab] = useState<'today' | 'setup' | 'event' | 'you'>('today');
+  const setBodyRef = useRef<HTMLDivElement>(null);
+  const goStab = (t: typeof stab) => {
+    setStab(t);
+    setBodyRef.current?.scrollTo(0, 0);
+  };
+  const STABS: ReadonlyArray<readonly [typeof stab, string]> = [
+    ['today', 'Today'], ['setup', 'Setup'], ['event', 'Event'], ['you', 'You'],
+  ];
+
   const teamOf = (side: 'a' | 'b') => data.teams.find(t => t.side === side);
   const playersOf = (side: 'a' | 'b'): DbPlayer[] => {
     const t = teamOf(side);
@@ -174,10 +185,19 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
         <h2>{commish ? 'Commissioner' : 'Settings'}</h2>
         <button className="done" onClick={onClose}>Done</button>
       </div>
-      <div className="setbody">
+      {commish && (
+        <div className="stabs" role="tablist">
+          {STABS.map(([t, label]) => (
+            <button key={t} role="tab" aria-selected={stab === t} onClick={() => goStab(t)}>
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="setbody" ref={setBodyRef}>
         {err && <div className="holine err">{err}</div>}
 
-        {commish && onActing && (
+        {commish && stab === 'you' && onActing && (
           <>
             <div className="grp">
               <h3>Acting as</h3>
@@ -194,26 +214,31 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
           </>
         )}
 
-        <div className="grp">
-          <h3>Appearance</h3>
-          <div className="hint">Dark holds up better in direct sun on the course. Light is easier indoors.</div>
-        </div>
-        <div className="fld">
-          <label>Light mode</label>
-          <button className="sw" role="switch" aria-checked={theme === 'light'} aria-label="Light mode" onClick={flipTheme} />
-        </div>
+        {(!commish || stab === 'you') && (
+          <>
+            <div className="grp">
+              <h3>Appearance</h3>
+              <div className="hint">Dark holds up better in direct sun on the course. Light is easier indoors.</div>
+            </div>
+            <div className="fld">
+              <label>Light mode</label>
+              <button className="sw" role="switch" aria-checked={theme === 'light'} aria-label="Light mode" onClick={flipTheme} />
+            </div>
 
-        <div className="grp"><h3>Account</h3></div>
-        <div className="fld">
-          <label>
-            {fname(me?.name) || 'Signed in'}
-            <span className="sub2">{commish ? 'Commissioner' : 'Player'}</span>
-          </label>
-          <button className="aghost" onClick={signOut}>Sign out</button>
-        </div>
+            <div className="grp"><h3>Account</h3></div>
+            <div className="fld">
+              <label>
+                {fname(me?.name) || 'Signed in'}
+                <span className="sub2">{commish ? 'Commissioner' : 'Player'}</span>
+              </label>
+              <button className="aghost" onClick={signOut}>Sign out</button>
+            </div>
+          </>
+        )}
 
         {commish && (
           <>
+            {stab === 'today' && <>
             {/* ---- The desk ---- */}
             {desk && (
               <Desk
@@ -265,6 +290,8 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
               );
             })}
 
+            </>}
+            {stab === 'setup' && <>
             {/* ---- Scorers ---- */}
             <div className="grp">
               <h3>Scorers</h3>
@@ -390,6 +417,8 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
               );
             })}
 
+            </>}
+            {stab === 'event' && <>
             {/* ---- Captains Shootout ---- */}
             {(moments?.tie || data.event.shootout) && (
               <>
@@ -502,6 +531,7 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
                 </button>
               )}
             </div>
+            </>}
           </>
         )}
       </div>
