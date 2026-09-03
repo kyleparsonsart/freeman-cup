@@ -22,13 +22,13 @@ export default function ScheduleScreen({ data, moments = null, onMoment }: {
 
   return (
     <>
-      {days.map(d => {
+      {days.map((d, di) => {
         const rs = sessions.filter(x => x.day === d);
         const holes = rs.reduce((a, x) => a + x.holes, 0);
         const [dow, ...rest] = d.split(' ');
         const dm = moments?.days.find(x => x.day === d);
         return (
-          <div key={d}>
+          <div key={d} className="dayfade" style={{ animationDelay: `${di * 80}ms` }}>
             <div className="dayrow">
               <span className="n">{dow}</span>
               <span className="d">{rest.join(' ')}</span>

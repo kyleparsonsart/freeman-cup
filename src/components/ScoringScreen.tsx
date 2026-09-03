@@ -113,7 +113,7 @@ interface GroupTabsProps {
 function GroupTabs({ matches, heroId, onSelect, meKey }: GroupTabsProps) {
   return (
     <div className="ftabs" role="tablist">
-      {matches.map(m => {
+      {matches.map((m, ix) => {
         const mine = !!meKey && (m.a.includes(meKey) || m.b.includes(meKey));
         const letter = String.fromCharCode(65 + m.g);
         const rr = calc(m);
@@ -129,6 +129,7 @@ function GroupTabs({ matches, heroId, onSelect, meKey }: GroupTabsProps) {
             className="ftab"
             role="tab"
             aria-selected={selected}
+            style={{ animationDelay: `${ix * 55}ms` }}
             onClick={() => onSelect(m.id)}
           >
             <span className="ft1">

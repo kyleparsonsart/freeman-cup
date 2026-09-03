@@ -1021,3 +1021,13 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .mmst .ldot{width:8px;height:8px;border-radius:50%;background:var(--brass);flex:none}
 .mmsc{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--moss-dim);margin-top:10px}
 .mmsc svg{width:14px;height:14px;flex:none}
+
+/* ============ entrance choreography (Sep 3 2026) ============
+   Group tabs slide up one at a time on Scoring; day blocks fade in
+   and up on Schedule and the Live feed. Quick, staggered per index
+   (inline animation-delay), and only on mount — realtime reloads
+   re-render in place without replaying. */
+.ftab{animation:ftabIn .26s cubic-bezier(.22,.8,.3,1) both}
+@keyframes ftabIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.dayfade{animation:dayIn .38s cubic-bezier(.22,.8,.3,1) both}
+@keyframes dayIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}

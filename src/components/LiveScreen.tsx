@@ -100,7 +100,7 @@ export default function LiveScreen({ data, moments = null, onMoment, strip = tru
         const [dow, ...rest] = g.day.split(' ');
         const open = i === openDay;
         return (
-          <div key={g.day}>
+          <div key={g.day} className="dayfade" style={{ animationDelay: `${i * 80}ms` }}>
             <button
               className="dayhd"
               aria-expanded={open}
