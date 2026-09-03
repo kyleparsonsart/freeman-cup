@@ -339,7 +339,7 @@ describe('derive — result derivation', () => {
       hs: [hole, ...Array.from({ length: 17 }, emptyHole)],
     };
     setContext(PLAYERS, [fourBallSession], [m], {
-      hcp: { on: false, fourball: 100, foursomes: 50, singles: 100, prorate: true },
+      hcp: { on: false, fourball: 100, foursomes: 50, aggregate: 100, singles: 100, prorate: true },
     });
 
     const d = derive(m, 0);
@@ -354,7 +354,7 @@ describe('derive — result derivation', () => {
       hs: [hole, ...Array.from({ length: 17 }, emptyHole)],
     };
     setContext(PLAYERS, [fourBallSession], [m], {
-      hcp: { on: false, fourball: 100, foursomes: 50, singles: 100, prorate: true },
+      hcp: { on: false, fourball: 100, foursomes: 50, aggregate: 100, singles: 100, prorate: true },
     });
 
     const d = derive(m, 0);
@@ -428,5 +428,83 @@ describe('roundState', () => {
     setContext(PLAYERS, [{ ...fourBallSession, state: 'upcoming' }], [m]);
 
     expect(roundState({ ...fourBallSession, state: 'upcoming' })).toBe('upcoming');
+  });
+});
+
+/* ---- Aggregate match play (Round 2, The Commons — decided Sep 3) ---- */
+
+describe('derive — aggregate match play', () => {
+  // 12-hole aggregate session on the same card as the old foursomes round
+  const aggSession: Session = {
+    id: 'r2a', rd: 'Round 2', day: 'Fri Oct 9', fmt: 'Aggregate',
+    course: 'The Commons', holes: 12,
+    tees: ['8:00 AM', '8:10 AM'], scorer: ['kyle', 'phil'], state: 'live',
+    par: [5, 3, 4, 4, 3, 4, 4, 3, 4, 4, 3, 4],
+    si:  [11, 7, 5, 3, 9, 1, 8, 12, 10, 2, 4, 6],
+  };
+  const aggMatch = (hs: HoleData[]): Match =>
+    ({ id: 'am1', s: 'r2a', g: 0, a: ['griffin', 'devin'], b: ['kyle', 'phil'], hs });
+
+  beforeEach(() => {
+    // restore handicap config: earlier tests switch hcp off via setContext
+    setContext(PLAYERS, [aggSession], [], {
+      hcp: { on: true, fourball: 100, foursomes: 50, aggregate: 100, singles: 100, prorate: true },
+    });
+  });
+
+  it('sums both partners and gives the hole to the lower total', () => {
+    // hole 1 (par 5, SI 11): no strokes land at SI 11 for these indexes
+    const m = aggMatch([mkHole(null, { griffin: 4, devin: 5, kyle: 5, phil: 5 })]);
+    setContext(PLAYERS, [aggSession], [m]);
+    const d = derive(m, 0);
+    expect(d.r).toBe('A');
+    expect(d.why).toContain('Vikes 4 + 5');
+    expect(d.why).toContain('beats Celts 5 + 5');
+  });
+
+  it('applies handicap strokes inside the sum, prorated to 12 holes', () => {
+    // Low man is brian?, no — in this match: griffin 15, devin 7, kyle 15, phil 11; low = devin 7.
+    // 100% differences: griffin 8, kyle 8, phil 4, prorated ×12/18 → griffin 5.33→5, kyle 5, phil 2.67→3.
+    const sm = strokeMap(aggMatch([]));
+    expect(sm.devin).toBe(0);
+    expect(sm.griffin).toBe(5);
+    expect(sm.kyle).toBe(5);
+    expect(sm.phil).toBe(3);
+
+    // hole 6 is SI 1: griffin, kyle and phil all get a shot there
+    const hs = [...Array(5)].map(() => emptyHole());
+    const m = aggMatch([...hs, mkHole(null, { griffin: 5, devin: 4, kyle: 5, phil: 4 })]);
+    setContext(PLAYERS, [aggSession], [m]);
+    const d = derive(m, 5);
+    // Vikes 5+4 less 1 = 8; Celts 5+4 less 2 = 7 — strokes decide it
+    expect(d.r).toBe('B');
+    expect(d.why).toContain('Celts 5 + 4 less 2 = 7');
+    expect(d.why).toContain('Vikes 5 + 4 less 1 = 8');
+  });
+
+  it('halves a tied total and shows both sums', () => {
+    const m = aggMatch([mkHole(null, { griffin: 4, devin: 5, kyle: 5, phil: 4 })]);
+    setContext(PLAYERS, [aggSession], [m]);
+    const d = derive(m, 0);
+    expect(d.r).toBe('H');
+    expect(d.why).toContain('Halved');
+  });
+
+  it('has no result until all four scores are in', () => {
+    const m = aggMatch([mkHole(null, { griffin: 4, devin: 5, kyle: 5 })]);
+    setContext(PLAYERS, [aggSession], [m]);
+    expect(holeComplete(m, 0)).toBe(false);
+    settle(m, 0);
+    expect(m.hs[0].r).toBeNull();
+  });
+
+  it('scores the match like any other once holes settle', () => {
+    const win = mkHole('A', {}), half = mkHole('H', {});
+    const m = aggMatch([win, win, half, win, win, win, win, win]);
+    setContext(PLAYERS, [aggSession], [m]);
+    const r = calc(m);
+    // 6 up after 7 with 5 left: the match closes itself 6 & 5
+    expect(r.done).toBe(true);
+    expect(r.label).toBe('6 & 5');
   });
 });

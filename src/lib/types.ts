@@ -52,7 +52,7 @@ export interface DbRound {
   seq: number;
   label: string;
   play_date: string;
-  format: 'four-ball' | 'foursomes' | 'singles';
+  format: 'four-ball' | 'foursomes' | 'aggregate' | 'singles';
   course_id: string;
   holes: number;
   locked: boolean;

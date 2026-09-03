@@ -49,9 +49,10 @@ const fn = (n?: string | null) => (n || '').split(' ')[0];
 const names = (keys: string[]) => keys.map(k => fn(P[k]?.n) || k).join(' / ');
 const firstOf = (keys: string[]) => fn(P[keys[0]]?.n) || keys[0] || '';
 
-/** Lowest net score on the winning side: whose hole it was. */
+/** Lowest net score on the winning side: whose hole it was. At
+ *  foursomes and aggregate the hole belongs to the pair, not a player. */
 export function bestName(m: Match, s: Session, i: number, side: 'a' | 'b'): { k: string; n: string } | null {
-  if (s.fmt === 'Foursomes') return { k: side, n: CFG.teams[side].name };
+  if (s.fmt === 'Foursomes' || s.fmt === 'Aggregate') return { k: side, n: CFG.teams[side].name };
   let bn = Infinity, k: string | null = null;
   m[side].forEach(x => {
     const g = m.hs[i].sc[x];

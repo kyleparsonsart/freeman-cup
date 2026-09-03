@@ -56,9 +56,10 @@ interface RawTables {
   switches?: DbFeedEvent[];
 }
 
-const FMT_MAP: Record<string, 'Four-ball' | 'Foursomes' | 'Singles'> = {
+const FMT_MAP: Record<string, 'Four-ball' | 'Foursomes' | 'Aggregate' | 'Singles'> = {
   'four-ball': 'Four-ball',
   'foursomes': 'Foursomes',
+  'aggregate': 'Aggregate',
   'singles': 'Singles',
 };
 

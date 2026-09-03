@@ -16,7 +16,10 @@ Do these in order. Items 1–3 now; 4–6 before invites go out Sep 27.
    `freeman-cup-cards.sql` → run once: `tee_group.submitted_at/_by`
    (the signed-card lock), `submit_card()` / `reopen_card()`, the
    `card_in` feed trigger, `scores_this_match()` now honouring the
-   hand-in, and `reset_event()` reopening every card.
+   hand-in, and `reset_event()` reopening every card (run Sep 3).
+   Then `freeman-cup-aggregate.sql` → run once: widens `round.format`
+   to allow `aggregate`, clears Round 2's old team-keyed test scores,
+   and flips The Commons from foursomes to Aggregate Match Play.
 
 1b. **Site URL.** Authentication → URL Configuration → Site URL
    `https://freeman-cup.vercel.app`, and add `http://localhost:5173` to

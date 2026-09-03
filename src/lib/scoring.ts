@@ -23,6 +23,7 @@ export interface HcpCfg {
   on: boolean;
   fourball: number;
   foursomes: number;
+  aggregate: number;
   singles: number;
   prorate: boolean;
 }
@@ -31,7 +32,7 @@ export interface Session {
   id: string;
   rd: string;
   day: string;
-  fmt: 'Four-ball' | 'Foursomes' | 'Singles';
+  fmt: 'Four-ball' | 'Foursomes' | 'Aggregate' | 'Singles';
   course: string;
   holes: number;
   tees: string[];
@@ -91,7 +92,7 @@ export let P: Record<string, Player> = {};
 export let SESSIONS: Session[] = [];
 export let CFG = {
   teams: { a: { name: 'Vikes', short: 'VIK' }, b: { name: 'Celts', short: 'CEL' } } as Record<string, TeamCfg>,
-  hcp: { on: true, fourball: 100, foursomes: 50, singles: 100, prorate: true } as HcpCfg,
+  hcp: { on: true, fourball: 100, foursomes: 50, aggregate: 100, singles: 100, prorate: true } as HcpCfg,
   trophy: 'The Lassie',
 };
 export let MATCHES: Match[] = [];
@@ -127,7 +128,8 @@ function missingIn(m: Match, i: number): string[] {
 export function strokeMap(m: Match): Record<string, number> {
   const s = ses(m.s), all = [...m.a, ...m.b], out: Record<string, number> = {};
   if (!CFG.hcp.on || !s.si) { (s.fmt === 'Foursomes' ? ['a', 'b'] : all).forEach(k => out[k] = 0); return out; }
-  const key = s.fmt === 'Four-ball' ? 'fourball' : s.fmt === 'Foursomes' ? 'foursomes' : 'singles';
+  const key = s.fmt === 'Four-ball' ? 'fourball' : s.fmt === 'Foursomes' ? 'foursomes'
+    : s.fmt === 'Aggregate' ? 'aggregate' : 'singles';
   const pct = CFG.hcp[key] / 100;
   const pr = (v: number) => Math.max(0, Math.round(v * pct * (CFG.hcp.prorate ? s.holes / 18 : 1)));
   if (s.fmt === 'Foursomes') {
@@ -150,6 +152,36 @@ export function settle(m: Match, i: number): void {
 
 export function derive(m: Match, i: number): DeriveResult {
   const s = ses(m.s), h = m.hs[i];
+
+  // Aggregate match play: both partners' nets are summed; the lower
+  // total takes the hole. A side without both scores has no total.
+  if (s.fmt === 'Aggregate') {
+    const agg: Record<'a' | 'b', { net: number; ok: boolean; txt: string }> = {
+      a: { net: 0, ok: true, txt: '' }, b: { net: 0, ok: true, txt: '' },
+    };
+    (['a', 'b'] as const).forEach(t => {
+      const ks = t === 'a' ? m.a : m.b;
+      let net = 0, strokes = 0;
+      const gross: number[] = [];
+      ks.forEach(k => {
+        const g = h.sc[k];
+        if (g === undefined || g === null || g === 'X') { agg[t].ok = false; return; }
+        const st = getsStroke(m, k, i);
+        net += (g as number) - st;
+        strokes += st;
+        gross.push(g as number);
+      });
+      agg[t].net = net;
+      agg[t].txt = `${CFG.teams[t].name} ${gross.join(' + ')}${strokes ? ` less ${strokes}` : ''} = ${net}`;
+    });
+    if (!agg.a.ok && !agg.b.ok) return { r: null, why: null };
+    if (!agg.a.ok) return { r: 'B', why: `${CFG.teams.a.name} have no total. ${CFG.teams.b.name} take it.` };
+    if (!agg.b.ok) return { r: 'A', why: `${CFG.teams.b.name} have no total. ${CFG.teams.a.name} take it.` };
+    if (agg.a.net < agg.b.net) return { r: 'A', why: `${agg.a.txt} beats ${agg.b.txt}.` };
+    if (agg.b.net < agg.a.net) return { r: 'B', why: `${agg.b.txt} beats ${agg.a.txt}.` };
+    return { r: 'H', why: `${agg.a.txt} ties ${agg.b.txt}. Halved.` };
+  }
+
   const sides: Record<string, string[]> = s.fmt === 'Foursomes' ? { a: ['a'], b: ['b'] } : { a: m.a, b: m.b };
   const best: Record<string, { net: number; who: string | null; gross: number | null }> = {};
   (['a', 'b'] as const).forEach(t => {
