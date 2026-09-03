@@ -22,7 +22,7 @@ input,select{font-family:inherit;color:inherit;background:none;border:none}
 :focus-visible{outline:2px solid var(--brass);outline-offset:2px;border-radius:2px}
 button:focus:not(:focus-visible),button:active{outline:none}
 
-.phone{width:100%;height:100dvh;background:var(--ink);
+.phone{width:100%;height:var(--app-h,100dvh);background:var(--ink);
   position:relative;overflow:hidden;display:flex;flex-direction:column}
 @media(min-width:520px) and (min-height:820px){
   .phone{max-width:420px;height:860px;border-radius:34px;box-shadow:0 0 0 10px #050B08,0 30px 70px rgba(0,0,0,.7)}}
@@ -1103,9 +1103,10 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
    with the pull, catches at 70px, and while the queue flushes the jug
    and the words pulse in a slow ripple — Trying, jug, to sync — then
    the page settles back. */
+:root{--sat:env(safe-area-inset-top,0px)}
 .pullsync{position:absolute;top:0;left:0;right:0;z-index:0;
-  height:calc(env(safe-area-inset-top,0px) + 96px);
-  display:flex;align-items:flex-end;justify-content:center;padding-bottom:18px;pointer-events:none}
+  height:calc(var(--sat) + 78px);
+  display:flex;align-items:flex-end;justify-content:center;padding-bottom:14px;pointer-events:none}
 .pullsync .pin{display:flex;align-items:center;gap:9px;opacity:0}
 .pullsync .pw{font-family:var(--clock);font-size:13px;letter-spacing:.07em;text-transform:uppercase;color:var(--moss)}
 .pjug{display:block;color:var(--brass)}

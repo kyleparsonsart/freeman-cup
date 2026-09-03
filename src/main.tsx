@@ -10,6 +10,17 @@ import { applyTheme, getTheme } from './lib/theme'
 // theme before first paint; dark unless this device chose light
 applyTheme(getTheme())
 
+// iOS standalone can leave 100dvh stuck at a Safari-chrome-reduced
+// height (the tab bar floats). Measure the real viewport instead and
+// keep it current.
+const setAppHeight = () => {
+  document.documentElement.style.setProperty('--app-h', `${window.innerHeight}px`)
+}
+setAppHeight()
+window.addEventListener('resize', setAppHeight)
+window.addEventListener('orientationchange', setAppHeight)
+window.visualViewport?.addEventListener('resize', setAppHeight)
+
 const isDesignSystem = location.pathname.replace(/\/+$/, '') === '/designsystem'
 
 if (!isDesignSystem) {

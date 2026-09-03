@@ -2,8 +2,15 @@ import { useEffect, useRef } from 'react';
 import { flushQueue } from '../lib/writeQueue';
 import { TrophySvg } from './CupStrip';
 
-const CATCH = 70;   // px of pull that arms the sync
-const MAX = 118;    // resistance ceiling
+const CATCH_BASE = 60;  // pull past the status bar that arms the sync
+const MAX_BASE = 116;   // resistance ceiling, likewise past the bar
+
+/** The status bar's height: the first chunk of any pull is spent under
+ *  it, so every distance offsets by the safe-area inset. */
+function statusInset(): number {
+  const v = getComputedStyle(document.documentElement).getPropertyValue('--sat');
+  return parseFloat(v) || 0;
+}
 
 /**
  * Pull-to-sync: drag the page down from the top and "Trying [jug] to
@@ -29,11 +36,14 @@ export default function PullSync({ bodyRef, onSync }: {
 
     let startY = 0, startX = 0, armed = false, active = false;
     let pull = 0, syncing = false, caught = false;
+    const sat = statusInset();
+    const CATCH = CATCH_BASE + sat;
+    const MAX = MAX_BASE + sat;
 
     const setPull = (px: number) => {
       pull = px;
       body.style.transform = px ? `translateY(${px}px)` : '';
-      const p = Math.min(1, px / CATCH);
+      const p = Math.min(1, Math.max(0, (px - sat * 0.6) / (CATCH - sat * 0.6)));
       if (!syncing) pin.style.opacity = String(p);
     };
 
@@ -88,7 +98,12 @@ export default function PullSync({ bodyRef, onSync }: {
         setPull(CATCH + 4);
         setTimeout(() => body.classList.remove('settling'), 480);
         const hold = new Promise(r => setTimeout(r, 1400));
-        Promise.allSettled([flushQueue(), Promise.resolve(onSync()), hold]).then(() => {
+        // watchdog: a hung reload must never strand the page open
+        const patience = new Promise(r => setTimeout(r, 8000));
+        Promise.race([
+          Promise.allSettled([flushQueue(), Promise.resolve(onSync()), hold]),
+          patience,
+        ]).then(() => {
           syncing = false;
           caught = false;
           ind.classList.remove('syncing');
