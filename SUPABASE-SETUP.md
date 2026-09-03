@@ -93,6 +93,6 @@ The styled sign-in email lives at `emails/signin-code.html`. To install it:
 2. Supabase Dashboard -> Authentication -> Email Templates -> **Magic Link**.
 3. Set the subject to: `Your Freeman Cup code: {{ .Token }}`
 4. Replace the message body with the full contents of `emails/signin-code.html` (it keeps `{{ .Token }}` in two places: the hidden preview line and the code box).
-5. Save, then request a code from the app to test. Check it in Gmail dark mode on a phone; the backgrounds carry a gradient lock so Gmail keeps the green.
+5. Save, then request a code from the app to test. On-device test (Sep 3): Gmail iOS inverts text colors even when backgrounds are pinned, so the gradient locks were removed; Gmail dark now inverts the whole email coherently into a light version, while Apple Mail shows the true design.
 
 Note: "good for the next hour" in the copy matches the default Email OTP expiry (3600s). If that setting changes, update the sentence.
