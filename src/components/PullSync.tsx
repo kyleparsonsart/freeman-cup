@@ -6,10 +6,10 @@ const CATCH = 70;   // px of pull that arms the sync
 const MAX = 118;    // resistance ceiling
 
 /**
- * Pull-to-sync: drag the page down from the top and the claret jug
- * fills with brass as you pull — "Trying [jug] to sync". A full jug
- * catches; releasing flushes the write queue and reloads, the jug
- * sloshes while that lands, and the page springs back.
+ * Pull-to-sync: drag the page down from the top and "Trying [jug] to
+ * sync" fades in with the pull. A full pull catches; releasing flushes
+ * the write queue and reloads while the jug and the words pulse in a
+ * slow ripple, then the page settles back.
  *
  * Touch-driven by hand (installed PWAs own their scroll container), so
  * it behaves identically on every tab. Direct style writes, no state
@@ -21,12 +21,11 @@ export default function PullSync({ bodyRef, onSync }: {
 }) {
   const indRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
-  const clipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const body = bodyRef.current;
-    const ind = indRef.current, pin = pinRef.current, clip = clipRef.current;
-    if (!body || !ind || !pin || !clip) return;
+    const ind = indRef.current, pin = pinRef.current;
+    if (!body || !ind || !pin) return;
 
     let startY = 0, startX = 0, armed = false, active = false;
     let pull = 0, syncing = false, caught = false;
@@ -35,21 +34,17 @@ export default function PullSync({ bodyRef, onSync }: {
       pull = px;
       body.style.transform = px ? `translateY(${px}px)` : '';
       const p = Math.min(1, px / CATCH);
-      pin.style.opacity = String(p);
-      if (!syncing) clip.style.height = `${Math.round(p * 100)}%`;
+      if (!syncing) pin.style.opacity = String(p);
     };
 
     const settle = () => {
       body.classList.add('settling');
       setPull(0);
-      setTimeout(() => body.classList.remove('settling'), 340);
+      setTimeout(() => body.classList.remove('settling'), 480);
     };
 
     const clearInd = () => {
-      setTimeout(() => {
-        pin.style.opacity = '0';
-        clip.style.height = '0%';
-      }, 340);
+      setTimeout(() => { pin.style.opacity = '0'; }, 480);
     };
 
     const onStart = (e: TouchEvent) => {
@@ -88,11 +83,11 @@ export default function PullSync({ bodyRef, onSync }: {
       if (pull >= CATCH) {
         syncing = true;
         ind.classList.add('syncing');
-        clip.style.height = '100%';
+        pin.style.opacity = '1';
         body.classList.add('settling');
         setPull(CATCH + 4);
-        setTimeout(() => body.classList.remove('settling'), 340);
-        const hold = new Promise(r => setTimeout(r, 650));
+        setTimeout(() => body.classList.remove('settling'), 480);
+        const hold = new Promise(r => setTimeout(r, 1400));
         Promise.allSettled([flushQueue(), Promise.resolve(onSync()), hold]).then(() => {
           syncing = false;
           caught = false;
@@ -122,12 +117,9 @@ export default function PullSync({ bodyRef, onSync }: {
   return (
     <div className="pullsync" ref={indRef} aria-hidden="true">
       <div className="pin" ref={pinRef}>
-        <span className="pw">Trying</span>
-        <span className="pjug">
-          <span className="dim"><TrophySvg /></span>
-          <span className="clip" ref={clipRef}><span className="brass"><TrophySvg /></span></span>
-        </span>
-        <span className="pw">to sync</span>
+        <span className="pw w1">Trying</span>
+        <span className="pjug"><TrophySvg /></span>
+        <span className="pw w2">to sync</span>
       </div>
     </div>
   );

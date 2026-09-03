@@ -1099,23 +1099,23 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .stabs button[aria-selected="true"]{color:var(--bone);border-bottom-color:var(--brass)}
 
 /* ============ pull to sync (Sep 4 2026) ============
-   Drag down from the top of any tab: the jug fills with brass as you
-   pull — "Trying [jug] to sync" — catches at a full jug, sloshes
-   while the queue flushes and the data reloads, then springs back. */
+   Drag down from the top of any tab: "Trying [jug] to sync" fades in
+   with the pull, catches at 70px, and while the queue flushes the jug
+   and the words pulse in a slow ripple — Trying, jug, to sync — then
+   the page settles back. */
 .pullsync{position:absolute;top:0;left:0;right:0;z-index:0;
   height:calc(env(safe-area-inset-top,0px) + 96px);
   display:flex;align-items:flex-end;justify-content:center;padding-bottom:18px;pointer-events:none}
 .pullsync .pin{display:flex;align-items:center;gap:9px;opacity:0}
 .pullsync .pw{font-family:var(--clock);font-size:13px;letter-spacing:.07em;text-transform:uppercase;color:var(--moss)}
-.pjug{position:relative;width:17px;height:28px;display:block}
+.pjug{display:block;color:var(--brass)}
 .pjug .jug{width:17px;height:auto;transition:none}
-.pjug .dim{color:var(--moss-dim);opacity:.45;display:block}
-.pjug .clip{position:absolute;left:0;bottom:0;width:100%;height:0;overflow:hidden;display:block}
-.pjug .brass{position:absolute;left:0;bottom:0;color:var(--brass);display:block}
-.pullsync.syncing .clip{animation:pslosh 1.1s ease-in-out infinite}
-@keyframes pslosh{0%,100%{height:100%}50%{height:80%}}
+.pullsync.syncing .pjug{animation:ppulse 1.7s ease-in-out .17s infinite}
+.pullsync.syncing .pw{animation:ppulse 1.7s ease-in-out infinite}
+.pullsync.syncing .pw.w2{animation-delay:.34s}
+@keyframes ppulse{0%,100%{opacity:1}50%{opacity:.35}}
 .body{position:relative;z-index:1;background:var(--ink)}
-.body.settling{transition:transform .32s cubic-bezier(.25,.8,.35,1)}
+.body.settling{transition:transform .45s cubic-bezier(.25,.8,.35,1)}
 .tabs{position:relative;z-index:5}
 
 /* the health strip: exists only when something is wrong */
