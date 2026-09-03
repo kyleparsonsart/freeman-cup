@@ -85,3 +85,14 @@ Do these in order. Items 1–3 now; 4–6 before invites go out Sep 27.
 `npm run dev` shows a dashed dev row on the sign-in screen — one tap
 signs in as any seed player (password auth, test accounts only). It is
 compiled out of production builds.
+
+## Sign-in code email template (Sep 3 2026)
+
+The styled sign-in email lives at `emails/signin-code.html`. To install it:
+1. Push so `public/email/email-badge.png` and `public/email/email-jug.png` deploy (the email loads its images from the production URL).
+2. Supabase Dashboard -> Authentication -> Email Templates -> **Magic Link**.
+3. Set the subject to: `Your Freeman Cup code: {{ .Token }}`
+4. Replace the message body with the full contents of `emails/signin-code.html` (it keeps `{{ .Token }}` in two places: the hidden preview line and the code box).
+5. Save, then request a code from the app to test. Check it in Gmail dark mode on a phone; the backgrounds carry a gradient lock so Gmail keeps the green.
+
+Note: "good for the next hour" in the copy matches the default Email OTP expiry (3600s). If that setting changes, update the sentence.
