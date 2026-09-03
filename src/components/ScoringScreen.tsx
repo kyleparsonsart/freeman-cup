@@ -484,7 +484,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
 
       {/* Scores the server refused: kept on this phone, shown, never silent */}
       {!viewOnly && gBlocked.length > 0 && (
-        <BlockedCard rows={gBlocked} data={data} session={s} commishName={commishName} />
+        <BlockedCard rows={gBlocked} data={data} commishName={commishName} />
       )}
 
       {/* Override strip */}
@@ -717,7 +717,6 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
         <CardDrawer
           gms={gms}
           session={s}
-          data={data}
           pending={pending}
           blockedCount={gBlocked.length}
           onClose={() => setDrawerOpen(false)}
@@ -779,10 +778,9 @@ function findPlayerId(key: string, data: EventData): string {
 
 /** Scores the server refused, kept on this phone until they land or are
  *  deliberately dismissed. The paper trail the commissioner reads from. */
-function BlockedCard({ rows, data, session: s, commishName }: {
+function BlockedCard({ rows, data, commishName }: {
   rows: QueuedHoleWrite[];
   data: EventData;
-  session: EventData['scoringSessions'][0];
   commishName: string;
 }) {
   const [confirm, setConfirm] = useState(false);
@@ -829,10 +827,9 @@ function BlockedCard({ rows, data, session: s, commishName }: {
 }
 
 /** Results, day totals and the sync check for a handed-in card. */
-function CardDrawer({ gms, session: s, data, pending, blockedCount, onClose }: {
+function CardDrawer({ gms, session: s, pending, blockedCount, onClose }: {
   gms: Match[];
   session: EventData['scoringSessions'][0];
-  data: EventData;
   pending: number;
   blockedCount: number;
   onClose: () => void;
