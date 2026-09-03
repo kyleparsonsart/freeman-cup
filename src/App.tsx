@@ -89,6 +89,7 @@ function Header({ title, sub, right }: { title?: string; sub?: string | null; ri
 /** Everything behind sign-in; mounting this starts the data load. */
 function CupApp({ signOut }: { signOut: () => Promise<void> }) {
   const { data, loading, error, reload } = useEventData();
+  const bodyRef = useRef<HTMLDivElement>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [tab, setTab] = useState<'scoring' | 'live' | 'schedule'>('scoring');
   // pulse when a round is actually mid-play, not only when set live
@@ -117,6 +118,16 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
   const closeMoment = () => {
     if (moKey) markSeen(moKey);
     setMoKey(null);
+  };
+
+  // A tab always opens at its top — scroll position never leaks across,
+  // and tapping the tab you're on is a shortcut back up.
+  useEffect(() => {
+    bodyRef.current?.scrollTo(0, 0);
+  }, [tab]);
+  const goTab = (t: 'scoring' | 'live' | 'schedule') => {
+    setTab(t);
+    bodyRef.current?.scrollTo(0, 0);
   };
 
   if (data?.unclaimed) {
@@ -163,7 +174,7 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
 
   return (
     <>
-      <div className="body">
+      <div className="body" ref={bodyRef}>
         {header}
         {loading && <div className="empty">Loading…</div>}
         {error && (
@@ -190,11 +201,11 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
       </div>
 
       <nav className="tabs" role="tablist">
-        <button className="tab" role="tab" aria-selected={tab === 'live'} onClick={() => setTab('live')}>
+        <button className="tab" role="tab" aria-selected={tab === 'live'} onClick={() => goTab('live')}>
           Live{anyLive && <span className="pulse" />}
         </button>
-        <button className="tab" role="tab" aria-selected={tab === 'scoring'} onClick={() => setTab('scoring')}>Scoring</button>
-        <button className="tab" role="tab" aria-selected={tab === 'schedule'} onClick={() => setTab('schedule')}>Schedule</button>
+        <button className="tab" role="tab" aria-selected={tab === 'scoring'} onClick={() => goTab('scoring')}>Scoring</button>
+        <button className="tab" role="tab" aria-selected={tab === 'schedule'} onClick={() => goTab('schedule')}>Schedule</button>
       </nav>
 
       {data && moments && moKey && (
