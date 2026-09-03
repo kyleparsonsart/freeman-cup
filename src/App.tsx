@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useEventData } from './hooks/useEventData';
 import ScoringScreen, { currentRound } from './components/ScoringScreen';
+import PullSync from './components/PullSync';
 import { half, roundState } from './lib/scoring';
 import { deriveMoments, nextUnseen, markSeen } from './lib/moments';
 import { getActing, setActing, type Acting } from './lib/view';
@@ -196,6 +197,7 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
 
   return (
     <>
+      {data && <PullSync bodyRef={bodyRef} onSync={reload} />}
       <div className="body" ref={bodyRef}>
         {header}
         {loading && (

@@ -1,0 +1,134 @@
+import { useEffect, useRef } from 'react';
+import { flushQueue } from '../lib/writeQueue';
+import { TrophySvg } from './CupStrip';
+
+const CATCH = 70;   // px of pull that arms the sync
+const MAX = 118;    // resistance ceiling
+
+/**
+ * Pull-to-sync: drag the page down from the top and the claret jug
+ * fills with brass as you pull — "Trying [jug] to sync". A full jug
+ * catches; releasing flushes the write queue and reloads, the jug
+ * sloshes while that lands, and the page springs back.
+ *
+ * Touch-driven by hand (installed PWAs own their scroll container), so
+ * it behaves identically on every tab. Direct style writes, no state
+ * churn on touchmove.
+ */
+export default function PullSync({ bodyRef, onSync }: {
+  bodyRef: React.RefObject<HTMLDivElement | null>;
+  onSync: () => Promise<unknown> | void;
+}) {
+  const indRef = useRef<HTMLDivElement>(null);
+  const pinRef = useRef<HTMLDivElement>(null);
+  const clipRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const body = bodyRef.current;
+    const ind = indRef.current, pin = pinRef.current, clip = clipRef.current;
+    if (!body || !ind || !pin || !clip) return;
+
+    let startY = 0, startX = 0, armed = false, active = false;
+    let pull = 0, syncing = false, caught = false;
+
+    const setPull = (px: number) => {
+      pull = px;
+      body.style.transform = px ? `translateY(${px}px)` : '';
+      const p = Math.min(1, px / CATCH);
+      pin.style.opacity = String(p);
+      if (!syncing) clip.style.height = `${Math.round(p * 100)}%`;
+    };
+
+    const settle = () => {
+      body.classList.add('settling');
+      setPull(0);
+      setTimeout(() => body.classList.remove('settling'), 340);
+    };
+
+    const clearInd = () => {
+      setTimeout(() => {
+        pin.style.opacity = '0';
+        clip.style.height = '0%';
+      }, 340);
+    };
+
+    const onStart = (e: TouchEvent) => {
+      if (syncing || body.scrollTop > 0) return;
+      const t = e.target as HTMLElement | null;
+      if (t?.closest('.drawer, .settings, .moment')) return;
+      startY = e.touches[0].clientY;
+      startX = e.touches[0].clientX;
+      armed = true;
+      active = false;
+    };
+
+    const onMove = (e: TouchEvent) => {
+      if (!armed || syncing) return;
+      const dy = e.touches[0].clientY - startY;
+      const dx = e.touches[0].clientX - startX;
+      if (!active) {
+        // only a clearly vertical, downward drag from the very top arms it
+        if (dy < -4 || body.scrollTop > 0) { armed = false; return; }
+        if (dy < 8 || Math.abs(dy) < Math.abs(dx) * 1.4) return;
+        active = true;
+      }
+      e.preventDefault();
+      const eased = Math.max(0, Math.min(MAX, (dy - 8) * 0.55));
+      const was = caught;
+      caught = eased >= CATCH;
+      if (caught && !was && navigator.vibrate) navigator.vibrate(10);
+      setPull(eased);
+    };
+
+    const onEnd = () => {
+      if (!armed) return;
+      armed = false;
+      if (!active) return;
+      active = false;
+      if (pull >= CATCH) {
+        syncing = true;
+        ind.classList.add('syncing');
+        clip.style.height = '100%';
+        body.classList.add('settling');
+        setPull(CATCH + 4);
+        setTimeout(() => body.classList.remove('settling'), 340);
+        const hold = new Promise(r => setTimeout(r, 650));
+        Promise.allSettled([flushQueue(), Promise.resolve(onSync()), hold]).then(() => {
+          syncing = false;
+          caught = false;
+          ind.classList.remove('syncing');
+          settle();
+          clearInd();
+        });
+      } else {
+        caught = false;
+        settle();
+        clearInd();
+      }
+    };
+
+    body.addEventListener('touchstart', onStart, { passive: true });
+    body.addEventListener('touchmove', onMove, { passive: false });
+    body.addEventListener('touchend', onEnd);
+    body.addEventListener('touchcancel', onEnd);
+    return () => {
+      body.removeEventListener('touchstart', onStart);
+      body.removeEventListener('touchmove', onMove);
+      body.removeEventListener('touchend', onEnd);
+      body.removeEventListener('touchcancel', onEnd);
+    };
+  }, [bodyRef, onSync]);
+
+  return (
+    <div className="pullsync" ref={indRef} aria-hidden="true">
+      <div className="pin" ref={pinRef}>
+        <span className="pw">Trying</span>
+        <span className="pjug">
+          <span className="dim"><TrophySvg /></span>
+          <span className="clip" ref={clipRef}><span className="brass"><TrophySvg /></span></span>
+        </span>
+        <span className="pw">to sync</span>
+      </div>
+    </div>
+  );
+}
