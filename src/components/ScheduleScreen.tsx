@@ -28,7 +28,7 @@ export default function ScheduleScreen({ data, moments = null, onMoment }: {
         const [dow, ...rest] = d.split(' ');
         const dm = moments?.days.find(x => x.day === d);
         return (
-          <div key={d} className="dayfade" style={{ animationDelay: `${di * 80}ms` }}>
+          <div key={d} className="dayfade" style={{ animationDelay: `${di * 110}ms` }}>
             <div className="dayrow">
               <span className="n">{dow}</span>
               <span className="d">{rest.join(' ')}</span>

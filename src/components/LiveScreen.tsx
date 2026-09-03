@@ -100,7 +100,7 @@ export default function LiveScreen({ data, moments = null, onMoment, strip = tru
         const [dow, ...rest] = g.day.split(' ');
         const open = i === openDay;
         return (
-          <div key={g.day} className="dayfade" style={{ animationDelay: `${i * 80}ms` }}>
+          <div key={g.day} className="dayfade" style={{ animationDelay: `${i * 110}ms` }}>
             <button
               className="dayhd"
               aria-expanded={open}
@@ -115,9 +115,16 @@ export default function LiveScreen({ data, moments = null, onMoment, strip = tru
                 <span className="chev">▾</span>
               </span>
             </button>
-            {open && g.items.map(e => {
+            {open && g.items.map((e, ix) => {
               const mk = openFor(e.key);
-              return <FeedRow key={e.key} e={e} onOpen={mk && onMoment ? () => onMoment(mk) : undefined} />;
+              return (
+                <FeedRow
+                  key={e.key}
+                  e={e}
+                  delay={i * 110 + Math.min(ix, 12) * 60}
+                  onOpen={mk && onMoment ? () => onMoment(mk) : undefined}
+                />
+              );
             })}
           </div>
         );
@@ -126,11 +133,12 @@ export default function LiveScreen({ data, moments = null, onMoment, strip = tru
   );
 }
 
-function FeedRow({ e, onOpen }: { e: FeedItem; onOpen?: () => void }) {
+function FeedRow({ e, delay = 0, onOpen }: { e: FeedItem; delay?: number; onOpen?: () => void }) {
   const tag = e.tag && <span className={`tag${e.tagGold ? ' gold' : ''}`}>{e.tag}</span>;
   return (
     <div
-      className={`ev ${e.side}${e.big ? ' big' : ''}${onOpen ? ' go' : ''}`}
+      className={`ev ${e.side}${e.big ? ' big' : ''}${onOpen ? ' go' : ''} rowfade`}
+      style={{ animationDelay: `${delay}ms` }}
       onClick={onOpen}
       role={onOpen ? 'button' : undefined}
       tabIndex={onOpen ? 0 : undefined}

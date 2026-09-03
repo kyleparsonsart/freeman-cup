@@ -129,7 +129,7 @@ function GroupTabs({ matches, heroId, onSelect, meKey }: GroupTabsProps) {
             className="ftab"
             role="tab"
             aria-selected={selected}
-            style={{ animationDelay: `${ix * 55}ms` }}
+            style={{ animationDelay: `${ix * 80}ms` }}
             onClick={() => onSelect(m.id)}
           >
             <span className="ft1">

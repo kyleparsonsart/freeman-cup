@@ -1027,7 +1027,10 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
    and up on Schedule and the Live feed. Quick, staggered per index
    (inline animation-delay), and only on mount — realtime reloads
    re-render in place without replaying. */
-.ftab{animation:ftabIn .26s cubic-bezier(.22,.8,.3,1) both}
+.ftab{animation:ftabIn .38s cubic-bezier(.22,.8,.3,1) both}
 @keyframes ftabIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-.dayfade{animation:dayIn .38s cubic-bezier(.22,.8,.3,1) both}
+.dayfade{animation:dayIn .5s cubic-bezier(.22,.8,.3,1) both}
 @keyframes dayIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+/* Live feed rows arrive one at a time; the stagger caps so a long day
+   doesn't take all morning, and a fresh realtime row fades in at once */
+.rowfade{animation:dayIn .4s cubic-bezier(.22,.8,.3,1) both}
