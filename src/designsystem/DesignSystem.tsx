@@ -491,6 +491,31 @@ export default function DesignSystem() {
               note={<>Until the round goes live, the Scoring tab shows the brief instead of a dead scoreboard: opponent, your group's tee time, where the shots land (straight from strokeMap), who keeps the card. The scorer and commissioner can open the real card early.</>}>
               <D.MatchBriefDemo />
             </D.Demo>
+
+            <D.Demo title="Acting as" classes={['.seg', '.crown']} stage="pad"
+              note={<>The commissioner's two jobs behind one switch, player by default. While Commissioner is on, the crown rides beside the cog — armed thumbs are never a surprise. The cog menu is his in both modes.</>}>
+              <D.ActingDemo />
+            </D.Demo>
+
+            <D.Demo title="The desk" classes={['.deskrow', '.deskrow.warn', '.abtn.deskgo']} stage="pad"
+              note={<>The commissioner's day on one card at the top of Settings: readiness and Go-live in the morning, per-group progress and freshness while live, cards-in and Mark complete in the evening.</>}>
+              <D.DeskDemo />
+            </D.Demo>
+
+            <D.Demo title="Complete guard" classes={['.guard', '.guard .glock']} stage="pad"
+              note={<>Marking a round Complete with cards still out asks once, with names and numbers, then obeys.</>}>
+              <D.GuardDemo />
+            </D.Demo>
+
+            <D.Demo title="Seats" classes={['.seatrow', '.schip', '.unbind']} stage="pad"
+              note={<>Every chair, its email and claim state; Unbind clears a stale account so the right email can claim. Invite day without the SQL editor.</>}>
+              <D.SeatsDemo />
+            </D.Demo>
+
+            <D.Demo title="Hold to clear" classes={['.dbtn.hold']} stage="pad"
+              note={<>Once the Cup is under way the reset takes a two-second hold; the fill is the countdown, releasing early cancels.</>}>
+              <D.HoldDemo />
+            </D.Demo>
           </section>
 
           {/* ---------------- Moments ---------------- */}

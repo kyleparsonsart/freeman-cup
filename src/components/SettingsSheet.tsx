@@ -1,12 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { getTheme, setTheme, type Theme } from '../lib/theme';
 import { TIEBREAK, type MomentsState } from '../lib/moments';
+import { deskFor, quietMins, type DeskState } from '../lib/desk';
+import type { Acting } from '../lib/view';
 import type { EventData } from '../hooks/useEventData';
 import type { DbPlayer } from '../lib/types';
 
 interface Props {
   data: EventData;
+  acting?: Acting;
+  onActing?: (a: Acting) => void;
   moments?: MomentsState | null;
   open: boolean;
   onClose: () => void;
@@ -34,7 +38,7 @@ type Outcome = PromiseLike<{ error: { message: string } | null }>;
  * control writes straight to Supabase through the commissioner policies
  * and reloads; realtime carries the change to the other phones.
  */
-export default function SettingsSheet({ data, moments = null, open, onClose, reload, signOut }: Props) {
+export default function SettingsSheet({ data, acting = 'player', onActing, moments = null, open, onClose, reload, signOut }: Props) {
   const [err, setErr] = useState<string | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
   const [cleared, setCleared] = useState(false);
@@ -75,6 +79,33 @@ export default function SettingsSheet({ data, moments = null, open, onClose, rel
     run(supabase.rpc('set_shootout', { s: { a: sh.a, b: sh.b, done: true } }));
   const clearShootout = () => run(supabase.rpc('set_shootout', { s: null }));
 
+  // Completing a round with cards still out asks once, with names.
+  const [finalGuard, setFinalGuard] = useState<{ roundId: string; msg: string } | null>(null);
+  const guardFor = (roundId: string): string | null => {
+    const tgs = data.teeGroups.filter(t => t.round_id === roundId);
+    const out = tgs.filter(t => !t.submitted_at);
+    if (!out.length) return null;
+    const session = data.scoringSessions.find(x => x.id === roundId);
+    const letters = out.map(t => `Group ${String.fromCharCode(65 + Math.max(0, tgs.findIndex(x => x.id === t.id)))}`);
+    let openHoles = 0;
+    out.forEach(t => {
+      const ids = data.matches.filter(m => m.tee_group_id === t.id).map(m => m.id);
+      const gm = data.scoringMatches.filter(m => ids.includes(m.id));
+      gm.forEach(m => { for (let i = 0; i < (session?.holes || 0); i++) if (!m.hs[i]?.r) openHoles++; });
+    });
+    return `${letters.join(' and ')} ${out.length === 1 ? "hasn't" : "haven't"} handed the card in` +
+      (openHoles ? ` — ${openHoles} hole${openHoles === 1 ? '' : 's'} still open` : '') +
+      '. Completing locks scoring and any unsynced scores will be refused.';
+  };
+  const requestRoundState = (id: string, state: string) => {
+    setFinalGuard(null);
+    if (state === 'final') {
+      const msg = guardFor(id);
+      if (msg) { setFinalGuard({ roundId: id, msg }); return; }
+    }
+    setRoundState(id, state);
+  };
+
   const clearAll = async () => {
     if (!confirmClear) { setConfirmClear(true); return; }
     setErr(null);
@@ -85,6 +116,32 @@ export default function SettingsSheet({ data, moments = null, open, onClose, rel
     setTimeout(() => setCleared(false), 1600);
     reload();
   };
+
+  // Once the Cup is under way, clearing takes a two-second hold.
+  const underway = data.matchHoles.length > 0;
+  const [holding, setHolding] = useState(false);
+  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const startHold = () => {
+    setErr(null);
+    setHolding(true);
+    holdTimer.current = setTimeout(async () => {
+      setHolding(false);
+      const { error } = await supabase.rpc('reset_event');
+      if (error) { setErr(error.message); return; }
+      setCleared(true);
+      setTimeout(() => setCleared(false), 1600);
+      reload();
+    }, 2000);
+  };
+  const cancelHold = () => {
+    setHolding(false);
+    if (holdTimer.current) { clearTimeout(holdTimer.current); holdTimer.current = null; }
+  };
+
+  const unbindSeat = (pid: string) =>
+    run(supabase.rpc('clear_seat', { p: pid }));
+
+  const desk: DeskState | null = commish ? deskFor(data) : null;
 
   const teamOf = (side: 'a' | 'b') => data.teams.find(t => t.side === side);
   const playersOf = (side: 'a' | 'b'): DbPlayer[] => {
@@ -120,6 +177,23 @@ export default function SettingsSheet({ data, moments = null, open, onClose, rel
       <div className="setbody">
         {err && <div className="holine err">{err}</div>}
 
+        {commish && onActing && (
+          <>
+            <div className="grp">
+              <h3>Acting as</h3>
+              <div className="hint">
+                Player is the default: you see the app exactly as the other
+                seven do, and your scores-anywhere powers stay holstered.
+                Commissioner arms them and puts the crown by the cog.
+              </div>
+            </div>
+            <div className="seg" role="tablist" aria-label="Acting as">
+              <button role="tab" aria-selected={acting === 'player'} className={acting === 'player' ? 'on' : ''} onClick={() => onActing('player')}>Player</button>
+              <button role="tab" aria-selected={acting === 'commish'} className={acting === 'commish' ? 'on' : ''} onClick={() => onActing('commish')}>Commissioner</button>
+            </div>
+          </>
+        )}
+
         <div className="grp">
           <h3>Appearance</h3>
           <div className="hint">Dark holds up better in direct sun on the course. Light is easier indoors.</div>
@@ -140,6 +214,24 @@ export default function SettingsSheet({ data, moments = null, open, onClose, rel
 
         {commish && (
           <>
+            {/* ---- The desk ---- */}
+            {desk && (
+              <Desk
+                desk={desk}
+                data={data}
+                onLive={() => requestRoundState(desk.round.id, 'live')}
+                onComplete={() => requestRoundState(desk.round.id, 'final')}
+              />
+            )}
+            {desk && finalGuard?.roundId === desk.round.id && (
+              <div className="guard">
+                {finalGuard.msg}{' '}
+                <button className="glock" onClick={() => { setFinalGuard(null); setRoundState(desk.round.id, 'final'); }}>
+                  Lock it anyway
+                </button>
+              </div>
+            )}
+
             {/* ---- Rounds ---- */}
             <div className="grp">
               <h3>Rounds</h3>
@@ -157,10 +249,18 @@ export default function SettingsSheet({ data, moments = null, open, onClose, rel
                     <span className="cs">{s?.day}</span>
                   </div>
                   <div className="r2">
-                    <select value={r.state} onChange={e => setRoundState(r.id, e.target.value)}>
+                    <select value={r.state} onChange={e => requestRoundState(r.id, e.target.value)}>
                       {STATES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                     </select>
                   </div>
+                  {finalGuard?.roundId === r.id && (
+                    <div className="guard">
+                      {finalGuard.msg}{' '}
+                      <button className="glock" onClick={() => { setFinalGuard(null); setRoundState(r.id, 'final'); }}>
+                        Lock it anyway
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -354,23 +454,154 @@ export default function SettingsSheet({ data, moments = null, open, onClose, rel
               </>
             )}
 
+            {/* ---- Seats ---- */}
+            <div className="grp">
+              <h3>Seats</h3>
+              <div className="hint">
+                Who each chair belongs to. Unbind clears a stale account so the
+                right email can claim the seat — run this before invites go out.
+              </div>
+            </div>
+            {data.players.map(p => (
+              <div key={p.id} className="seatrow">
+                <span className="sn2">{fname(p.name)}</span>
+                <span className="se">{p.email}</span>
+                <span className={`schip${p.auth_uid ? ' ok' : ''}`}>{p.auth_uid ? 'Claimed' : 'Open'}</span>
+                {p.auth_uid && p.id !== data.mePlayerId && (
+                  <button className="unbind" onClick={() => unbindSeat(p.id)}>Unbind</button>
+                )}
+              </div>
+            ))}
+
             {/* ---- Danger ---- */}
             <div className="grp">
               <h3>Danger</h3>
               <div className="hint">
-                Clears every score and puts all four rounds back to Not started.
-                The history table keeps the record. Cannot be undone from here.
-                Do this once, before Thursday.
+                Clears every score, reopens every card, puts all four rounds back
+                to Not started. The history table keeps the record.
+                {underway
+                  ? ' The Cup is under way, so this takes a two-second hold — releasing early cancels.'
+                  : ' Do this once, before Thursday.'}
               </div>
             </div>
             <div className="danger">
-              <button className="dbtn" onClick={clearAll} onBlur={() => setConfirmClear(false)}>
-                {cleared ? 'Cleared' : confirmClear ? 'Tap again to clear everything' : 'Clear all scores'}
-              </button>
+              {underway ? (
+                <button
+                  className={`dbtn hold${holding ? ' holding' : ''}`}
+                  onPointerDown={startHold}
+                  onPointerUp={cancelHold}
+                  onPointerLeave={cancelHold}
+                  onPointerCancel={cancelHold}
+                  onContextMenu={e => e.preventDefault()}
+                >
+                  {cleared ? 'Cleared' : holding ? 'Hold on…' : 'Hold to clear everything'}
+                </button>
+              ) : (
+                <button className="dbtn" onClick={clearAll} onBlur={() => setConfirmClear(false)}>
+                  {cleared ? 'Cleared' : confirmClear ? 'Tap again to clear everything' : 'Clear all scores'}
+                </button>
+              )}
             </div>
           </>
         )}
       </div>
     </div>
+  );
+}
+
+
+/** The commissioner's day on one card: launch, watch, landing. */
+function Desk({ desk, data, onLive, onComplete }: {
+  desk: DeskState;
+  data: EventData;
+  onLive: () => void;
+  onComplete: () => void;
+}) {
+  const first = (id: string | null) => id ? (data.playerById[id]?.name.split(' ')[0] || '?') : null;
+  const t = (ms: number) => {
+    const d = new Date(ms);
+    let h = d.getHours();
+    const ap = h >= 12 ? 'pm' : 'am';
+    h = ((h + 11) % 12) + 1;
+    return `${h}:${String(d.getMinutes()).padStart(2, '0')}${ap}`;
+  };
+  const s = desk.session;
+  const total = desk.groups.length;
+
+  return (
+    <>
+      <div className="grp">
+        <h3>The desk</h3>
+        <div className="hint">
+          {desk.state === 'upcoming'
+            ? `${s.day} · ${s.rd} · ${s.course} · tees ${s.tees.join('/')}`
+            : desk.state === 'live'
+              ? `${s.rd} live at ${s.course}`
+              : `${s.rd} is in the book`}
+        </div>
+      </div>
+
+      {desk.state === 'upcoming' ? (
+        <>
+          <div className={`deskrow${desk.pairingsSet === desk.pairingsTotal ? ' ok' : ' warn'}`}>
+            <span className="dk">Pairings</span>
+            <span className="dv">{desk.pairingsSet} of {desk.pairingsTotal} set</span>
+            <span className="dtick">{desk.pairingsSet === desk.pairingsTotal ? '\u2713' : '!'}</span>
+          </div>
+          <div className={`deskrow${desk.scorersSet === total ? ' ok' : ' warn'}`}>
+            <span className="dk">Scorers</span>
+            <span className="dv">
+              {desk.scorersSet === total
+                ? desk.groups.map(g => first(g.scorer)).join(' \u00b7 ')
+                : `${desk.groups.filter(g => !g.scorer).map(g => `Group ${g.letter}`).join(', ')} unnamed`}
+            </span>
+            <span className="dtick">{desk.scorersSet === total ? '\u2713' : '!'}</span>
+          </div>
+          <div className="deskrow">
+            <span className="dk">Format</span>
+            <span className="dv">{s.fmt} \u00b7 {s.holes} holes</span>
+            <span className="dtick" />
+          </div>
+          <button
+            className="abtn deskgo"
+            disabled={desk.scorersSet < total || desk.pairingsSet < desk.pairingsTotal}
+            onClick={onLive}
+          >
+            {desk.scorersSet < total ? 'Name the scorers first'
+              : desk.pairingsSet < desk.pairingsTotal ? 'Finish the pairings first'
+              : `Set ${s.rd} live`}
+          </button>
+        </>
+      ) : desk.state === 'live' ? (
+        <>
+          {desk.groups.map(g => {
+            const q = quietMins(g.lastAt);
+            const quiet = q !== null && q >= 30 && g.open > 0;
+            return (
+              <div key={g.tgId} className={`deskrow${quiet ? ' warn' : ' ok'}`}>
+                <span className="dk">Group {g.letter}</span>
+                <span className="dv">
+                  {g.submitted ? 'card in'
+                    : g.lastAt === null ? 'no scores yet'
+                    : quiet ? `thru ${g.thru} \u00b7 quiet ${q} min`
+                    : `thru ${g.thru} \u00b7 last score ${t(g.lastAt!)}`}
+                </span>
+                <span className="dtick">{g.submitted ? '\u2713' : quiet ? '!' : ''}</span>
+              </div>
+            );
+          })}
+          <div className="deskrow">
+            <span className="dk">Cards</span>
+            <span className="dv">{desk.cardsIn} of {total} in</span>
+            <span className="dtick">{desk.cardsIn === total ? '\u2713' : ''}</span>
+          </div>
+          <button className={`abtn deskgo${desk.cardsIn < total ? ' soft' : ''}`} onClick={onComplete}>
+            {desk.cardsIn < total
+              ? `Mark complete \u2014 ${total - desk.cardsIn} card${total - desk.cardsIn === 1 ? '' : 's'} still out`
+              : `Mark ${s.rd} complete`}
+          </button>
+        </>
+      ) : null}
+    </>
   );
 }

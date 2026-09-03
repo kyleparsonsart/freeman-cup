@@ -4,6 +4,7 @@ import { useEventData } from './hooks/useEventData';
 import ScoringScreen, { currentRound } from './components/ScoringScreen';
 import { half, roundState } from './lib/scoring';
 import { deriveMoments, nextUnseen, markSeen } from './lib/moments';
+import { getActing, setActing, type Acting } from './lib/view';
 import LiveScreen from './components/LiveScreen';
 import MomentOverlay from './components/Moments';
 import ScheduleScreen from './components/ScheduleScreen';
@@ -88,8 +89,17 @@ function Header({ title, sub, right }: { title?: string; sub?: string | null; ri
 
 /** Everything behind sign-in; mounting this starts the data load. */
 function CupApp({ signOut }: { signOut: () => Promise<void> }) {
-  const { data, loading, error, reload } = useEventData();
+  const { data: rawData, loading, error, reload } = useEventData();
   const bodyRef = useRef<HTMLDivElement>(null);
+
+  // Acting as: player by default. Everything below the cog reads the
+  // effective data, so the commissioner in player view is a player.
+  const [acting, setActingState] = useState<Acting>(getActing());
+  const flipActing = (a: Acting) => { setActing(a); setActingState(a); };
+  const armed = !!rawData?.meIsCommissioner && acting === 'commish';
+  const data = rawData && rawData.meIsCommissioner && !armed
+    ? { ...rawData, meIsCommissioner: false }
+    : rawData;
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [tab, setTab] = useState<'scoring' | 'live' | 'schedule'>('scoring');
   // pulse when a round is actually mid-play, not only when set live
@@ -153,9 +163,16 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
   }
 
   const cog = data && (
-    <button
-      className={`cog${data.meIsCommissioner ? ' on' : ''}`}
-      aria-label={data.meIsCommissioner ? 'Commissioner settings' : 'Settings'}
+    <span className="hdicons">
+      {armed && (
+        <svg className="crown" viewBox="0 0 24 24" fill="currentColor" aria-label="Acting as commissioner">
+          <path d="M3 8.5 7.6 12 12 5.5 16.4 12 21 8.5 19.2 17H4.8L3 8.5z"/>
+          <rect x="4.8" y="18.2" width="14.4" height="1.9"/>
+        </svg>
+      )}
+      <button
+      className={`cog${rawData?.meIsCommissioner ? ' on' : ''}`}
+      aria-label={rawData?.meIsCommissioner ? 'Commissioner settings' : 'Settings'}
       onClick={() => setSettingsOpen(true)}
     >
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
@@ -163,6 +180,7 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
       </svg>
     </button>
+    </span>
   );
 
   // Header per tab: the course on Scoring, the event on Schedule, the road
@@ -223,9 +241,11 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
         />
       )}
 
-      {data && (
+      {rawData && (
         <SettingsSheet
-          data={data}
+          data={rawData}
+          acting={acting}
+          onActing={flipActing}
           moments={moments}
           open={settingsOpen}
           onClose={() => setSettingsOpen(false)}

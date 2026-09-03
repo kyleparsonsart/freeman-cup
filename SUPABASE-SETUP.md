@@ -19,7 +19,10 @@ Do these in order. Items 1–3 now; 4–6 before invites go out Sep 27.
    hand-in, and `reset_event()` reopening every card (run Sep 3).
    Then `freeman-cup-aggregate.sql` → run once: widens `round.format`
    to allow `aggregate`, clears Round 2's old team-keyed test scores,
-   and flips The Commons from foursomes to Aggregate Match Play.
+   and flips The Commons from foursomes to Aggregate Match Play (run
+   Sep 3). Then `freeman-cup-seats.sql` → run once: commissioner-only
+   `clear_seat()` behind the Unbind buttons in Settings → Seats — the
+   in-app fix for stale test bindings before invites go out.
 
 1b. **Site URL.** Authentication → URL Configuration → Site URL
    `https://freeman-cup.vercel.app`, and add `http://localhost:5173` to

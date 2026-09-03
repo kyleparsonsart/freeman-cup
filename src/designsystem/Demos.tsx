@@ -548,3 +548,75 @@ export function MatchBriefDemo() {
     </div>
   );
 }
+
+/* ---------------- the commissioner's week ---------------- */
+
+export function ActingDemo() {
+  return (
+    <>
+      <div className="seg" style={{ margin: '0 0 12px' }}>
+        <button>Player</button>
+        <button className="on">Commissioner</button>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--moss)', fontSize: 13 }}>
+        Armed state in the header:
+        <svg className="crown" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3 8.5 7.6 12 12 5.5 16.4 12 21 8.5 19.2 17H4.8L3 8.5z"/>
+          <rect x="4.8" y="18.2" width="14.4" height="1.9"/>
+        </svg>
+      </div>
+    </>
+  );
+}
+
+export function DeskDemo() {
+  return (
+    <>
+      <div className="deskrow ok" style={{ borderTop: 'none' }}>
+        <span className="dk">Group A</span><span className="dv">thru 8 · last score 9:41</span><span className="dtick">✓</span>
+      </div>
+      <div className="deskrow warn">
+        <span className="dk">Group B</span><span className="dv">thru 5 · quiet 38 min</span><span className="dtick">!</span>
+      </div>
+      <div className="deskrow">
+        <span className="dk">Cards</span><span className="dv">0 of 2 in</span><span className="dtick" />
+      </div>
+      <button className="abtn deskgo soft" style={{ width: '100%', margin: '12px 0 0' }}>Mark complete — 2 cards still out</button>
+    </>
+  );
+}
+
+export function GuardDemo() {
+  return (
+    <div className="guard" style={{ margin: 0 }}>
+      Group B hasn't handed the card in — 3 holes still open. Completing locks
+      scoring and any unsynced scores will be refused.{' '}
+      <button className="glock">Lock it anyway</button>
+    </div>
+  );
+}
+
+export function SeatsDemo() {
+  return (
+    <>
+      <div className="seatrow" style={{ borderTop: 'none', paddingLeft: 0, paddingRight: 0 }}>
+        <span className="sn2">Kyle</span><span className="se">kyleparsonsart@gmail.com</span><span className="schip ok">Claimed</span>
+      </div>
+      <div className="seatrow" style={{ paddingLeft: 0, paddingRight: 0 }}>
+        <span className="sn2">Devin</span><span className="se">devin+test@example.com</span><span className="schip ok">Claimed</span><button className="unbind">Unbind</button>
+      </div>
+      <div className="seatrow" style={{ paddingLeft: 0, paddingRight: 0 }}>
+        <span className="sn2">Griffin</span><span className="se">griffin@example.com</span><span className="schip">Open</span>
+      </div>
+    </>
+  );
+}
+
+export function HoldDemo() {
+  return (
+    <button className="dbtn hold" style={{ width: '100%' }}>
+      <span style={{ position: 'absolute', inset: 0, width: '62%', background: 'rgba(200,64,47,.28)', zIndex: -1 }} />
+      Hold to clear everything
+    </button>
+  );
+}
