@@ -120,14 +120,18 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
     setMoKey(null);
   };
 
-  // A tab always opens at its top — scroll position never leaks across,
-  // and tapping the tab you're on is a shortcut back up.
+  // A tab always opens at its top — scroll position never leaks across.
+  // Switching lands instantly (the content changes anyway); tapping the
+  // tab you're on rides visibly back up instead.
   useEffect(() => {
     bodyRef.current?.scrollTo(0, 0);
   }, [tab]);
   const goTab = (t: 'scoring' | 'live' | 'schedule') => {
+    if (t === tab) {
+      bodyRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     setTab(t);
-    bodyRef.current?.scrollTo(0, 0);
   };
 
   if (data?.unclaimed) {
