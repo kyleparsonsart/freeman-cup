@@ -1135,3 +1135,28 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .empty .errdetail{display:block;margin-top:10px;font-size:11.5px;color:var(--moss-dim);font-family:var(--clock);letter-spacing:.02em}
 .authic .ph{width:40px;height:40px;color:var(--moss-dim);display:block;margin:0 0 14px}
 .authic .ph .duo{fill:var(--brass);opacity:.26}
+
+/* ============ sign-in, redesigned (Sep 4 2026) ============
+   The badge is the header: brass crest, wordmark, INVITATIONAL over
+   SAND VALLEY 2026, the whole flow centered on both axes. */
+.body > .siview{flex:1;display:flex;padding-bottom:0}
+.signin{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:env(safe-area-inset-top,0px) 34px 48px}
+.silogo{width:104px;height:106px;background:var(--brass);flex:none;
+  -webkit-mask:url(/brand/logo-badge.svg) center/contain no-repeat;
+  mask:url(/brand/logo-badge.svg) center/contain no-repeat;margin-bottom:20px}
+.siname{font-family:var(--display);font-size:27px;font-weight:600;color:var(--bone);
+  letter-spacing:-.015em;font-synthesis:none}
+.siinv{font-family:var(--clock);font-size:15px;font-weight:600;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--moss);margin-top:9px;padding-left:.22em}
+.sivenue{font-family:var(--clock);font-size:12px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--moss-dim);margin-top:4px;padding-left:.14em}
+.sigap{height:36px;flex:none}
+.sicopy{font-size:14px;line-height:1.6;color:var(--moss);max-width:30ch;margin-bottom:16px}
+.sicopy b{color:var(--bone);font-weight:600}
+.aform.si{display:flex;flex-direction:column;gap:10px;width:100%;max-width:280px;align-items:stretch}
+.ainput.si{text-align:center}
+.ainput.code.si{padding-left:.35em}
+.aghost.si{align-self:center;margin-top:16px}
+.signin .aerr{text-align:center;margin-top:12px}
+.signin .adev{justify-content:center;margin-top:20px}

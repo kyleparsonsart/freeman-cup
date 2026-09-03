@@ -36,8 +36,7 @@ export default function App() {
     <div className="phone" ref={root}>
       {!auth.ready ? null : !auth.session ? (
         <div className="body">
-          <Header />
-          <section className="view on">
+          <section className="view on siview">
             <SignInScreen
               sendCode={auth.sendCode}
               verifyCode={auth.verifyCode}

@@ -34,16 +34,20 @@ export default function SignInScreen({ sendCode, verifyCode, devSignIn }: Props)
   };
 
   return (
-    <div className="auth">
-      <h2>Sign in</h2>
+    <div className="signin">
+      <span className="silogo" aria-hidden="true" />
+      <h1 className="siname">The Freeman Cup</h1>
+      <div className="siinv">Invitational</div>
+      <div className="sivenue">Sand Valley 2026</div>
+      <div className="sigap" />
       {step === 'email' ? (
         <>
-          <p className="asub">
+          <p className="sicopy">
             Enter the email your invite went to and we'll send you a six-digit code.
           </p>
-          <form onSubmit={submitEmail} className="aform">
+          <form onSubmit={submitEmail} className="aform si">
             <input
-              className="ainput"
+              className="ainput si"
               type="email"
               inputMode="email"
               autoComplete="email"
@@ -53,19 +57,20 @@ export default function SignInScreen({ sendCode, verifyCode, devSignIn }: Props)
               required
               autoFocus
             />
-            <button className="abtn" disabled={busy || !email.trim()}>
+            <button className="abtn si" disabled={busy || !email.trim()}>
               {busy ? 'Sending…' : 'Email me a code'}
             </button>
           </form>
         </>
       ) : (
         <>
-          <p className="asub">
-            Sent to <b>{email.trim()}</b>. Enter the six-digit code from the email.
+          <p className="sicopy">
+            Sent to <b>{email.trim()}</b>.<br />
+            Enter the six digits from the email.
           </p>
-          <form onSubmit={submitCode} className="aform">
+          <form onSubmit={submitCode} className="aform si">
             <input
-              className="ainput code"
+              className="ainput code si"
               inputMode="numeric"
               autoComplete="one-time-code"
               pattern="[0-9]{6}"
@@ -76,13 +81,13 @@ export default function SignInScreen({ sendCode, verifyCode, devSignIn }: Props)
               required
               autoFocus
             />
-            <button className="abtn" disabled={busy || code.length !== 6}>
+            <button className="abtn si" disabled={busy || code.length !== 6}>
               {busy ? 'Checking…' : 'Sign in'}
             </button>
           </form>
           <button
             type="button"
-            className="aghost"
+            className="aghost si"
             onClick={() => { setStep('email'); setCode(''); setErr(null); }}
           >
             Use a different email
