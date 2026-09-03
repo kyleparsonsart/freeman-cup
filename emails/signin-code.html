@@ -11,15 +11,13 @@
   body { margin:0; padding:0; }
   table { border-collapse:collapse; }
   img { border:0; line-height:100%; }
-  u + .body .gmail-blend-screen { background:#000000; mix-blend-mode:screen; }
-  u + .body .gmail-blend-difference { background:#000000; mix-blend-mode:difference; }
 </style>
 </head>
-<body class="body" style="margin:0;padding:0;background-color:#0F1E19;background-image:linear-gradient(#0F1E19,#0F1E19);">
+<body style="margin:0;padding:0;background-color:#0F1E19;">
   <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">Your code: {{ .Token }}</div>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0F1E19;background-image:linear-gradient(#0F1E19,#0F1E19);">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0F1E19;">
     <tr>
-      <td align="center" style="padding:40px 20px 0;background-color:#0F1E19;background-image:linear-gradient(#0F1E19,#0F1E19);">
+      <td align="center" style="padding:40px 20px 0;background-color:#0F1E19;">
         <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="max-width:480px;width:100%;">
           <tr>
             <td align="center" style="padding:6px 10px 0;">
@@ -27,49 +25,41 @@
             </td>
           </tr>
           <tr>
-            <td>
-              <div class="gmail-blend-screen"><div class="gmail-blend-difference">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <td align="center" style="padding:16px 10px 0;font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:13px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#8CA79B;">
+              Let&#8217;s Sign In
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:10px 10px 0;font-family:'Young Serif',Georgia,'Times New Roman',serif;font-size:26px;line-height:33px;font-weight:400;color:#F0EBDC;">
+              Here&#8217;s your code.
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:26px 10px 0;">
+              <table role="presentation" width="300" cellpadding="0" cellspacing="0" style="max-width:300px;width:100%;">
                 <tr>
-                  <td align="center" style="padding:16px 10px 0;font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:13px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#8CA79B;">
-                    Let&#8217;s Sign In
-                  </td>
-                </tr>
-                <tr>
-                  <td align="center" style="padding:10px 10px 0;font-family:'Young Serif',Georgia,'Times New Roman',serif;font-size:26px;line-height:33px;font-weight:400;color:#F0EBDC;">
-                    Here&#8217;s your code.
-                  </td>
-                </tr>
-                <tr>
-                  <td align="center" style="padding:26px 10px 0;">
-                    <table role="presentation" width="300" cellpadding="0" cellspacing="0" style="max-width:300px;width:100%;">
-                      <tr>
-                        <td align="center" style="background-color:#172B24;border:1px solid #26443A;border-radius:14px;padding:22px 10px;">
-                          <div style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#5D7268;padding-bottom:6px;">
-                            Sign-in code
-                          </div>
-                          <div style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:44px;line-height:48px;font-weight:600;letter-spacing:10px;color:#F0EBDC;padding-left:10px;">
-                            {{ .Token }}
-                          </div>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td align="center" style="padding:20px 24px 0;font-family:'Work Sans',Helvetica,Arial,sans-serif;font-size:15px;line-height:24px;color:#8CA79B;">
-                    Type it into the app. It&#8217;s good for the next hour and works once.
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:34px 10px 0;">
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                      <tr><td style="border-top:1px solid #26443A;font-size:0;line-height:0;">&nbsp;</td></tr>
-                    </table>
+                  <td align="center" style="background-color:#172B24;border:1px solid #26443A;border-radius:14px;padding:22px 10px;">
+                    <div style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#5D7268;padding-bottom:6px;">
+                      Sign-in code
+                    </div>
+                    <div style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:44px;line-height:48px;font-weight:600;letter-spacing:10px;color:#F0EBDC;padding-left:10px;">
+                      {{ .Token }}
+                    </div>
                   </td>
                 </tr>
               </table>
-              </div></div>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:20px 24px 0;font-family:'Work Sans',Helvetica,Arial,sans-serif;font-size:15px;line-height:24px;color:#8CA79B;">
+              Type it into the app. It&#8217;s good for the next hour and works once.
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:34px 10px 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr><td style="border-top:1px solid #26443A;font-size:0;line-height:0;">&nbsp;</td></tr>
+              </table>
             </td>
           </tr>
           <tr>
@@ -78,17 +68,9 @@
             </td>
           </tr>
           <tr>
-            <td>
-              <div class="gmail-blend-screen"><div class="gmail-blend-difference">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td align="center" style="padding:8px 24px 36px;font-family:'Work Sans',Helvetica,Arial,sans-serif;font-size:12px;line-height:19px;color:#5D7268;">
-                    Didn&#8217;t try to sign in? Ignore this. Nobody gets in without the code.<br>
-                    The Freeman Cup &middot; Sand Valley, Wisconsin
-                  </td>
-                </tr>
-              </table>
-              </div></div>
+            <td align="center" style="padding:8px 24px 36px;font-family:'Work Sans',Helvetica,Arial,sans-serif;font-size:12px;line-height:19px;color:#5D7268;">
+              Didn&#8217;t try to sign in? Ignore this. Nobody gets in without the code.<br>
+              The Freeman Cup &middot; Sand Valley, Wisconsin
             </td>
           </tr>
         </table>
