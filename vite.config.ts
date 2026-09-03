@@ -10,7 +10,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       // public/manifest.json is the manifest; don't generate a second one
       manifest: false,
-      includeAssets: ['manifest.json', 'icons/*.png', 'fonts/*.woff2'],
+      includeAssets: ['manifest.json', 'icons/*.png', 'fonts/*.woff2', 'brand/*.svg'],
       workbox: {
         // the app shell (index.html + hashed js/css) is precached by default
         runtimeCaching: [

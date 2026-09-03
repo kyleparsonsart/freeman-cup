@@ -198,7 +198,12 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
     <>
       <div className="body" ref={bodyRef}>
         {header}
-        {loading && <div className="empty">Loading…</div>}
+        {loading && (
+          <div className="boot" aria-label="Loading">
+            <span className="bootlogo" />
+            <span className="bootsub">The Freeman Cup</span>
+          </div>
+        )}
         {error && (
           <div className="empty">
             <b>Error</b>
