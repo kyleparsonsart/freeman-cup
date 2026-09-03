@@ -10,30 +10,16 @@ import { applyTheme, getTheme } from './lib/theme'
 // theme before first paint; dark unless this device chose light
 applyTheme(getTheme())
 
-// iOS standalone sometimes reports a window exactly one status bar
-// shorter than the screen (seen on device: win 812 on an 874 screen),
-// top-anchored, leaving a dead strip under the tab bar. When that
-// happens, size the frame to the physical screen instead and flag it
-// so the tab bar keeps clear of the home indicator on its own.
-const sizeApp = () => {
-  const standalone = window.matchMedia('(display-mode: standalone)').matches
-  const portrait = window.innerWidth <= window.screen.width
-  const short = standalone && portrait && window.innerHeight < window.screen.height
-  const h = short ? window.screen.height : window.innerHeight
-  document.documentElement.style.setProperty('--app-h', `${h}px`)
-  document.documentElement.classList.toggle('ios-stretch', short)
-}
-sizeApp()
-window.addEventListener('resize', sizeApp)
-window.addEventListener('orientationchange', sizeApp)
-
-// ...and the keyboard can scroll the whole window without putting it
-// back; snap any leftover offset home.
+// The frame is position:fixed inset:0 — the honest window, whatever
+// iOS reports. (Painting past a short window proved impossible: the
+// surface really is clipped. A latched-short install is cured by
+// deleting and re-adding the app, not by CSS.) The keyboard can still
+// scroll the whole window without putting it back; snap it home.
 const pin = () => {
   if (window.scrollX || window.scrollY) window.scrollTo(0, 0)
-  sizeApp()
 }
 window.addEventListener('focusout', pin)
+window.addEventListener('orientationchange', pin)
 window.visualViewport?.addEventListener('resize', pin)
 
 const isDesignSystem = location.pathname.replace(/\/+$/, '') === '/designsystem'

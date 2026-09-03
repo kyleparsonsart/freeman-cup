@@ -238,7 +238,8 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
               Build {__BUILD_STAMP__} ·{' '}
               {window.matchMedia('(display-mode: standalone)').matches ? 'standalone' : 'browser'} ·
               win {window.innerWidth}×{window.innerHeight} · screen {window.screen.width}×{window.screen.height} ·
-              vv {Math.round(window.visualViewport?.height ?? 0)} · y {Math.round(window.scrollY)}
+              vv {Math.round(window.visualViewport?.height ?? 0)} · y {Math.round(window.scrollY)} ·
+              sat {getComputedStyle(document.documentElement).getPropertyValue('--sat').trim() || '0'}
             </div>
           </>
         )}
