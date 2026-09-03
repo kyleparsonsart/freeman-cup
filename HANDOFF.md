@@ -42,7 +42,7 @@ SQL that has run, in order: `freeman-cup-schema.sql`, `freeman-cup-auth.sql`, `f
 
 ## Not code, and blocking real use
 
-1. **Custom SMTP** (Resend or Postmark). Supabase locks email templates behind it, and the six-digit code only appears in the email once `{{ .Token }}` is in the template. Until then sign-in works by tapped link in a browser only, not inside the installed iPhone app. Steps in `SUPABASE-SETUP.md`.
+1. ~~Custom SMTP~~ **Done Sep 4**: Resend + thefreemancup.com, code-in-email sign-in verified on the installed iPhone app. Details in `SUPABASE-SETUP.md`.
 2. **Seven real emails.** Player rows still carry `@example.com` for everyone but Kyle. Each needs a pre-created auth user (signups are off). Devin and Matt have `auth_uid` bound to test accounts; clear before claiming.
 3. **Two-phone test.** Sign in as two players, Switch the scorer, score a hole in airplane mode, come back online, watch it sync. Nothing here has been exercised with two real devices yet.
 

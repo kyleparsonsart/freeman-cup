@@ -29,6 +29,16 @@ Do these in order. Items 1–3 now; 4–6 before invites go out Sep 27.
    the redirect list. Until this is set, sign-in links bounce to
    localhost:3000 (done Aug 30).
 
+1c. **Custom SMTP — done Sep 4.** Resend (domain thefreemancup.com,
+   verified; sending-access API key), Supabase → Authentication →
+   Emails → SMTP Settings: sender `no-reply@thefreemancup.com` /
+   "The Freeman Cup", host `smtp.resend.com`, port 465, username
+   `resend`, password = the Resend API key. Email OTP Length set to
+   **6** under Sign In / Providers → Email (project default was 8;
+   the app's code field expects 6). Magic Link template carries
+   `{{ .Token }}` + `{{ .ConfirmationURL }}`. Verified end to end on
+   the installed iPhone app: typed code signs in, no Safari.
+
 2. **Turn signups off.** Authentication → Sign In / Providers → Email:
    disable "Allow new users to sign up". Sign-in emails then only go to
    auth users that already exist (the 8 test users, later the real 8).
