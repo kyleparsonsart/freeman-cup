@@ -95,12 +95,14 @@ The styled sign-in email lives at `emails/signin-code.html`. To install it:
 4. Replace the message body with the full contents of `emails/signin-code.html` (it keeps `{{ .Token }}` in two places: the hidden preview line and the code box).
 5. Save, then request a code from the app to test.
 
-Final design (Sep 3, after on-device Gmail iOS testing): the masthead is
-ink green with the brass badge, gradient-locked (safe because it holds no
-text; Gmail defeats locks only by inverting text). The body ships light in
-an app-hue green so Gmail dark inverts it into a near-app dark green:
-dark phones get dark, light phones get light. Apple Mail shows the light
-body regardless of theme (it never inverts colored emails); accepted.
+Final design (Sep 3, after four on-device Gmail iOS tests): the masthead
+is ink green with the brass badge, gradient-locked (safe because it holds
+no text; Gmail defeats locks only by inverting text). The body is the
+app's ink green. Gmail dark inverts dark emails to pale AND leaves light
+emails light, so a light body never renders dark anywhere; given that,
+the source design is the brand one. Apple Mail and Gmail light show the
+full ink green; Gmail dark shows the locked green masthead over a pale
+inverted body.
 Assets: email-badge.png (brass), email-jug-mid.png (mid green #75897F),
 both under public/email/. Blend-mode and full-page lock hacks were tried
 and are defeated by 2026 Gmail; do not resurrect them.
