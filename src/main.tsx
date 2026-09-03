@@ -10,16 +10,15 @@ import { applyTheme, getTheme } from './lib/theme'
 // theme before first paint; dark unless this device chose light
 applyTheme(getTheme())
 
-// iOS standalone can leave 100dvh stuck at a Safari-chrome-reduced
-// height (the tab bar floats). Measure the real viewport instead and
-// keep it current.
-const setAppHeight = () => {
-  document.documentElement.style.setProperty('--app-h', `${window.innerHeight}px`)
+// iOS standalone scrolls the whole window when the keyboard opens and
+// doesn't always put it back — the app frame is position:fixed so that
+// scroll can't move it, and this guard snaps any leftover offset home.
+const pin = () => {
+  if (window.scrollX || window.scrollY) window.scrollTo(0, 0)
 }
-setAppHeight()
-window.addEventListener('resize', setAppHeight)
-window.addEventListener('orientationchange', setAppHeight)
-window.visualViewport?.addEventListener('resize', setAppHeight)
+window.addEventListener('focusout', pin)
+window.addEventListener('orientationchange', pin)
+window.visualViewport?.addEventListener('resize', pin)
 
 const isDesignSystem = location.pathname.replace(/\/+$/, '') === '/designsystem'
 

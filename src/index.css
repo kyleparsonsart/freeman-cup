@@ -22,10 +22,10 @@ input,select{font-family:inherit;color:inherit;background:none;border:none}
 :focus-visible{outline:2px solid var(--brass);outline-offset:2px;border-radius:2px}
 button:focus:not(:focus-visible),button:active{outline:none}
 
-.phone{width:100%;height:var(--app-h,100dvh);background:var(--ink);
-  position:relative;overflow:hidden;display:flex;flex-direction:column}
+.phone{position:fixed;inset:0;background:var(--ink);
+  overflow:hidden;display:flex;flex-direction:column}
 @media(min-width:520px) and (min-height:820px){
-  .phone{max-width:420px;height:860px;border-radius:34px;box-shadow:0 0 0 10px #050B08,0 30px 70px rgba(0,0,0,.7)}}
+  .phone{position:relative;inset:auto;width:100%;max-width:420px;height:860px;border-radius:34px;box-shadow:0 0 0 10px #050B08,0 30px 70px rgba(0,0,0,.7)}}
 
 .hd{padding:16px 18px 14px;background:transparent;border:none;display:flex;
   align-items:flex-start;justify-content:space-between;gap:12px}
