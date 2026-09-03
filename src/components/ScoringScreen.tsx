@@ -710,18 +710,24 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
         </>
       )}
 
-      {/* The card-in drawer: the scorer's handshake at the end of the day */}
-      <div className={`scrim hi${drawerOpen ? ' on' : ''}`} onClick={() => setDrawerOpen(false)} />
-      <div className={`drawer cardin${drawerOpen ? ' on' : ''}`} role="dialog" aria-modal="true" aria-label="Card in">
-        <div className="dh" />
-        <CardDrawer
-          gms={gms}
-          session={s}
-          pending={pending}
-          blockedCount={gBlocked.length}
-          onClose={() => setDrawerOpen(false)}
-        />
-      </div>
+      {/* The card-in drawer: the scorer's handshake at the end of the day.
+          Mounted only while open — parked offscreen its shadow used to
+          bleed a smudge over the tab bar. */}
+      {drawerOpen && (
+        <>
+          <div className="scrim hi on rise" onClick={() => setDrawerOpen(false)} />
+          <div className="drawer cardin on" role="dialog" aria-modal="true" aria-label="Card in">
+            <div className="dh" />
+            <CardDrawer
+              gms={gms}
+              session={s}
+              pending={pending}
+              blockedCount={gBlocked.length}
+              onClose={() => setDrawerOpen(false)}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }

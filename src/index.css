@@ -969,3 +969,10 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .cisync.warn{color:var(--red)}
 .cisync svg{width:16px;height:16px;flex:none}
 .cidone{margin-top:14px}
+
+/* the drawer mounts only when open, so it enters by keyframe, not
+   transition (a parked drawer's shadow smudged the tab bar) */
+.drawer.cardin.on{animation:drawerUp .3s cubic-bezier(.32,.72,0,1)}
+.scrim.rise{animation:scrimIn .25s ease}
+@keyframes drawerUp{from{transform:translateY(101%)}to{transform:translateY(0)}}
+@keyframes scrimIn{from{opacity:0}to{opacity:1}}
