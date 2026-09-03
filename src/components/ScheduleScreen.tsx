@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { calc, roundState, half, P, CFG, type Match, type Session } from '../lib/scoring';
 import Scorecard from './Scorecard';
-import { TIEBREAK, type MomentsState } from '../lib/moments';
+import { mvpBoard, roundRaces, relLabel } from '../lib/standings';
+import type { MomentsState } from '../lib/moments';
 import type { EventData } from '../hooks/useEventData';
 
 const fn = (n?: string | null) => (n || '').split(' ')[0];
@@ -12,13 +13,12 @@ export default function ScheduleScreen({ data, moments = null, onMoment }: {
   moments?: MomentsState | null;
   onMoment?: (key: string) => void;
 }) {
-  const { scoringSessions: sessions, scoringMatches: matches, players, teams } = data;
+  const { scoringSessions: sessions, scoringMatches: matches } = data;
   // which scorecards are open; cards in the live round open by default
   const [cards, setCards] = useState<Record<string, boolean>>({});
   const isOpen = (m: Match, st: string) => cards[m.id] ?? st === 'live';
 
   const days = [...new Set(sessions.map(x => x.day))];
-  const T = matches.length;
 
   return (
     <>
@@ -50,41 +50,57 @@ export default function ScheduleScreen({ data, moments = null, onMoment }: {
         );
       })}
 
-      <div className="sh"><h2>Rosters</h2><span className="meta">Index</span></div>
-      <div className="roster">
-        {(['a', 'b'] as const).map(side => {
-          const team = teams.find(t => t.side === side);
-          const ps = players.filter(p => p.team_id === team?.id).sort((x, y) => x.handicap_index - y.handicap_index);
-          return (
-            <div key={side} className={`rcol ${side}`}>
-              <h4>{team?.name}</h4>
-              {ps.map(p => (
-                <div key={p.id} className="pl">
-                  <span>{fn(p.name)}{p.is_captain && <span className="cap">C</span>}</span>
-                  <span className="hc">{p.handicap_index}</span>
-                </div>
-              ))}
-            </div>
-          );
-        })}
-      </div>
+      <TheRaces sessions={sessions} matches={matches} />
+    </>
+  );
+}
 
-      <div className="sh"><h2>If we finish level</h2></div>
-      <div style={{ padding: '0 18px 2px', fontSize: 15, color: 'var(--moss)', lineHeight: 1.55 }}>
-        {Math.floor(T / 2)}-{Math.floor(T / 2)} goes to the{' '}
-        <b style={{ color: 'var(--bone)' }}>{TIEBREAK.name}</b> on the {TIEBREAK.where}.
-        Captains only. Three holes, stroke play, putt until it drops. Lowest total takes the jug.
-        Hole two is played from the fringe, putter only.
+/**
+ * The races: the MVP board and Player of the Round, in place of the old
+ * rosters. Net against par, own-ball rounds, full cards only — a short
+ * card stays on the board, struck through, so the missing byes have a
+ * face.
+ */
+function TheRaces({ sessions, matches }: { sessions: Session[]; matches: Match[] }) {
+  const board = mvpBoard(sessions, matches);
+  const races = roundRaces(sessions, matches);
+  return (
+    <>
+      <div className="sh"><h2>The races</h2><span className="meta">Net against par</span></div>
+      <div className="racehint">
+        MVP of the Freeman Cup: lowest net across the own-ball rounds.
+        Full cards only — finish your byes or fall off the board.
       </div>
-      <div className="stations">
-        {TIEBREAK.stations.map((x, n) => (
-          <div key={n} className="stn">
-            <span className="sh3">Hole {n + 1}</span>
-            <span className="sd">{x.d}<i>ft</i></span>
-            <span className="sn">{x.n}</span>
-          </div>
-        ))}
-      </div>
+      {board.length === 0 ? (
+        <div className="racehint" style={{ color: 'var(--moss-dim)' }}>
+          The board opens with the first cards on Thursday.
+        </div>
+      ) : (
+        <div className="mvpboard">
+          {board.map((r, i) => (
+            <div key={r.key} className={`mvprow${r.eligible ? '' : ' off'}`}>
+              <span className="rk">{r.eligible ? i + 1 : '–'}</span>
+              <span className={`nm4 ${r.side}`}>{r.name}</span>
+              <span className="rd2">{r.eligible ? `${r.rounds} round${r.rounds === 1 ? '' : 's'}` : 'card short'}</span>
+              <span className="net">{relLabel(r.rel)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="sh"><h2>Player of the round</h2><span className="meta">The ball marker</span></div>
+      {races.map(r => (
+        <div key={r.roundId} className={`potr${r.state === 'final' ? '' : ' up'}`}>
+          <span className="r3">{r.rd} · {r.course}</span>
+          <span className="w3">
+            {r.winner
+              ? <><b className={r.winner.side}>{r.winner.name}</b> · {relLabel(r.winner.rel)} net</>
+              : r.state === 'live' ? 'In play'
+              : r.state === 'upcoming' ? 'To come'
+              : 'No full cards'}
+          </span>
+        </div>
+      ))}
     </>
   );
 }

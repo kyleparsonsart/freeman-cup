@@ -342,7 +342,7 @@ body.board-on .body{
 .hnav .hnc .hh2{font-size:13px;color:var(--moss-dim);letter-spacing:.008em}
 
 /* read-only is a capability, not a visual state: same colours, no taps */
-.ro{pointer-events:none}
+.ro{cursor:default}
 .brow{padding:14px 0 0}
 .brow:last-child{padding-bottom:2px}
 .btop{display:flex;align-items:center;gap:10px;margin:0 14px 10px}
@@ -976,3 +976,48 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .scrim.rise{animation:scrimIn .25s ease}
 @keyframes drawerUp{from{transform:translateY(101%)}to{transform:translateY(0)}}
 @keyframes scrimIn{from{opacity:0}to{opacity:1}}
+
+/* ============ the player's week (Sep 3 2026) ============
+   Three fixes from walking the week as a non-scorer: taps answered
+   with who has the pencil, The races on Schedule (in place of the old
+   rosters and tiebreak explainer), and the pre-round match brief. */
+
+/* who has the pencil — answers a spectator's tap, then fades */
+.pencil{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid var(--line);
+  background:var(--ink-3);font-size:13.5px;color:var(--moss);animation:pencilIn .2s ease}
+.pencil svg{width:15px;height:15px;flex:none;color:var(--brass)}
+.pencil b{color:var(--bone)}
+@keyframes pencilIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* the races */
+.racehint{padding:0 18px 12px;font-size:13px;color:var(--moss);line-height:1.55}
+.mvpboard{margin:0 18px 6px;border:1px solid var(--line)}
+.mvprow{display:flex;align-items:baseline;gap:12px;padding:10px 13px;border-bottom:1px solid var(--line);font-size:15px}
+.mvprow:last-child{border-bottom:none}
+.mvprow .rk{font-family:var(--num);font-weight:600;font-size:15px;color:var(--moss-dim);width:18px;flex:none}
+.mvprow .nm4{font-family:var(--display);font-size:17px;flex:1;font-synthesis:none;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mvprow .nm4.a{color:var(--red)} .mvprow .nm4.b{color:var(--blue)}
+.mvprow .rd2{font-size:12px;color:var(--moss-dim);flex:none}
+.mvprow .net{font-family:var(--num);font-weight:600;font-size:18px;color:var(--bone);width:44px;text-align:right;flex:none}
+.mvprow.off{opacity:.5}
+.mvprow.off .net{text-decoration:line-through}
+.potr{display:flex;justify-content:space-between;gap:10px;padding:11px 18px;border-bottom:1px solid var(--line);font-size:14px}
+.potr .r3{color:var(--moss)}
+.potr .w3{color:var(--bone);flex:none} .potr .w3 b.a{color:var(--red)} .potr .w3 b.b{color:var(--blue)}
+.potr.up .w3{color:var(--moss-dim)}
+
+/* the pre-round match brief */
+.mymatch{margin:14px;border:1px solid var(--line);border-top:2px solid var(--brass);background:var(--ink-2);padding:16px}
+.mmk{font-family:var(--clock);font-size:13.5px;letter-spacing:.05em;color:var(--brass);margin-bottom:8px}
+.mmvs{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;font-family:var(--display);font-size:26px;
+  letter-spacing:-.015em;font-synthesis:none;line-height:1.15}
+.mmvs .a{color:var(--red)} .mmvs .b{color:var(--blue)}
+.mmvs .vv{font-family:var(--num);font-size:15px;color:var(--moss-dim)}
+.mml{font-size:13.5px;color:var(--moss);margin:6px 0 12px}
+.mmst{display:flex;gap:8px;align-items:baseline;font-size:14px;color:var(--moss);line-height:1.5;
+  border-top:1px solid var(--line);padding-top:12px}
+.mmst b{color:var(--bone)}
+.mmst .ldot{width:8px;height:8px;border-radius:50%;background:var(--brass);flex:none}
+.mmsc{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--moss-dim);margin-top:10px}
+.mmsc svg{width:14px;height:14px;flex:none}

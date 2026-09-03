@@ -487,3 +487,64 @@ export function CardDrawerDemo() {
     </div>
   );
 }
+
+/* ---------------- the player's week ---------------- */
+
+export function PencilDemo() {
+  return (
+    <div className="pencil" style={{ animation: 'none' }}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>
+      </svg>
+      <span><b>Griffin</b> has the pencil — scores go in from his phone.</span>
+    </div>
+  );
+}
+
+export function RacesDemo() {
+  const rows = [
+    ['1', 'Justin', 'b', '3 rounds', '−4', ''],
+    ['2', 'Griffin', 'a', '3 rounds', '−2', ''],
+    ['3', 'Kyle', 'b', '3 rounds', '+3', ''],
+    ['–', 'Devin', 'a', 'card short', '+2', ' off'],
+  ] as const;
+  return (
+    <>
+      <div className="mvpboard" style={{ margin: 0 }}>
+        {rows.map(([rk, nm, sd, rd, net, off]) => (
+          <div key={nm} className={`mvprow${off}`}>
+            <span className="rk">{rk}</span>
+            <span className={`nm4 ${sd}`}>{nm}</span>
+            <span className="rd2">{rd}</span>
+            <span className="net">{net}</span>
+          </div>
+        ))}
+      </div>
+      <div className="potr" style={{ paddingLeft: 0, paddingRight: 0 }}>
+        <span className="r3">Round 1 · Mammoth Dunes</span>
+        <span className="w3"><b className="a">Griffin</b> · −3 net</span>
+      </div>
+      <div className="potr up" style={{ paddingLeft: 0, paddingRight: 0, borderBottom: 'none' }}>
+        <span className="r3">Round 4 · Sedge Valley</span>
+        <span className="w3">In play</span>
+      </div>
+    </>
+  );
+}
+
+export function MatchBriefDemo() {
+  return (
+    <div className="mymatch" style={{ margin: 0 }}>
+      <div className="mmk">Your match · off at 10:10am</div>
+      <div className="mmvs"><span className="a">Griffin</span><span className="vv">V</span><span className="b">Kyle</span></div>
+      <div className="mml">Singles · 18 holes · Sedge Valley</div>
+      <div className="mmst"><i className="ldot" /><span>You get a shot on <b>3, 7 and 12</b>. Kyle plays off scratch.</span></div>
+      <div className="mmsc">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>
+        </svg>
+        Griffin keeps the card for your group.
+      </div>
+    </div>
+  );
+}

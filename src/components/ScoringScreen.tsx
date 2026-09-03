@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { enqueueHoleWrite, getQueuedWrites, onQueueChange, dismissBlocked, type QueuedHoleWrite } from '../lib/writeQueue';
 import { groupMatches, openHoles, holesShort, byeProgress } from '../lib/card';
 import {
-  calc, derive, settle, holeComplete, getsStroke, runningAt, headline,
+  calc, derive, settle, holeComplete, getsStroke, strokeMap, runningAt, headline,
   holeKeys, missingIn, initials, setContext,
   CFG, P,
   type Match,
@@ -341,6 +341,19 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
 
   const [subErr, setSubErr] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // A spectator's tap is answered, not swallowed: say who has the pencil.
+  const [pencil, setPencil] = useState(0);
+  useEffect(() => {
+    if (!pencil) return;
+    const t = setTimeout(() => setPencil(0), 2400);
+    return () => clearTimeout(t);
+  }, [pencil]);
+  const pokePencil = () => setPencil(Date.now());
+
+  // Before the round goes live the card is a brief, not a dead scoreboard;
+  // the scorer and the commissioner can still open the real thing early.
+  const [peek, setPeek] = useState(false);
   const submitCard = async () => {
     if (!dbTg) return;
     setSubErr(null);
@@ -439,6 +452,21 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
   const A = CFG.teams.a.short;
   const B = CFG.teams.b.short;
 
+  // Before the round goes live: the brief instead of a dead scoreboard
+  if (s.state === 'upcoming' && r.played === 0 && !peek) {
+    return (
+      <div className={`hero${tabbed ? ' tabbed' : ''}`} ref={heroRef}>
+        <MatchBrief
+          m={m}
+          session={s}
+          data={data}
+          scorerKey={scorerKey}
+          onPeek={iAmScorer || data.meIsCommissioner ? () => setPeek(true) : undefined}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className={`hero${tabbed ? ' tabbed' : ''}`} ref={heroRef}>
       {/* Hole navigator */}
@@ -462,6 +490,21 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
           aria-label="Next hole"
         >&#8250;</button>
       </div>
+
+      {pencil > 0 && (
+        <div className="pencil" key={pencil}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>
+          </svg>
+          {submitted && !data.meIsCommissioner ? (
+            <span>Card's in — only <b>{commishName}</b> can edit now.</span>
+          ) : scorerKey ? (
+            <span><b>{fn(P[scorerKey]?.n) || 'The scorer'}</b> has the pencil — scores go in from his phone.</span>
+          ) : (
+            <span>Nobody has the pencil yet — <b>{commishName}</b> names a scorer in Settings.</span>
+          )}
+        </div>
+      )}
 
       {/* A hole left behind: one yellow bar, one tap to go fix it */}
       {!viewOnly && !submitted && gaps.length > 0 && (
@@ -498,6 +541,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
               onPointerDown={tap.onPointerDown}
               onClick={e => {
                 if (!tap.isTap(e)) return;
+                if (viewOnly) { pokePencil(); return; }
                 handleOverride(w);
               }}
             >
@@ -593,7 +637,8 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
                     onPointerDown={tap.onPointerDown}
                     onClick={e => {
                       if (!tap.isTap(e)) return;
-                      if (!viewOnly && !on) rippleAt(`tg:${k}:${val}`, e.currentTarget, e.clientX, e.clientY); // not when clearing
+                      if (viewOnly) { pokePencil(); return; }
+                      if (!on) rippleAt(`tg:${k}:${val}`, e.currentTarget, e.clientX, e.clientY); // not when clearing
                       handleScoreSet(k, val);
                     }}
                   >
@@ -884,6 +929,81 @@ function CardDrawer({ gms, session: s, pending, blockedCount, onClose }: {
           : `Still syncing ${pending}…`}
       </div>
       <button className="abtn cidone" onClick={onClose}>Done — the card is in</button>
+    </div>
+  );
+}
+
+
+/** '3, 7 and 12' */
+function listJoin(xs: number[]): string {
+  if (xs.length <= 1) return xs.join('');
+  return `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`;
+}
+
+/**
+ * The pre-round brief: who you play, when you're off, where the shots
+ * land — in place of a dead scoreboard until the round goes live.
+ */
+function MatchBrief({ m, session: s, data, scorerKey, onPeek }: {
+  m: Match;
+  session: EventData['scoringSessions'][0];
+  data: EventData;
+  scorerKey: string;
+  onPeek?: () => void;
+}) {
+  const mine = !!data.meKey && (m.a.includes(data.meKey) || m.b.includes(data.meKey));
+  const letter = String.fromCharCode(65 + Math.max(0, m.g));
+  const tee = (s.tees[m.g] || '').replace(/\s*(AM|PM)/i, x => x.trim().toLowerCase());
+  const nm = (ks: string[]) => ks.map(k => fn(P[k]?.n) || k).join(' / ');
+
+  const keys = s.fmt === 'Foursomes' ? ['a', 'b'] : [...m.a, ...m.b];
+  const sm = strokeMap(m);
+  const label = (k: string) =>
+    k === data.meKey ? 'You' : k === 'a' || k === 'b' ? `The ${CFG.teams[k].name}` : (fn(P[k]?.n) || k);
+  const holesFor = (k: string) => {
+    const out: number[] = [];
+    for (let i = 0; i < s.holes; i++) if (getsStroke(m, k, i)) out.push(i + 1);
+    return out;
+  };
+  const withShots = keys.filter(k => (sm[k] || 0) > 0);
+  const scratch = keys.filter(k => !(sm[k] || 0));
+  const verb = (k: string) => (k === data.meKey || k === 'a' || k === 'b') ? 'get' : 'gets';
+
+  return (
+    <div className="mymatch">
+      <div className="mmk">{mine ? 'Your match' : `Group ${letter}`} · off at {tee || 'TBD'}</div>
+      <div className="mmvs">
+        <span className="a">{nm(m.a)}</span>
+        <span className="vv">V</span>
+        <span className="b">{nm(m.b)}</span>
+      </div>
+      <div className="mml">{s.fmt} · {s.holes} holes · {s.course}</div>
+      <div className="mmst">
+        <i className="ldot" />
+        <span>
+          {withShots.length === 0
+            ? 'Straight up — no shots either way.'
+            : <>
+                {withShots.map((k, ix) => (
+                  <span key={k}>{ix > 0 ? ' ' : ''}{label(k)} {verb(k)} a shot on <b>{listJoin(holesFor(k))}</b>.</span>
+                ))}
+                {scratch.length > 0 && ` ${scratch.map(label).join(' and ')} play${scratch.length === 1 && scratch[0] !== data.meKey ? 's' : ''} off scratch.`}
+              </>}
+        </span>
+      </div>
+      <div className="mmsc">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>
+        </svg>
+        {scorerKey
+          ? `${fn(P[scorerKey]?.n) || 'Somebody'} keeps the card for ${mine ? 'your' : 'this'} group.`
+          : 'No scorer named yet.'}
+      </div>
+      {onPeek && (
+        <button className="aghost" style={{ marginTop: 12 }} onClick={onPeek}>
+          Open the scorecard anyway
+        </button>
+      )}
     </div>
   );
 }

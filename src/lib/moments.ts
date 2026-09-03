@@ -10,9 +10,10 @@
  * day recaps in the feed and on the Schedule day rows.
  */
 import {
-  calc, getsStroke, P, CFG,
+  calc, P, CFG,
   type Match, type Session,
 } from './scoring';
+import { mvp, relLabel } from './standings';
 import type { DbMatchHole, DbPlayer, DbTeam, ShootoutJson } from './types';
 
 /* The Captains Shootout, as decided. */
@@ -223,40 +224,16 @@ export function deriveMoments(input: MomentsInput): MomentsState {
 }
 
 /**
- * MVP of the Freeman Cup: lowest cumulative net against par over the
- * rounds where players hold their own ball (four-ball and singles;
- * foursomes cards belong to the team). Only players with the full set
- * of scored holes are eligible, so a missing card can't win it.
+ * MVP of the Freeman Cup: the top of the standings board (see
+ * lib/standings.ts — net against par, own-ball rounds, full cards only).
  */
 function mvpOf(sessions: Session[], matches: Match[]): { name: string; line: string } | null {
-  const acc: Record<string, { rel: number; holes: number; rounds: Set<string> }> = {};
-  matches.forEach(m => {
-    const s = sessions.find(x => x.id === m.s);
-    if (!s || s.fmt === 'Foursomes') return;
-    [...m.a, ...m.b].forEach(k => {
-      m.hs.forEach((h, i) => {
-        const g = h.sc[k];
-        if (typeof g !== 'number') return;
-        const e = (acc[k] = acc[k] || { rel: 0, holes: 0, rounds: new Set<string>() });
-        e.rel += g - getsStroke(m, k, i) - (s.par[i] ?? 4);
-        e.holes++;
-        e.rounds.add(s.id);
-      });
-    });
-  });
-  const max = Math.max(0, ...Object.values(acc).map(e => e.holes));
-  if (!max) return null;
-  let best: string | null = null;
-  Object.entries(acc).forEach(([k, e]) => {
-    if (e.holes !== max) return;
-    if (best === null || e.rel < acc[best].rel) best = k;
-  });
-  if (best === null) return null;
-  const e = acc[best];
-  const rel = e.rel === 0 ? 'even net' : e.rel > 0 ? `+${e.rel} net` : `−${-e.rel} net`;
-  const n = e.rounds.size;
+  const top = mvp(sessions, matches);
+  if (!top) return null;
+  const rel = top.rel === 0 ? 'even net' : `${relLabel(top.rel)} net`;
+  const n = top.rounds;
   const span = n === 1 ? 'the round' : n === 2 ? 'two rounds' : n === 3 ? 'three rounds' : `${n} rounds`;
-  return { name: fn(P[best]?.n) || best, line: `${rel} across ${span}` };
+  return { name: top.name, line: `${rel} across ${span}` };
 }
 
 /* ---- once per device ---- */

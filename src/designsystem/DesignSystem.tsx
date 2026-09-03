@@ -476,6 +476,21 @@ export default function DesignSystem() {
               note={<>Submit hands the card in — the group's scores lock for everyone but the commissioner — and the drawer confirms it: results, day totals, an explicit everything-synced check. The feed logs the card coming home.</>}>
               <D.CardDrawerDemo />
             </D.Demo>
+
+            <D.Demo title="Who has the pencil" classes={['.pencil']} stage="plain"
+              note={<>A spectator's tap is answered, not swallowed: this line appears under the hole header for a couple of seconds. Writes stay guarded client- and server-side.</>}>
+              <D.PencilDemo />
+            </D.Demo>
+
+            <D.Demo title="The races" classes={['.mvpboard', '.mvprow', '.mvprow.off', '.potr']} stage="pad"
+              note={<>On Schedule in place of the old rosters: the MVP board (net against par, own-ball rounds) with short cards struck through but shown, and Player of the Round per finished round — the ball marker.</>}>
+              <D.RacesDemo />
+            </D.Demo>
+
+            <D.Demo title="Pre-round match brief" classes={['.mymatch', '.mmvs', '.mmst']} stage="pad"
+              note={<>Until the round goes live, the Scoring tab shows the brief instead of a dead scoreboard: opponent, your group's tee time, where the shots land (straight from strokeMap), who keeps the card. The scorer and commissioner can open the real card early.</>}>
+              <D.MatchBriefDemo />
+            </D.Demo>
           </section>
 
           {/* ---------------- Moments ---------------- */}
