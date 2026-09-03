@@ -5,6 +5,7 @@ import { TIEBREAK, type MomentsState } from '../lib/moments';
 import { deskFor, quietMins, type DeskState } from '../lib/desk';
 import type { Acting } from '../lib/view';
 import type { EventData } from '../hooks/useEventData';
+import { IconFlagCheckered } from './icons';
 import type { DbPlayer } from '../lib/types';
 
 interface Props {
@@ -247,6 +248,14 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
                 onLive={() => requestRoundState(desk.round.id, 'live')}
                 onComplete={() => requestRoundState(desk.round.id, 'final')}
               />
+            )}
+            {!desk && data.scoringSessions.length > 0 && data.scoringSessions.every(x => x.state === 'final') && (
+              <div className="empty">
+                <IconFlagCheckered />
+                <b>All four rounds in the book</b>
+                The desk stands down. Reopen a card from Setup if anything
+                needs correcting.
+              </div>
             )}
             {desk && finalGuard?.roundId === desk.round.id && (
               <div className="guard">

@@ -4,6 +4,7 @@ import { useEventData } from './hooks/useEventData';
 import ScoringScreen, { currentRound } from './components/ScoringScreen';
 import PullSync from './components/PullSync';
 import SyncBanner from './components/SyncBanner';
+import { IconCloudSlash, IconArmchair } from './components/icons';
 import { half, roundState } from './lib/scoring';
 import { deriveMoments, nextUnseen, markSeen } from './lib/moments';
 import { getActing, setActing, type Acting } from './lib/view';
@@ -152,6 +153,7 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
         <Header />
         <section className="view on">
           <div className="auth">
+            <div className="authic"><IconArmchair /></div>
             <h2>No seat for this email</h2>
             <p className="asub">
               You're signed in, but this email isn't on the roster.
@@ -210,8 +212,11 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
         )}
         {error && (
           <div className="empty">
-            <b>Error</b>
-            {error}
+            <IconCloudSlash />
+            <b>Couldn’t reach the clubhouse</b>
+            Check your signal, then pull down to try again. Anything you
+            scored is safe on this phone.
+            <span className="errdetail">{error}</span>
           </div>
         )}
         {data && tab === 'scoring' && (

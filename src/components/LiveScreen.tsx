@@ -3,6 +3,7 @@ import CupStrip from './CupStrip';
 import { buildFeed, clock, type FeedItem } from '../lib/feed';
 import { half, CFG } from '../lib/scoring';
 import type { MomentsState } from '../lib/moments';
+import { IconBinoculars } from './icons';
 import type { EventData } from '../hooks/useEventData';
 
 /** `**bold**` runs in feed text become <b>. */
@@ -93,8 +94,10 @@ export default function LiveScreen({ data, moments = null, onMoment, strip = tru
       )}
       {!days.length ? (
         <div className="empty">
+          <IconBinoculars />
           <b>Quiet out there</b>
-          Every hole won, every match that turns, and every scorer switch lands here.
+          Every hole won, every match that turns, and every card handed in
+          lands here the moment it happens.
         </div>
       ) : days.map((g, i) => {
         const [dow, ...rest] = g.day.split(' ');

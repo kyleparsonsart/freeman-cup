@@ -8,6 +8,7 @@ import {
   CFG, P,
   type Match,
 } from '../lib/scoring';
+import { IconGolf } from './icons';
 import type { EventData } from '../hooks/useEventData';
 
 /** Display rule: first names only, everywhere. */
@@ -67,8 +68,10 @@ export default function ScoringScreen({ data, reload }: Props) {
   if (!todayRound || !hero) {
     return (
       <div className="empty">
-        <b>Cup complete</b>
-        Nothing left to play.
+        <IconGolf />
+        <b>Nothing left to play</b>
+        All four rounds are in the book. The finale and the week live on
+        the Live tab.
       </div>
     );
   }

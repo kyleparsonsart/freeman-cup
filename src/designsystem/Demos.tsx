@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import CupStrip from '../components/CupStrip';
+import { IconBinoculars } from '../components/icons';
 import Scorecard from '../components/Scorecard';
 import { MATCHES } from './sample';
 
@@ -351,8 +352,10 @@ export function Inputs() {
 export function Empty() {
   return (
     <div className="empty">
+      <IconBinoculars />
       <b>Quiet out there</b>
-      Every hole won, every match that turns, and every scorer switch lands here.
+      Every hole won, every match that turns, and every card handed in
+      lands here the moment it happens.
     </div>
   );
 }

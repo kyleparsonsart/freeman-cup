@@ -1124,3 +1124,13 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
   color:var(--moss);border-bottom:1px solid var(--line);animation:syncbarIn .25s ease}
 .syncbar.warn{background:rgba(216,169,63,.14);color:var(--brass);border-bottom-color:rgba(216,169,63,.5);cursor:pointer}
 @keyframes syncbarIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+
+/* ============ empty states wear duotone (Sep 4 2026) ============
+   Phosphor duotone icons on every zero state: the back layer takes a
+   whisper of brass, the front takes moss-dim — furniture, not
+   decoration. Copy says what will appear here, and when. */
+.empty .ph{width:40px;height:40px;color:var(--moss-dim);display:block;margin:0 auto 12px}
+.ph .duo{fill:var(--brass);opacity:.26}
+.empty .errdetail{display:block;margin-top:10px;font-size:11.5px;color:var(--moss-dim);font-family:var(--clock);letter-spacing:.02em}
+.authic .ph{width:40px;height:40px;color:var(--moss-dim);display:block;margin:0 0 14px}
+.authic .ph .duo{fill:var(--brass);opacity:.26}

@@ -448,7 +448,8 @@ export default function DesignSystem() {
               <D.Inputs />
             </D.Demo>
 
-            <D.Demo title="Empty state" classes={['.empty', '.empty b']} stage="board">
+            <D.Demo title="Empty state" classes={['.empty', '.empty .ph', '.ph .duo']} stage="board"
+              note={<>Every zero state wears a Phosphor duotone icon: back layer a whisper of brass, front moss-dim. The copy says what will appear here and when, never just that nothing is here.</>}>
               <D.Empty />
             </D.Demo>
 

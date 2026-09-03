@@ -3,6 +3,7 @@ import { calc, roundState, half, P, CFG, type Match, type Session } from '../lib
 import Scorecard from './Scorecard';
 import { mvpBoard, roundRaces, relLabel } from '../lib/standings';
 import type { MomentsState } from '../lib/moments';
+import { IconMedal } from './icons';
 import type { EventData } from '../hooks/useEventData';
 
 const fn = (n?: string | null) => (n || '').split(' ')[0];
@@ -67,15 +68,19 @@ function TheRaces({ sessions, matches }: { sessions: Session[]; matches: Match[]
   return (
     <>
       <div className="sh"><h2>The races</h2><span className="meta">Net against par</span></div>
+      {board.length === 0 ? (
+        <div className="empty">
+          <IconMedal />
+          <b>The board opens Thursday</b>
+          First full cards start the race — lowest net against par takes
+          the marker, and the MVP.
+        </div>
+      ) : (<>
       <div className="racehint">
         MVP of the Freeman Cup: lowest net across the own-ball rounds.
         Full cards only — finish your byes or fall off the board.
       </div>
-      {board.length === 0 ? (
-        <div className="racehint" style={{ color: 'var(--moss-dim)' }}>
-          The board opens with the first cards on Thursday.
-        </div>
-      ) : (
+      {(
         <div className="mvpboard">
           {board.map((r, i) => (
             <div key={r.key} className={`mvprow${r.eligible ? '' : ' off'}`}>
@@ -86,7 +91,7 @@ function TheRaces({ sessions, matches }: { sessions: Session[]; matches: Match[]
             </div>
           ))}
         </div>
-      )}
+      )}</>)}
 
       <div className="sh"><h2>Player of the round</h2><span className="meta">The ball marker</span></div>
       {races.map(r => (
