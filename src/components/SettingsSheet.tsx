@@ -234,6 +234,12 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
               </label>
               <button className="aghost" onClick={signOut}>Sign out</button>
             </div>
+            <div className="hint" style={{ padding: '2px 18px 14px', color: 'var(--moss-dim)' }}>
+              Build {__BUILD_STAMP__} ·{' '}
+              {window.matchMedia('(display-mode: standalone)').matches ? 'standalone' : 'browser'} ·
+              win {window.innerWidth}×{window.innerHeight} · screen {window.screen.width}×{window.screen.height} ·
+              vv {Math.round(window.visualViewport?.height ?? 0)} · y {Math.round(window.scrollY)}
+            </div>
           </>
         )}
 
