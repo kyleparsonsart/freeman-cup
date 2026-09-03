@@ -526,8 +526,9 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
         </button>
       )}
 
-      {/* Scores the server refused: kept on this phone, shown, never silent */}
-      {!viewOnly && gBlocked.length > 0 && (
+      {/* Scores the server refused: kept on this phone, shown, never silent —
+          whatever view mode this phone is in, it wrote them */}
+      {gBlocked.length > 0 && (
         <BlockedCard rows={gBlocked} data={data} commishName={commishName} />
       )}
 

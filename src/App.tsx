@@ -3,6 +3,7 @@ import { useAuth } from './hooks/useAuth';
 import { useEventData } from './hooks/useEventData';
 import ScoringScreen, { currentRound } from './components/ScoringScreen';
 import PullSync from './components/PullSync';
+import SyncBanner from './components/SyncBanner';
 import { half, roundState } from './lib/scoring';
 import { deriveMoments, nextUnseen, markSeen } from './lib/moments';
 import { getActing, setActing, type Acting } from './lib/view';
@@ -200,6 +201,7 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
       {data && <PullSync bodyRef={bodyRef} onSync={reload} />}
       <div className="body" ref={bodyRef}>
         {header}
+        {data && <SyncBanner offline={data.offline} onOpenScoring={() => goTab('scoring')} />}
         {loading && (
           <div className="boot" aria-label="Loading">
             <span className="bootlogo" />

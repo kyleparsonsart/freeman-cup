@@ -1117,3 +1117,10 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .body{position:relative;z-index:1;background:var(--ink)}
 .body.settling{transition:transform .32s cubic-bezier(.25,.8,.35,1)}
 .tabs{position:relative;z-index:5}
+
+/* the health strip: exists only when something is wrong */
+.syncbar{position:sticky;top:0;z-index:6;display:block;width:100%;text-align:center;
+  padding:8px 14px;font-size:12.5px;letter-spacing:.02em;background:var(--ink-3);
+  color:var(--moss);border-bottom:1px solid var(--line);animation:syncbarIn .25s ease}
+.syncbar.warn{background:rgba(216,169,63,.14);color:var(--brass);border-bottom-color:rgba(216,169,63,.5);cursor:pointer}
+@keyframes syncbarIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
