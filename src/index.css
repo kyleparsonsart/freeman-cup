@@ -1105,7 +1105,7 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
    and the words pulse in a slow ripple — Trying, jug, to sync — then
    the page settles back. */
 :root{--sat:env(safe-area-inset-top,0px)}
-.pullsync{position:absolute;top:0;left:0;right:0;z-index:0;
+.pullsync{position:absolute;top:0;left:0;right:0;z-index:0;background:var(--ink);
   height:calc(var(--sat) + 78px);
   display:flex;align-items:flex-end;justify-content:center;padding-bottom:14px;pointer-events:none}
 .pullsync .pin{display:flex;align-items:center;gap:9px;opacity:0}
