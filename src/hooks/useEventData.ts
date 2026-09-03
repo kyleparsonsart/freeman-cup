@@ -95,7 +95,7 @@ async function fetchTables(): Promise<RawTables> {
     supabase.from('tee_group').select('*').order('seq'),
     supabase.from('match').select('*').order('seq'),
     supabase.from('match_hole').select('*'),
-    supabase.from('feed_event').select('*').eq('kind', 'scorer_switch').order('occurred_at', { ascending: false }),
+    supabase.from('feed_event').select('*').in('kind', ['scorer_switch', 'card_in']).order('occurred_at', { ascending: false }),
   ]);
 
   const err = e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8 || e9;
@@ -197,6 +197,7 @@ export function useEventData() {
     // Latest handoff per tee group (rows arrive newest first)
     const handoffs: Record<string, Handoff> = {};
     for (const ev of raw.switches || []) {
+      if (ev.kind !== 'scorer_switch') continue;
       const tg = ev.body.tee_group_id as string | undefined;
       if (!tg || handoffs[tg]) continue;
       handoffs[tg] = {

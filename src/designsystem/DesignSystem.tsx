@@ -451,6 +451,31 @@ export default function DesignSystem() {
             <D.Demo title="Empty state" classes={['.empty', '.empty b']} stage="board">
               <D.Empty />
             </D.Demo>
+
+            <D.Demo title="Hole left behind" classes={['.gapbar', '.gapbar .go']} stage="plain"
+              note={<>One amber bar when a hole at or before the frontier has no result; Fix now jumps to it, oldest first, across both of the group's matches. Only the scorer and the commissioner see it.</>}>
+              <D.GapbarDemo />
+            </D.Demo>
+
+            <D.Demo title="Blocked scores" classes={['.savefail', '.sfrow', '.sfdismiss']} stage="pad"
+              note={<>Scores the server refused are kept and shown, never silently dropped: the holes, the entries, the reason, and the way out. They retry on their own; Dismiss is a two-tap deliberate act.</>}>
+              <D.BlockedDemo />
+            </D.Demo>
+
+            <D.Demo title="The honest bye bar" classes={['.byebar', '.byeprog']} stage="plain"
+              note={<>The match is over, the card is not: byes feed day totals and the MVP's full-card rule.</>}>
+              <D.ByebarDemo />
+            </D.Demo>
+
+            <D.Demo title="Advance and Submit" classes={['.advbtn', '.advbtn.submit', '.advbtn.dim']} stage="pad"
+              note={<>The way forward appears where the thumb already is, once the hole has a result. On the last hole the slot is Submit scores — solid brass when the card is whole, disabled and honest while it has gaps or unsynced rows.</>}>
+              <D.AdvbtnDemo />
+            </D.Demo>
+
+            <D.Demo title="Card-in drawer" classes={['.drawer.cardin', '.cirow', '.cisync']} stage="plain"
+              note={<>Submit hands the card in — the group's scores lock for everyone but the commissioner — and the drawer confirms it: results, day totals, an explicit everything-synced check. The feed logs the card coming home.</>}>
+              <D.CardDrawerDemo />
+            </D.Demo>
           </section>
 
           {/* ---------------- Moments ---------------- */}

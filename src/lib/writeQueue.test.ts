@@ -14,7 +14,7 @@ vi.mock('./supabase', () => ({
 }));
 
 import {
-  enqueueHoleWrite, flushQueue, getQueuedWrites, overlayQueue,
+  enqueueHoleWrite, flushQueue, getQueuedWrites, overlayQueue, dismissBlocked,
   type QueuedHoleWrite, type Upserter,
 } from './writeQueue';
 
@@ -93,17 +93,70 @@ describe('flushQueue', () => {
     expect(await getQueuedWrites()).toHaveLength(1);
   });
 
-  it('drops a row the server rejects so the queue never wedges', async () => {
+  it('keeps a rejected row flagged blocked instead of dropping it', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     await enqueueHoleWrite(row(1), offline);
     await tick();
     await enqueueHoleWrite(row(2), offline);
 
-    // hole 1 is rejected (e.g. RLS after a scorer handoff), hole 2 succeeds
+    // hole 1 is refused (round locked / card handed in), hole 2 succeeds
     const spy = vi.fn(async (r: Omit<QueuedHoleWrite, 'queued_at'>) =>
       r.hole === 1 ? rejected(r) : ok(r));
     const synced = await flushQueue(spy);
     expect(synced).toBe(true);
+    const q = await getQueuedWrites();
+    expect(q).toHaveLength(1);
+    expect(q[0].hole).toBe(1);
+    expect(q[0].blocked).toBe('permission denied');
+    vi.restoreAllMocks();
+  });
+
+  it('retries blocked rows and clears them when the server relents', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    await enqueueHoleWrite(row(1), offline);
+    await flushQueue(rejected);
+    expect((await getQueuedWrites())[0].blocked).toBeTruthy();
+
+    // the commissioner unlocked: same row now lands
+    expect(await flushQueue(ok)).toBe(true);
+    expect(await getQueuedWrites()).toHaveLength(0);
+    vi.restoreAllMocks();
+  });
+
+  it('tries fresh rows before blocked ones so nothing waits behind a refusal', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    await enqueueHoleWrite(row(1), offline);
+    await flushQueue(rejected);          // hole 1 now blocked
+    await tick();
+    await enqueueHoleWrite(row(2), offline);
+
+    const calls: number[] = [];
+    const spy: Upserter = async r => { calls.push(r.hole); return r.hole === 1 ? rejected(r) : ok(r); };
+    await flushQueue(spy);
+    expect(calls).toEqual([2, 1]);       // fresh hole 2 first, blocked hole 1 after
+    const q = await getQueuedWrites();
+    expect(q.map(x => x.hole)).toEqual([1]);
+    vi.restoreAllMocks();
+  });
+
+  it('a new write to the same hole replaces its blocked row', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    await enqueueHoleWrite(row(1, { scores: { p1: 6 } }), offline);
+    await flushQueue(rejected);
+    await enqueueHoleWrite(row(1, { scores: { p1: 4 } }), offline);
+    const q = await getQueuedWrites();
+    expect(q).toHaveLength(1);
+    expect(q[0].scores).toEqual({ p1: 4 });
+    expect(q[0].blocked).toBeUndefined();
+    vi.restoreAllMocks();
+  });
+
+  it('dismissBlocked is the only way a refused row dies', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    await enqueueHoleWrite(row(1), offline);
+    await flushQueue(rejected);
+    expect(await getQueuedWrites()).toHaveLength(1);
+    await dismissBlocked('m1', 1);
     expect(await getQueuedWrites()).toHaveLength(0);
     vi.restoreAllMocks();
   });

@@ -181,8 +181,16 @@ export default function SettingsSheet({ data, moments = null, open, onClose, rel
                   <div key={tg.id} className="fld">
                     <label>
                       {r.label} · {data.scoringSessions[ri]?.tees[gi]}
-                      <span className="sub2">{gp.map(first).join(', ')}</span>
+                      <span className="sub2">
+                        {gp.map(first).join(', ')}
+                        {tg.submitted_at ? ' · Card in' : ''}
+                      </span>
                     </label>
+                    {tg.submitted_at && (
+                      <button className="aghost" onClick={() => run(supabase.rpc('reopen_card', { tg: tg.id }))}>
+                        Reopen
+                      </button>
+                    )}
                     <select
                       value={tg.scorer_player_id ?? ''}
                       onChange={e => setScorer(tg.id, e.target.value)}

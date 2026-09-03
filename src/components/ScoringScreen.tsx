@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import { enqueueHoleWrite, getQueuedWrites, onQueueChange } from '../lib/writeQueue';
+import { enqueueHoleWrite, getQueuedWrites, onQueueChange, dismissBlocked, type QueuedHoleWrite } from '../lib/writeQueue';
+import { groupMatches, openHoles, holesShort, byeProgress } from '../lib/card';
 import {
   calc, derive, settle, holeComplete, getsStroke, runningAt, headline,
   holeKeys, missingIn, initials, setContext,
@@ -93,6 +94,7 @@ export default function ScoringScreen({ data, reload }: Props) {
           data={data}
           pinned={pinned}
           setPinned={setPinned}
+          selectMatch={setHeroId}
           reload={reload}
           tabbed={tabbed}
         />
@@ -158,6 +160,7 @@ interface HeroCardProps {
   data: EventData;
   pinned: Record<string, number>;
   setPinned: (fn: (p: Record<string, number>) => Record<string, number>) => void;
+  selectMatch: (id: string) => void;
   reload: () => void;
   tabbed: boolean;
 }
@@ -195,7 +198,7 @@ function useTapGuard() {
   return { onPointerDown, isTap };
 }
 
-function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbed }: HeroCardProps) {
+function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, reload, tabbed }: HeroCardProps) {
   const r = calc(m);
   const tap = useTapGuard();
 
@@ -239,11 +242,13 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
     ) : null;
   };
   const [pending, setPending] = useState(0);
+  const [blocked, setBlocked] = useState<QueuedHoleWrite[]>([]);
 
   // How many scores are still waiting to reach the server. Online, a row
   // sits in the queue for a few hundred ms before it flushes; showing that
   // reads as flicker, so a non-zero count only appears once it has been
-  // waiting a couple of seconds. Zero clears immediately.
+  // waiting a couple of seconds. Zero clears immediately. Blocked rows —
+  // refused by the server, kept on this phone — surface immediately.
   useEffect(() => {
     let live = true;
     let timer: ReturnType<typeof setTimeout> | null = null;
@@ -251,8 +256,10 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
       getQueuedWrites().then(q => {
         if (!live) return;
         if (timer) { clearTimeout(timer); timer = null; }
-        if (q.length === 0) setPending(0);
-        else timer = setTimeout(() => { if (live) setPending(q.length); }, 2500);
+        setBlocked(q.filter(w => w.blocked));
+        const fresh = q.filter(w => !w.blocked).length;
+        if (fresh === 0) setPending(0);
+        else timer = setTimeout(() => { if (live) setPending(fresh); }, 2500);
       });
     };
     update();
@@ -282,11 +289,21 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
   // Find the scorer for this group
   const scorerKey = s.scorer[m.g];
   const iAmScorer = !!data.meKey && scorerKey === data.meKey;
-  // The commissioner can score any group
-  const viewOnly = !iAmScorer && !data.meIsCommissioner;
 
   // Find the match's tee_group_id and match_id from the DB
   const dbMatch = data.matches.find(dm => dm.id === m.id);
+  const dbTg = data.teeGroups.find(t => t.id === dbMatch?.tee_group_id);
+  const submitted = !!dbTg?.submitted_at;
+
+  // The commissioner can score any group; a handed-in card locks the rest
+  const viewOnly = (!iAmScorer && !data.meIsCommissioner) || (submitted && !data.meIsCommissioner);
+
+  // Everything this scorer carries (two matches a group at singles)
+  const gms = groupMatches(data.scoringMatches, m.s, m.g);
+  const gaps = openHoles(gms, s.holes).filter(o => !(o.matchId === m.id && o.hole === i));
+  const gBlocked = blocked.filter(w => gms.some(gm => gm.id === w.match_id));
+  const short = holesShort(gms, s.holes);
+  const commishName = fn(data.players.find(pl => pl.is_commissioner)?.name) || 'the commissioner';
 
   // Scorer handoff: the scorer hands the pencil on, the commissioner can
   // reassign anyone. Goes straight to tee_group (the handoff policy), no
@@ -319,6 +336,22 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
       return;
     }
     setPicking(false);
+    reload();
+  };
+
+  const [subErr, setSubErr] = useState<string | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const submitCard = async () => {
+    if (!dbTg) return;
+    setSubErr(null);
+    const { error } = await supabase.rpc('submit_card', { tg: dbTg.id });
+    if (error) {
+      setSubErr(/fetch|network|load failed/i.test(error.message)
+        ? 'Needs a signal to hand in the card. It\u2019ll be ready when you have one.'
+        : error.message);
+      return;
+    }
+    setDrawerOpen(true);
     reload();
   };
 
@@ -420,6 +453,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
           <span className="hh2">
             Par {s.par[i]}{s.si ? ` · SI ${s.si[i]}` : ' · scratch'}
             {pending > 0 ? ` · ${pending} to sync` : data.offline ? ' · offline' : ''}
+            {gBlocked.length > 0 ? ` · ${gBlocked.length} blocked` : ''}
           </span>
         </div>
         <button
@@ -428,6 +462,30 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
           aria-label="Next hole"
         >&#8250;</button>
       </div>
+
+      {/* A hole left behind: one yellow bar, one tap to go fix it */}
+      {!viewOnly && !submitted && gaps.length > 0 && (
+        <button
+          className="gapbar"
+          onClick={() => {
+            const g0 = gaps[0];
+            if (g0.matchId !== m.id) selectMatch(g0.matchId);
+            setPinned(prev => ({ ...prev, [g0.matchId]: g0.hole }));
+          }}
+        >
+          <span className="t">
+            {gaps.length === 1
+              ? <>Scoring for <b>Hole {gaps[0].hole + 1}</b>{gaps[0].matchId !== m.id ? ' in the other match' : ''} is incomplete.</>
+              : <>Scoring for <b>{gaps.length} holes</b> is incomplete.</>}
+          </span>
+          <span className="go">Fix now ›</span>
+        </button>
+      )}
+
+      {/* Scores the server refused: kept on this phone, shown, never silent */}
+      {!viewOnly && gBlocked.length > 0 && (
+        <BlockedCard rows={gBlocked} data={data} session={s} commishName={commishName} />
+      )}
 
       {/* Override strip */}
       {!bye && (
@@ -454,11 +512,17 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
       <StrokeLegend match={m} holeIdx={i} session={s} />
 
       {/* Bye hole bar */}
-      {bye && (
-        <div className="byebar">
-          Bye hole · match closed on {r.byeStart} · recorded but does not count
-        </div>
-      )}
+      {bye && (() => {
+        const bp = byeProgress(m, s.holes);
+        const res = r.w === 'h' ? 'Halved' : r.w ? `${CFG.teams[r.w].short} ${r.label}` : '';
+        return (
+          <div className="byebar">
+            <b>Match closed on {r.byeStart}{res ? ` · ${res}` : ''}.</b>{' '}
+            Keep the scores coming — byes count for day totals and the MVP card.
+            {bp && <span className="byeprog"> {bp.got} of {bp.total} in</span>}
+          </div>
+        );
+      })()}
 
       {/* Player rows with notation cells */}
       {keys.map(k => {
@@ -573,12 +637,41 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
             ? `Match final · ${headline(m).txt}`
             : (h.r ? `${runningAt(m, i)} after ${i + 1}${h.by ? ' · ' + h.by : ''}` : 'Not posted')}
         </span>
-        {h.r && i < s.holes - 1 && (
-          <button className="lnk" onClick={() => nav(1)}>
-            Next hole ›
-          </button>
-        )}
       </div>
+
+      {/* One-thumb flow: the hole settles, the way forward appears where
+          the thumb already is. On the last hole this slot is Submit. */}
+      {!viewOnly && !submitted && h.r && i < s.holes - 1 && (
+        <button className="advbtn" onClick={() => nav(1)}>
+          <span key={i} className="albl">Hole {i + 2}</span>
+          <span className="achev">›</span>
+        </button>
+      )}
+      {!viewOnly && !submitted && i === s.holes - 1 && (iAmScorer || data.meIsCommissioner) && (
+        <button
+          className={`advbtn submit${short > 0 || pending > 0 || gBlocked.length > 0 ? ' dim' : ''}`}
+          disabled={short > 0 || pending > 0 || gBlocked.length > 0}
+          onClick={submitCard}
+        >
+          {gBlocked.length > 0 ? `${gBlocked.length} score${gBlocked.length === 1 ? '' : 's'} need attention`
+            : short > 0 ? `${short} hole${short === 1 ? '' : 's'} still open`
+            : pending > 0 ? `Syncing ${pending}…`
+            : 'Submit scores'}
+        </button>
+      )}
+      {submitted && i === s.holes - 1 && (
+        <button className="advbtn done" onClick={() => setDrawerOpen(true)}>
+          Card in · view the summary
+        </button>
+      )}
+      {subErr && <div className="holine err">{subErr}</div>}
+      {submitted && (
+        <div className="holine">
+          Card handed in{dbTg?.submitted_by ? ` by ${playerName(dbTg.submitted_by, data)}` : ''}
+          {dbTg?.submitted_at ? `, ${ago(dbTg.submitted_at)}` : ''}
+          {!data.meIsCommissioner ? ` · only ${commishName} can edit now` : ''}
+        </div>
+      )}
 
       {/* Handoff log line */}
       {handoff && (
@@ -616,6 +709,20 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, reload, tabbe
           </div>
         </>
       )}
+
+      {/* The card-in drawer: the scorer's handshake at the end of the day */}
+      <div className={`scrim hi${drawerOpen ? ' on' : ''}`} onClick={() => setDrawerOpen(false)} />
+      <div className={`drawer cardin${drawerOpen ? ' on' : ''}`} role="dialog" aria-modal="true" aria-label="Card in">
+        <div className="dh" />
+        <CardDrawer
+          gms={gms}
+          session={s}
+          data={data}
+          pending={pending}
+          blockedCount={gBlocked.length}
+          onClose={() => setDrawerOpen(false)}
+        />
+      </div>
     </div>
   );
 }
@@ -667,4 +774,113 @@ function findPlayerId(key: string, data: EventData): string {
   if (key === 'a' || key === 'b') return key;
   const player = data.players.find(p => p.name.split(' ')[0].toLowerCase() === key);
   return player?.id || key;
+}
+
+
+/** Scores the server refused, kept on this phone until they land or are
+ *  deliberately dismissed. The paper trail the commissioner reads from. */
+function BlockedCard({ rows, data, session: s, commishName }: {
+  rows: QueuedHoleWrite[];
+  data: EventData;
+  session: EventData['scoringSessions'][0];
+  commishName: string;
+}) {
+  const [confirm, setConfirm] = useState(false);
+  const entry = (w: QueuedHoleWrite): string => {
+    const parts = Object.entries(w.scores).map(([k, v]) => {
+      const nm = k === 'a' || k === 'b' ? CFG.teams[k].short : fn(data.playerById[k]?.name) || '?';
+      return `${nm} ${v}`;
+    });
+    const res = w.result === 'A' ? CFG.teams.a.short : w.result === 'B' ? CFG.teams.b.short
+      : w.result === 'H' ? 'Halved' : '';
+    return [...parts, res].filter(Boolean).join(' · ') || 'cleared';
+  };
+  return (
+    <div className="savefail">
+      <div className="sfhd">
+        <span className="tag">Couldn’t save</span>
+        {rows.length} score{rows.length === 1 ? ' was' : 's were'} refused by the server
+      </div>
+      <div className="sfwhy">
+        Usually the round was marked Complete, or this card handed in, while
+        these were waiting to sync. They are kept on this phone and retry on
+        their own — show this screen to {commishName}, who can unlock or enter
+        them by hand.
+      </div>
+      {rows.map(w => (
+        <div key={`${w.match_id}:${w.hole}`} className="sfrow">
+          <span className="n">Hole {w.hole}</span>
+          <span className="d">{entry(w)}</span>
+        </div>
+      ))}
+      <button
+        className="sfdismiss"
+        onBlur={() => setConfirm(false)}
+        onClick={() => {
+          if (!confirm) { setConfirm(true); return; }
+          rows.forEach(w => { dismissBlocked(w.match_id, w.hole); });
+          setConfirm(false);
+        }}
+      >
+        {confirm ? 'Tap again — they’ll be gone for good' : 'Dismiss these scores (they’ll be lost)'}
+      </button>
+    </div>
+  );
+}
+
+/** Results, day totals and the sync check for a handed-in card. */
+function CardDrawer({ gms, session: s, data, pending, blockedCount, onClose }: {
+  gms: Match[];
+  session: EventData['scoringSessions'][0];
+  data: EventData;
+  pending: number;
+  blockedCount: number;
+  onClose: () => void;
+}) {
+  const short = holesShort(gms, s.holes);
+  const totals: { label: string; n: number }[] = [];
+  gms.forEach(gm => {
+    holeKeys(gm).forEach(k => {
+      let n = 0;
+      for (let hh = 0; hh < s.holes; hh++) {
+        const v = gm.hs[hh]?.sc[k];
+        if (typeof v === 'number') n += v;
+      }
+      if (n > 0) totals.push({ label: k === 'a' || k === 'b' ? CFG.teams[k].short : fn(P[k]?.n) || k, n });
+    });
+  });
+  const clean = pending === 0 && blockedCount === 0;
+  return (
+    <div className="cardin-bd">
+      <div className="cihd">
+        <span className="tag gold">Card in</span>
+        {short === 0 ? `All ${s.holes} holes recorded` : `${short} hole${short === 1 ? '' : 's'} missing`}
+      </div>
+      {gms.map(gm => {
+        const rr = calc(gm);
+        const res = rr.w === 'h' ? 'Halved' : rr.w ? `${CFG.teams[rr.w].short} ${rr.label}` : '—';
+        const cls = rr.w === 'a' ? 'a' : rr.w === 'b' ? 'b' : 'h';
+        const nm2 = (ks: string[]) => ks.map(k => fn(P[k]?.n) || k).join(' / ');
+        return (
+          <div key={gm.id} className="cirow">
+            <span className="p">{nm2(gm.a)}<span className="vv">V</span>{nm2(gm.b)}</span>
+            <span className={`s ${cls}`}>{res}</span>
+          </div>
+        );
+      })}
+      {totals.length > 0 && (
+        <div className="cisub">Day totals · {totals.map(t => `${t.label} ${t.n}`).join(' · ')}</div>
+      )}
+      <div className={`cisync${clean ? '' : ' warn'}`}>
+        {clean ? (
+          <>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            Everything reached the server · 0 to sync
+          </>
+        ) : blockedCount > 0 ? `${blockedCount} score${blockedCount === 1 ? '' : 's'} could not save — see the card above`
+          : `Still syncing ${pending}…`}
+      </div>
+      <button className="abtn cidone" onClick={onClose}>Done — the card is in</button>
+    </div>
+  );
 }

@@ -422,3 +422,68 @@ export function RchipDemo() {
     </div>
   );
 }
+
+/* ---------------- the scorekeeper's day ---------------- */
+
+export function GapbarDemo() {
+  return (
+    <button className="gapbar">
+      <span className="t">Scoring for <b>Hole 7</b> is incomplete.</span>
+      <span className="go">Fix now ›</span>
+    </button>
+  );
+}
+
+export function BlockedDemo() {
+  return (
+    <div className="savefail" style={{ margin: 0 }}>
+      <div className="sfhd"><span className="tag">Couldn’t save</span>2 scores were refused by the server</div>
+      <div className="sfwhy">
+        Usually the round was marked Complete, or this card handed in, while these
+        were waiting to sync. They are kept on this phone and retry on their own.
+      </div>
+      <div className="sfrow"><span className="n">Hole 11</span><span className="d">Griffin 4 · Kyle 5 · VIK</span></div>
+      <div className="sfrow"><span className="n">Hole 12</span><span className="d">Griffin 5 · Kyle 5 · Halved</span></div>
+      <button className="sfdismiss">Dismiss these scores (they’ll be lost)</button>
+    </div>
+  );
+}
+
+export function AdvbtnDemo() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <button className="advbtn" style={{ margin: '0 0 8px' }}><span className="albl">Hole 8</span><span className="achev">›</span></button>
+      <button className="advbtn submit" style={{ margin: '0 0 8px' }}>Submit scores</button>
+      <button className="advbtn dim" style={{ margin: 0 }} disabled>3 holes still open</button>
+    </div>
+  );
+}
+
+export function ByebarDemo() {
+  return (
+    <div className="byebar">
+      <b>Match closed on 15 · VIK 4 &amp; 3.</b>{' '}
+      Keep the scores coming — byes count for day totals and the MVP card.
+      <span className="byeprog"> 1 of 3 in</span>
+    </div>
+  );
+}
+
+export function CardDrawerDemo() {
+  return (
+    <div className="drawer cardin on" style={{ position: 'relative', top: 'auto', transform: 'none' }}>
+      <div className="dh" />
+      <div className="cardin-bd">
+        <div className="cihd"><span className="tag gold">Card in</span>All 18 holes recorded</div>
+        <div className="cirow"><span className="p">Griffin<span className="vv">V</span>Kyle</span><span className="s a">VIK 2 &amp; 1</span></div>
+        <div className="cirow"><span className="p">Matt<span className="vv">V</span>JT</span><span className="s b">CEL 1 up</span></div>
+        <div className="cisub">Day totals · Griffin 88 · Kyle 91 · Matt 90 · JT 87</div>
+        <div className="cisync">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          Everything reached the server · 0 to sync
+        </div>
+        <button className="abtn cidone">Done — the card is in</button>
+      </div>
+    </div>
+  );
+}

@@ -7,9 +7,13 @@
  * browser comes back online, when the tab becomes visible, and on a timer.
  *
  * A network failure keeps rows for the next flush. A server rejection
- * (RLS, bad payload) is permanent for that row: retrying forever would
- * wedge the queue behind it, so the row is dropped and logged, and the
- * next reload shows the server's truth.
+ * (RLS — the round marked Complete or the card handed in while rows were
+ * waiting) keeps the row too, flagged `blocked`, so nothing the scorer
+ * entered ever disappears silently: the scoring screen shows blocked
+ * rows and they keep retrying, clearing themselves the moment the
+ * commissioner unlocks. A newer write to the same hole replaces a
+ * blocked row like any other. Deleting one is a deliberate act
+ * (dismissBlocked), never a side effect.
  */
 import { supabase } from './supabase';
 import { idbGetAll, idbPut, idbDelete } from './db';
@@ -23,6 +27,8 @@ export interface QueuedHoleWrite {
   derived: boolean;
   entered_by: string | null;
   queued_at: number;
+  /** set when the server refused this row for a permanent reason */
+  blocked?: string;
 }
 
 export type UpsertError = { code?: string; message: string } | null;
@@ -66,7 +72,7 @@ export async function getQueuedWrites(): Promise<QueuedHoleWrite[]> {
 }
 
 export async function enqueueHoleWrite(
-  row: Omit<QueuedHoleWrite, 'queued_at'>,
+  row: Omit<QueuedHoleWrite, 'queued_at' | 'blocked'>,
   upsert: Upserter = defaultUpsert,
 ): Promise<void> {
   const queued: QueuedHoleWrite = { ...row, queued_at: Date.now() };
@@ -94,7 +100,11 @@ export function flushQueue(upsert: Upserter = defaultUpsert): Promise<boolean> {
   if (flushing) return flushing;
   flushing = (async () => {
     let synced = false;
-    const rows = await getQueuedWrites();
+    let changed = false;
+    // fresh rows first so a blocked row never delays a new score
+    const rows = (await getQueuedWrites()).sort(
+      (a, b) => Number(!!a.blocked) - Number(!!b.blocked) || a.queued_at - b.queued_at,
+    );
     for (const row of rows) {
       const { error } = await upsert(row).catch((e: Error) => ({
         error: { message: e.message } as UpsertError,
@@ -102,19 +112,28 @@ export function flushQueue(upsert: Upserter = defaultUpsert): Promise<boolean> {
       if (!error) {
         await idbDelete('write_queue', keyOf(row));
         synced = true;
+        changed = true;
       } else if (isNetworkError(error)) {
         break; // offline — keep everything for the next trigger
-      } else {
-        console.error(`Dropping unsyncable write for hole ${row.hole}:`, error.message);
-        await idbDelete('write_queue', keyOf(row));
+      } else if (row.blocked !== error.message) {
+        // refused for a permanent reason: keep the row, say so, retry later
+        console.error(`Score for hole ${row.hole} refused, kept as blocked:`, error.message);
+        await idbPut('write_queue', keyOf(row), { ...row, blocked: error.message });
+        changed = true;
       }
     }
-    if (synced) notify();
+    if (changed) notify();
     return synced;
   })().finally(() => {
     flushing = null;
   });
   return flushing;
+}
+
+/** Deliberately throw away one blocked row (the card's Dismiss). */
+export async function dismissBlocked(match_id: string, hole: number): Promise<void> {
+  await idbDelete('write_queue', keyOf({ match_id, hole }));
+  notify();
 }
 
 /* ---------- overlay ---------- */

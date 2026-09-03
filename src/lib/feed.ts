@@ -196,15 +196,23 @@ export function buildFeed(input: FeedInput): FeedDay[] {
     }
   });
 
-  // Scorer switches, from the feed table
+  // Scorer switches and cards coming home, from the feed table
   const byId = (id: unknown) => (typeof id === 'string' && fn(playerById[id]?.name)) || 'someone';
   switches.forEach(ev => {
     const s = sessions.find(x => x.id === ev.round_id);
     if (!s) return;
     const seq = typeof ev.body.seq === 'number' ? ev.body.seq : 1;
+    const letter = String.fromCharCode(64 + seq);
+    if (ev.kind === 'card_in') {
+      out.push({
+        key: `ci:${ev.id}`, day: s.day, at: new Date(ev.occurred_at).getTime(), side: '',
+        text: `**${byId(ev.body.by)}** handed in Group ${letter}'s card for ${s.rd}.`,
+      });
+      return;
+    }
     out.push({
       key: `s:${ev.id}`, day: s.day, at: new Date(ev.occurred_at).getTime(), side: '',
-      text: `**${byId(ev.body.to)}** took over scoring for ${s.rd} Group ${String.fromCharCode(64 + seq)} from ${byId(ev.body.from)}.`,
+      text: `**${byId(ev.body.to)}** took over scoring for ${s.rd} Group ${letter} from ${byId(ev.body.from)}.`,
     });
   });
 

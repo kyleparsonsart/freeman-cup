@@ -65,6 +65,9 @@ export interface DbTeeGroup {
   seq: number;
   tee_time: string;
   scorer_player_id: string | null;
+  /** set when the card is handed in; locks scoring for all but the commissioner */
+  submitted_at?: string | null;
+  submitted_by?: string | null;
 }
 
 export interface DbMatch {

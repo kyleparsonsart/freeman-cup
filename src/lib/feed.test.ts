@@ -118,4 +118,18 @@ describe('buildFeed', () => {
     expect(s.text).toContain('Group A');
     expect(s.text).toContain('from Griffin');
   });
+
+  it('announces a card coming home', () => {
+    const m = match('m1', 'griffin', 'kyle', ['A']);
+    setContext(PLAYERS, [singles], [m]);
+    const ci: DbFeedEvent = {
+      id: 2, event_id: 'e', round_id: 'r4', match_id: null, kind: 'card_in', tier: 'none',
+      body: { seq: 1, by: 'p1', tee_group_id: 'tg' },
+      occurred_at: new Date(T0 + 9 * 60000).toISOString(),
+    };
+    const input = { ...base([m], [ci]), playerById: { p1: { name: 'Griffin S.' } } as never };
+    const [day] = buildFeed(input);
+    const line = day.items.find(i => i.key === 'ci:2')!;
+    expect(line.text).toBe("**Griffin** handed in Group A's card for Round 4.");
+  });
 });

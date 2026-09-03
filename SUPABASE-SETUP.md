@@ -12,7 +12,11 @@ Do these in order. Items 1–3 now; 4–6 before invites go out Sep 27.
    `reset_event()` behind "Clear all scores". Then `freeman-cup-shootout.sql`
    → run once: adds `event.shootout` (jsonb) with the commissioner-only
    `set_shootout()` RPC for the Captains Shootout, teaches `reset_event()`
-   to clear it, and turns on realtime for `event`.
+   to clear it, and turns on realtime for `event` (run Sep 3). Then
+   `freeman-cup-cards.sql` → run once: `tee_group.submitted_at/_by`
+   (the signed-card lock), `submit_card()` / `reopen_card()`, the
+   `card_in` feed trigger, `scores_this_match()` now honouring the
+   hand-in, and `reset_event()` reopening every card.
 
 1b. **Site URL.** Authentication → URL Configuration → Site URL
    `https://freeman-cup.vercel.app`, and add `http://localhost:5173` to
