@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 interface Props {
   sendCode: (email: string) => Promise<string | null>;
@@ -14,6 +14,7 @@ export default function SignInScreen({ sendCode, verifyCode, devSignIn }: Props)
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const boxes = useRef<Array<HTMLInputElement | null>>([]);
 
   const submitEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,10 +28,44 @@ export default function SignInScreen({ sendCode, verifyCode, devSignIn }: Props)
   const submitCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true); setErr(null);
-    const error = await verifyCode(email.trim(), code.trim());
+    const error = await verifyCode(email.trim(), code);
     setBusy(false);
     if (error) setErr(error);
     // on success onAuthStateChange takes it from here
+  };
+
+  /* Six boxes share one string of typed digits. Typing fills forward,
+     backspace walks back, and a paste or an iOS code-autofill anywhere
+     splats across all six. */
+  const onBox = (e: React.ChangeEvent<HTMLInputElement>, i: number) => {
+    const d = e.target.value.replace(/\D/g, '');
+    if (!d) return;
+    if (d.length > 1) {
+      const next = d.slice(0, 6);
+      setCode(next);
+      boxes.current[Math.min(next.length, 5)]?.focus();
+      return;
+    }
+    const pos = Math.min(i, code.length);
+    const next = (code.slice(0, pos) + d + code.slice(pos + 1)).slice(0, 6);
+    setCode(next);
+    boxes.current[Math.min(pos + 1, 5)]?.focus();
+  };
+
+  const onBoxKey = (e: React.KeyboardEvent) => {
+    if (e.key !== 'Backspace') return;
+    e.preventDefault();
+    const next = code.slice(0, -1);
+    setCode(next);
+    boxes.current[Math.min(next.length, 5)]?.focus();
+  };
+
+  const onBoxPaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const d = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (!d) return;
+    setCode(d);
+    boxes.current[Math.min(d.length, 5)]?.focus();
   };
 
   return (
@@ -69,18 +104,23 @@ export default function SignInScreen({ sendCode, verifyCode, devSignIn }: Props)
             Enter the six digits from the email.
           </p>
           <form onSubmit={submitCode} className="aform si">
-            <input
-              className="ainput code si"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              pattern="[0-9]{6}"
-              maxLength={6}
-              placeholder="······"
-              value={code}
-              onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
-              required
-              autoFocus
-            />
+            <div className="sidigits" onPaste={onBoxPaste}>
+              {[0, 1, 2, 3, 4, 5].map(i => (
+                <input
+                  key={i}
+                  ref={el => { boxes.current[i] = el; }}
+                  className="sidigit"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  value={code[i] ?? ''}
+                  onChange={e => onBox(e, i)}
+                  onKeyDown={onBoxKey}
+                  onFocus={e => e.currentTarget.select()}
+                  autoFocus={i === 0}
+                  aria-label={`Digit ${i + 1}`}
+                />
+              ))}
+            </div>
             <button className="abtn si" disabled={busy || code.length !== 6}>
               {busy ? 'Checking…' : 'Sign in'}
             </button>

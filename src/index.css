@@ -1156,8 +1156,13 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .sicopy{font-size:14px;line-height:1.6;color:var(--moss);max-width:30ch;margin-bottom:16px}
 .sicopy b{color:var(--bone);font-weight:600}
 .aform.si{display:flex;flex-direction:column;gap:10px;width:100%;max-width:280px;align-items:stretch}
-.ainput.si{text-align:center}
-.ainput.code.si{padding-left:.35em}
+.ainput.si{text-align:center;border-radius:8px}
+.abtn.si{border-radius:8px}
+.sidigits{display:flex;gap:8px;justify-content:center}
+.sidigit{flex:1;min-width:0;height:54px;border:1px solid var(--line);background:var(--ink-2);
+  color:var(--bone);border-radius:8px;text-align:center;padding:0;
+  font-family:var(--num);font-size:26px;font-weight:600;caret-color:var(--brass)}
+.sidigit::selection{background:rgba(216,169,63,.3)}
 .aghost.si{align-self:center;margin-top:16px}
 .signin .aerr{text-align:center;margin-top:12px}
 .signin .adev{justify-content:center;margin-top:20px}
