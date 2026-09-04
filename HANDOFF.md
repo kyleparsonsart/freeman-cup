@@ -33,6 +33,18 @@ SQL that has run, in order: `freeman-cup-schema.sql`, `freeman-cup-auth.sql`, `f
 
 ---
 
+## Public scoreboard (thefreemancup.com), built Sep 4
+
+Second Vite page in the same repo, no app code touched. `scoreboard.html` + `src/scoreboard/` (Scoreboard.tsx, shape.ts, moments.ts, weather.ts, scoreboard.css, symbols.ts). It imports the app's `scoring.ts` and `standings.ts` as-is and calls one anon RPC, `public_scoreboard()` (`freeman-cup-scoreboard.sql`), every 60 s. Three lives from the same data: countdown before the trip, live cards during, the record after. Celts always left, Vikes right. Weather is Open-Meteo, fetched client-side, no key. Prototypes that were signed off live in `docs/prototypes/`.
+
+- `vercel.json` rewrites `thefreemancup.com` (and www) to `/scoreboard.html`; `freeman-cup.vercel.app` keeps the app and its home-screen installs.
+- `vite.config.ts` has the two-page `rollupOptions.input` and keeps `scoreboard*` out of the app's precache.
+- `shape.ts` duplicates the row-to-engine mapping in `useEventData.ts` on purpose (freeze). If they drift, the app's is the reference; unify in 2027.
+- `event.previous_winner` / `previous_year` (nullable) drive the "hold the Lassie" line. Null = inaugural copy. Set them after the cup.
+- Still to do: run the SQL, add the domain in Vercel and the A record at the registrar (Resend's DNS records are separate), then check thefreemancup.com shows the countdown.
+
+---
+
 ## Not built
 
 - **Push notifications** — the whole system: VAPID keys, `push_subscription` writes, a server-side sender (Edge Function or Vercel function), the 90-second hold, tiering. Biggest remaining risk to the date; a legitimate 2027 candidate
@@ -79,6 +91,6 @@ The original warnings still stand: don't let anyone rewrite `calc()` or `derive(
 
 ## The event (unchanged)
 
-Eight men, two teams, four rounds at Sand Valley, playing for **The Lassie**. Ten points, 5½ wins. Vikes (red): Griffin S. 15 (C), Devin E. 7, Brian K. 6, Matt J. 15. Celts (blue): Kyle P. 15 (C, commissioner), Phil J. 11, Justin D. 7, JT W. 15. Thu Mammoth Dunes four-ball; Fri The Commons foursomes (12 holes) then Sand Valley four-ball; Sat Sedge Valley singles. Tie at 5–5 goes to the Captains Shootout on the practice green.
+Eight men, two teams, four rounds at Sand Valley, playing for **The Lassie**. Ten points, 5½ wins. Vikes (red): Griffin S. 15 (C), Devin E. 7, Brian K. 6, Matt J. 15. Celts (blue): Kyle P. 15 (C, commissioner), Phil J. 11, Justin D. 7, JT W. 15. Thu Mammoth Dunes four-ball; Fri The Commons aggregate match play (12 holes) then Sand Valley four-ball; Sat Sedge Valley singles. Tie at 5–5 goes to the Captains Shootout on the practice green.
 
 Three tabs: **Live · Scoring · Schedule.** Dark scorecard green, bone, brass; Young Serif (display, one weight, self-hosted Latin subset in `public/fonts/`, replaced Fraunces Sep 1) / Work Sans / Barlow Condensed; sentence case.

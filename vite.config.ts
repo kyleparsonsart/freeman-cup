@@ -4,6 +4,17 @@ import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  // two pages, one build: the app (index.html) and the public scoreboard
+  // (scoreboard.html, served at thefreemancup.com by a host rewrite in
+  // vercel.json). The app URL never changes.
+  build: {
+    rollupOptions: {
+      input: {
+        main: 'index.html',
+        scoreboard: 'scoreboard.html',
+      },
+    },
+  },
   define: {
     __BUILD_STAMP__: JSON.stringify(new Date().toISOString().slice(5, 16).replace('T', ' ')),
   },
@@ -15,7 +26,10 @@ export default defineConfig({
       manifest: false,
       includeAssets: ['manifest.json', 'icons/*.png', 'fonts/*.woff2', 'brand/*.svg'],
       workbox: {
-        // the app shell (index.html + hashed js/css) is precached by default
+        // the app shell (index.html + hashed js/css) is precached by default;
+        // the scoreboard page is a different site and stays out of it
+        globIgnores: ['**/scoreboard*'],
+        navigateFallbackDenylist: [/^\/scoreboard/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\//,

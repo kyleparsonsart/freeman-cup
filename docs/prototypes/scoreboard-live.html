@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>thefreemancup.com: Scoreboard Prototype v6</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Young+Serif&family=Work+Sans:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap');
+:root{
+  --ink:#0F1E19; --ink-2:#172B24; --ink-3:#1E362D; --line:#26443A;
+  --bone:#F0EBDC; --moss:#8CA79B; --moss-dim:#5D7268;
+  --red:#C8402F; --blue:#4C86C4; --brass:#D8A93F;
+  --paper:#E7E1D0;
+  --display:'Young Serif',Georgia,serif;
+  --body:'Work Sans',system-ui,sans-serif;
+  --clock:'Barlow Condensed',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:#2A2620;font-family:var(--body);font-size:16px;line-height:1.55}
+a{color:inherit}
+
+/* annotation chrome */
+.note{max-width:680px;margin:40px auto 26px;padding:0 22px}
+.note h1{font-family:var(--display);font-size:27px;color:var(--ink);line-height:1.25}
+.note h2{font-family:var(--display);font-size:20px;color:var(--ink);margin-bottom:8px}
+.note p{margin-top:10px;color:#5A5344;font-size:15.5px}
+.note.tail{margin:48px auto 90px}
+
+/* ============ THE PAGE ============ */
+.site{background:var(--ink);color:var(--bone);box-shadow:0 24px 70px rgba(40,32,12,.3)}
+.wrap{max-width:680px;margin:0 auto;padding:0 22px}
+.shd{border-bottom:1px solid var(--line)}
+.shd .wrap{display:flex;align-items:center;justify-content:space-between;padding-top:18px;padding-bottom:18px}
+.brandrow{display:flex;align-items:center;gap:12px}
+.brandrow svg{color:var(--brass)}
+.brandrow .t1{font-family:var(--display);font-size:19px;letter-spacing:.01em}
+.brandrow .t2{font-family:var(--clock);font-size:12.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--moss-dim)}
+.livepill{display:flex;align-items:center;gap:7px;font-family:var(--clock);font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--brass);border:1px solid rgba(216,169,63,.5);border-radius:999px;padding:5px 13px}
+.livepill .d{width:8px;height:8px;border-radius:50%;background:var(--brass)}
+.hdright{display:flex;align-items:center;gap:10px}
+.sibtn{white-space:nowrap;font-family:var(--clock);font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);background:var(--brass);border-radius:8px;padding:7px 14px;text-decoration:none}
+@media(max-width:560px){.livepill{display:none}}
+
+/* cup strip: Celts left, Vikes right, always */
+.strip{padding:22px 22px 18px;border-bottom:1px solid var(--line);background:var(--ink-2)}
+.day{text-align:center;font-family:var(--clock);font-size:14px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--moss);padding-bottom:14px}
+.striptop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;max-width:636px;margin-left:auto;margin-right:auto}
+.sside{display:flex;align-items:baseline;gap:10px;flex:1;min-width:0}
+.sside.r{justify-content:flex-end}
+.sside .nm{font-size:12.5px;color:var(--moss);white-space:nowrap}
+.sside .pt{font-family:var(--clock);font-size:52px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+.sside.cel .pt{color:var(--blue)} .sside.vik .pt{color:var(--red)}
+.jugwrap{display:flex;flex-direction:column;align-items:center;gap:7px;flex:none;padding:0 4px}
+.jugwrap svg{color:var(--brass)}
+.juglbl{font-family:var(--display);font-size:14px;font-weight:600;color:var(--brass);white-space:nowrap}
+.tug{position:relative;height:26px;background:var(--ink-3);border:1px solid var(--line);overflow:hidden;max-width:636px;margin:0 auto}
+.tug .f{position:absolute;top:0;bottom:0}
+.tug .fc{left:0;background:var(--blue)} .tug .fv{right:0;background:var(--red)}
+.tug .livez{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(135deg,rgba(240,235,220,.10) 0 5px,transparent 5px 10px)}
+.tick{position:absolute;top:-1px;bottom:-1px;width:2px;background:var(--brass);z-index:3}
+.striplbl{display:flex;justify-content:space-between;margin-top:8px;font-size:11.5px;color:var(--moss-dim);max-width:636px;margin-left:auto;margin-right:auto}
+
+/* how-it-works bar under the strip */
+.howbar{border-bottom:1px solid var(--line);background:var(--ink)}
+.hx{display:none}
+.hl{display:flex;justify-content:space-between;align-items:center;max-width:680px;margin:0 auto;padding:11px 22px;font-family:var(--clock);font-size:12.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--moss);cursor:pointer}
+.hl .ar{color:var(--brass);transition:transform .15s}
+.hx:checked ~ .hl .ar{transform:rotate(180deg)}
+.hb{display:none;padding-bottom:14px}
+.hx:checked ~ .hb{display:block}
+.hb p{font-size:14.5px;color:var(--moss);line-height:1.6;margin-top:8px}
+.hb p b{color:var(--bone);font-weight:600}
+/* sections */
+.sect{padding-top:44px}
+.sect > .wrap > h2{font-family:var(--display);font-size:21px;color:var(--bone);font-weight:400}
+.sect .sub{font-size:14.5px;color:var(--moss-dim);margin-top:3px}
+
+/* ===== match card ===== */
+.mc{margin-top:16px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.mc + .mc{margin-top:14px}
+.mc .top{display:flex;flex-wrap:wrap;gap:4px 12px;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line)}
+.mc .fmt{white-space:nowrap;font-family:var(--clock);font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--brass)}
+.mc .meta{white-space:nowrap;font-family:var(--clock);font-size:13px;font-weight:600;letter-spacing:.06em;color:var(--moss)}
+.mc .meta i{font-style:normal;color:var(--moss-dim);margin:0 6px}
+.face{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:16px 14px 14px;gap:8px}
+.side{min-width:0}
+.side .tm{font-family:var(--clock);font-size:11.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;margin-bottom:5px}
+.side.cel .tm{color:var(--blue)} .side.vik .tm{color:var(--red)}
+.side .p{font-size:16.5px;font-weight:500;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.side.vik{text-align:right}
+.mid{text-align:center;padding:0 6px}
+.mid .st{font-family:var(--clock);font-size:34px;font-weight:600;line-height:1;letter-spacing:.02em}
+.mid .st.cel{color:var(--blue)} .mid .st.vik{color:var(--red)} .mid .st.as{color:var(--moss)}
+.mid .sl{font-family:var(--clock);font-size:11.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--moss-dim);margin-top:4px}
+.face.cel-lead{background:linear-gradient(90deg,rgba(76,134,196,.13),transparent 55%)}
+.face.vik-lead{background:linear-gradient(270deg,rgba(200,64,47,.13),transparent 55%)}
+
+/* activity inside a card, CSS-only expand */
+.act{border-top:1px solid var(--line)}
+.act .ah{display:flex;justify-content:space-between;align-items:center;padding:9px 16px 4px}
+.act .ah span{font-family:var(--clock);font-size:11.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--moss-dim)}
+.ev{display:flex;gap:10px;padding:8px 16px 8px 13px;border-left:3px solid transparent;font-size:14.5px;line-height:1.4;color:var(--moss)}
+.ev.cel{border-left-color:var(--blue)} .ev.vik{border-left-color:var(--red)} .ev.gold{border-left-color:var(--brass)}
+.ev .t{width:38px;flex:none;font-family:var(--clock);font-size:13.5px;font-weight:600;color:var(--moss-dim);padding-top:1px}
+.ev b{color:var(--bone);font-weight:600}
+.ev .who.cel{color:var(--blue);font-weight:600} .ev .who.vik{color:var(--red);font-weight:600}
+.more{display:none}
+.xp{display:none}
+.xp:checked ~ .more{display:block}
+.xl{display:block;padding:8px 16px 11px;font-family:var(--clock);font-size:12.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--brass);cursor:pointer}
+.xl .b{display:none}
+.xp:checked ~ .xl .a{display:none} .xp:checked ~ .xl .b{display:inline}
+
+/* scorecard accordion */
+.sc-x{display:none}
+.sc-l{display:flex;justify-content:space-between;align-items:center;padding:11px 16px;border-top:1px solid var(--line);font-family:var(--clock);font-size:12.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--moss);cursor:pointer}
+.sc-l .ar{color:var(--brass);transition:transform .15s}
+.sc-x:checked ~ .sc-l .ar{transform:rotate(180deg)}
+.sc-x:checked ~ .sc-l{color:var(--bone)}
+.sc-x ~ .holecard{display:none}
+.sc-x:checked ~ .holecard{display:block}
+/* today's weather card above the live matches */
+.wxcard{margin-top:16px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.wxcard .wh{display:flex;justify-content:space-between;padding:11px 16px 0;font-family:var(--clock);font-size:11.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--moss-dim)}
+.wxcard .wh em{font-style:normal;color:var(--moss)}
+/* full scorecard inside a card */
+.holecard{border-top:1px solid var(--line);overflow-x:auto;background:var(--ink)}
+.holecard table{border-collapse:collapse;min-width:100%}
+.holecard th,.holecard td{padding:7px 0;text-align:center;font-family:var(--clock);font-size:14px;font-weight:600;min-width:32px}
+.holecard th{font-size:11.5px;letter-spacing:.06em;color:var(--moss-dim);border-bottom:1px solid var(--line)}
+.holecard .pl{position:sticky;left:0;background:var(--ink);text-align:left;padding-left:16px;padding-right:12px;font-family:var(--body);font-size:13.5px;font-weight:500;min-width:80px;white-space:nowrap}
+.holecard .pl.hd{color:var(--moss-dim)}
+.holecard .pl.c{color:var(--blue)} .holecard .pl.v{color:var(--red)}
+.holecard td{color:var(--bone)}
+.holecard td.net{color:var(--brass)}
+.holecard td.o{color:var(--moss-dim);font-weight:500}
+.holecard tr.sum td{border-top:1px solid var(--line);color:var(--moss)}
+.holecard tr.par td{color:var(--moss-dim);font-weight:500;font-size:12.5px;border-bottom:1px solid var(--line)}
+.holecard tr.res td{font-size:12px;letter-spacing:.04em;padding:6px 0 10px}
+.holecard tr.res td.v{color:var(--red)} .holecard tr.res td.c{color:var(--blue)} .holecard tr.res td.h{color:var(--moss-dim)}
+.holenote{padding:9px 16px 12px;font-size:12.5px;color:var(--moss-dim);border-top:1px solid var(--line)}
+.holenote b{color:var(--bone);font-weight:500}
+
+/* day accordions */
+.dayblk{margin-top:16px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--ink-2)}
+.dayblk + .dayblk{margin-top:12px}
+.dx{display:none}
+.dh{display:grid;grid-template-columns:1fr auto 18px;gap:12px;align-items:center;padding:13px 16px;cursor:pointer}
+.dh .n{font-family:var(--display);font-size:16px;min-width:0}
+.dh .n small{display:block;font-family:var(--clock);font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--moss-dim);margin-top:2px}
+.dh .fs{display:flex;align-items:baseline;gap:7px;font-family:var(--clock);font-size:30px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+.dh .fs b{font-weight:600} .dh .fs .c{color:var(--blue)} .dh .fs .v{color:var(--red)}
+.dh .fs i{font-style:normal;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--moss-dim)}
+.dh .fs.tba{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--moss-dim);text-align:right;line-height:1.35}
+.dh .ar{color:var(--brass);font-size:14px;text-align:center;transition:transform .15s}
+.dx:checked ~ .dh .ar{transform:rotate(180deg)}
+.dayblk.vik-won .dh{background:linear-gradient(270deg,rgba(200,64,47,.16),transparent 60%)}
+.dayblk.cel-won .dh{background:linear-gradient(90deg,rgba(76,134,196,.16),transparent 60%)}
+.dayblk.live .dh .fs b{color:var(--moss)} .dayblk.live .dh .n small{color:var(--brass)}
+.dbody{display:none;border-top:1px solid var(--line);background:var(--ink)}
+.dx:checked ~ .dbody{display:block}
+.tee{padding:4px 16px}
+.tee .r{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid rgba(38,68,58,.55);font-size:14.5px}
+.tee .r:last-child{border-bottom:none}
+.tee .tt{font-family:var(--clock);font-size:14px;font-weight:600;color:var(--moss)}
+.tee .who .c{color:var(--blue)} .tee .who .v{color:var(--red)} .tee .who i{font-style:normal;color:var(--moss-dim);font-size:13px;margin:0 5px}
+.tee .sc{font-family:var(--clock);font-weight:600;white-space:nowrap;font-size:14px}
+.tee .sc.v{color:var(--red)} .tee .sc.c{color:var(--blue)} .tee .sc.hv,.tee .sc.tb{color:var(--moss-dim)}
+.tee .sc.lv{color:var(--brass)}
+.wx{border-top:1px solid var(--line);background:var(--ink)}
+.wxcard .wxrow{padding-bottom:10px}
+.wx .wh{display:flex;justify-content:space-between;padding:9px 16px 0;font-family:var(--clock);font-size:11.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--moss-dim)}
+.wx .wh em{font-style:normal;color:var(--moss)}
+.wxrow{display:flex;overflow-x:auto;padding:8px 8px 12px;gap:0}
+.wxc{flex:1;min-width:56px;text-align:center;padding:6px 2px;border-radius:8px}
+.wxc.now{background:rgba(216,169,63,.08);outline:1px solid rgba(216,169,63,.35)}
+.wxc .h{font-family:var(--clock);font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--moss-dim)}
+.wxc svg{display:block;margin:5px auto 3px;color:var(--moss)}
+.wxc.sun svg{color:var(--brass)}
+.wxc .tp{font-family:var(--clock);font-size:18px;font-weight:600;color:var(--bone);line-height:1}
+.wxc .wd{font-size:11px;color:var(--moss-dim);margin-top:4px;white-space:nowrap}
+.wxc .pp{font-size:11px;color:var(--blue);margin-top:1px}
+.wxsum{padding:0 16px 12px;font-size:13px;color:var(--moss)}
+
+/* how it works, teams, mvp, lives, footer */
+.how{margin-top:16px;display:grid;gap:12px}
+.how .h{background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.how .h .ht{font-family:var(--clock);font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
+.how .h p{margin-top:6px;font-size:14.5px;color:var(--moss);line-height:1.6}
+.how .h p b{color:var(--bone);font-weight:600}
+.teams{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.team{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--ink-2)}
+.team .th{display:flex;justify-content:space-between;align-items:baseline;padding:12px 16px;font-family:var(--display);font-size:17px;border-bottom:1px solid var(--line)}
+.team .th .tp{font-family:var(--clock);font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;opacity:.85}
+.team.vik .th{color:var(--red);background:linear-gradient(270deg,rgba(200,64,47,.16),transparent 70%)}
+.team.cel .th{color:var(--blue);background:linear-gradient(90deg,rgba(76,134,196,.16),transparent 70%)}
+.team ul{list-style:none}
+.team li{display:grid;grid-template-columns:1fr auto 30px;gap:10px;align-items:baseline;padding:10px 16px;border-bottom:1px solid rgba(38,68,58,.55);font-size:15px}
+.team li:last-child{border-bottom:none}
+.team li i{font-style:normal;font-family:var(--clock);font-size:11.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--moss-dim);margin-left:6px}
+.team li .rec{white-space:nowrap;font-family:var(--clock);font-weight:600;color:var(--moss-dim);font-size:13.5px}
+.team li .pts{white-space:nowrap;font-family:var(--clock);font-weight:600;color:var(--moss);font-size:16px;text-align:right}
+.team li.lead{background:rgba(216,169,63,.07)}
+.team li.lead .pts{color:var(--brass)}
+.team li.lead .nm::after{content:"MVP";font-family:var(--clock);font-size:10.5px;font-weight:600;letter-spacing:.12em;color:var(--brass);margin-left:7px;vertical-align:1px}
+.mvp{margin-top:16px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.mvp > .r{display:flex;align-items:center;gap:14px;padding:12px 16px;border-bottom:1px solid rgba(38,68,58,.55);font-size:15px}
+.mvp > .r:last-child{border-bottom:none}
+.mvp .pos{font-family:var(--clock);font-weight:600;color:var(--moss-dim);width:18px}
+.mvp .r b{font-weight:500;flex:1}
+.mvp .r .dot{width:9px;height:9px;border-radius:50%}
+.mvp .r .dot.r{background:var(--red)} .mvp .r .dot.b{background:var(--blue)}
+.mvp .r .pts{font-family:var(--clock);font-weight:600;color:var(--brass)}
+.mvp > .r:first-child{background:rgba(216,169,63,.07)}
+.lives{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.life{border:1px solid var(--line);border-radius:14px;padding:20px 18px;text-align:center;background:var(--ink-2)}
+.life .lk{font-family:var(--clock);font-size:12.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--moss-dim)}
+.life .lh{font-family:var(--display);font-size:20px;color:var(--bone);margin-top:8px}
+.life .lb{font-size:13.5px;color:var(--moss);margin-top:8px;line-height:1.55}
+.life .big{font-family:var(--clock);font-size:44px;font-weight:600;color:var(--brass);margin-top:10px;line-height:1}
+.life .bigl{font-family:var(--clock);font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--moss-dim);margin-top:2px}
+.life .champ{font-family:var(--display);font-size:26px;color:var(--red);margin-top:10px}
+.sfoot{margin-top:48px;border-top:1px solid var(--line);text-align:center;padding:26px 22px 34px}
+.sfoot svg{color:var(--moss-dim)}
+.sfoot p{font-size:13px;color:var(--moss-dim);margin-top:8px;line-height:1.6}
+@media(max-width:560px){.lives,.teams{grid-template-columns:1fr}.side .p{font-size:15px}.mid .st{font-size:30px}.tee .r{font-size:13.5px}.brandrow .t2{font-size:11.5px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="wx-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></g></symbol>
+<symbol id="wx-part" viewBox="0 0 24 24"><circle cx="8.5" cy="8.5" r="3.4" fill="currentColor" opacity=".85"/><g stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".85"><path d="M8.5 2.2v1.8M2.2 8.5H4M4 4l1.3 1.3M13 4l-1.3 1.3"/></g><path fill="var(--ink-2)" stroke="currentColor" stroke-width="1.6" d="M8 19.5h9.3a3.4 3.4 0 0 0 .4-6.8 4.6 4.6 0 0 0-8.8-1.2A3.6 3.6 0 0 0 8 19.5z"/></symbol>
+<symbol id="wx-cloud" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" d="M7 18.5h10.3a3.7 3.7 0 0 0 .4-7.4 5.2 5.2 0 0 0-10-1.4A4 4 0 0 0 7 18.5z"/></symbol>
+<symbol id="wx-rain" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" d="M7 15.5h10.3a3.7 3.7 0 0 0 .4-7.4 5.2 5.2 0 0 0-10-1.4A4 4 0 0 0 7 15.5z"/><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M9 18.5l-1 2.5M13 18.5l-1 2.5M17 18.5l-1 2.5"/></g></symbol>
+<symbol id="claretjug" viewBox="0 0 19.83 40"><path fill="currentColor" d="M15.03,11.38h0c.31-.24.59-.47.85-.71h0c1.18-1.03,2-2,2.57-2.85.35-.52.61-.99.8-1.39.13-.27.22-.51.29-.71.18-.51.21-.81.21-.81.06-.34.08-.65.07-.94-.08-2.03-1.73-2.94-1.73-2.94.06-.15.08-.29.08-.4,0-.33-.21-.47-.21-.47-.08-.06-.16-.09-.24-.12-.02,0-.04-.01-.06-.02-.07-.02-.14-.03-.2-.03,0,0,0,0,0,0-.06,0-.11,0-.15.02-.01,0-.03,0-.04.01-.03,0-.06.02-.08.02-.01,0-.02,0-.03.01-.02,0-.04.02-.05.02,0,0-.01,0-.02,0-.01,0-.02.01-.02.01-.07.05-.13.1-.17.15,0,0-.02.02-.03.02-.35.4.03.76.03.76-.69.86-2.96.99-2.96.99-.02,0-.03,0-.05,0-.06,0-.11.01-.15.03,0,0,0,0-.01,0-.03.02-.05.05-.07.07,0,0,0,0,0,0-.01.03-.01.05-.01.07,0,0,0,0,0,0,0,.02,0,.03,0,.03,0,.01,0,.03,0,.04.03,1.3-.62,1.45-.62,1.45h0s0-.08,0-.12c-.02-.17-.1-.39-.44-.45h0c-.08-.01-.16,0-.23,0-.04,0-.07,0-.1.02-.05.01-.09.03-.13.05-.02.01-.05.02-.07.03-.04.02-.07.04-.1.06,0,0-.03.02-.03.02-.02.02-.04.04-.04.04,0,0,0,0,0,0l-.47-.19c.06-.1.11-.18.16-.27.37-.57.67-.8.67-.8,0,0,.17-.13.27-.28.04-.05.06-.11.07-.16,0,0,0-.01,0-.02,0-.03,0-.06,0-.08,0,0,0,0,0,0-.02-.05-.05-.08-.09-.11-.01,0-.02-.02-.04-.02-.03-.02-.06-.04-.09-.05-.01,0-.03-.01-.04-.01-.05-.01-.09-.02-.14-.03,0,0,0,0,0,0-.05,0-.1,0-.14,0,0,0-.02,0-.03,0-.03,0-.06,0-.09,0,0,0-.01,0-.01,0-.02,0-.04,0-.04,0h0s0,0-.01,0c0,0,0,0,0,0,0,0-.02,0-.04,0,0,0-.02,0-.02,0-.02,0-.04,0-.06.01-.01,0-.03,0-.04.01-.02,0-.05.01-.08.02-.02,0-.04.01-.07.02-.03.01-.07.02-.11.04-.03,0-.06.02-.09.03-.05.02-.1.04-.16.06-.04.01-.07.03-.11.04-.07.03-.14.06-.22.09-.04.02-.08.03-.12.05-.13.06-.26.12-.42.19-.19.09-.36.16-.54.23-.05.02-.1.04-.14.05-.14.05-.26.09-.39.13-.03,0-.07.02-.1.03-.15.04-.29.07-.43.1-.03,0-.06.01-.09.02-.11.02-.21.04-.3.05-.03,0-.06,0-.09.01-.19.02-.36.03-.48.03-.02,0-.04,0-.05,0,0,0-.02,0-.02,0-.06,0-.11,0-.14,0,0,0,0,0,0,0-.03,0-.05,0-.05,0,0,0-1.1,0-2.82-.63-.2-.07-.39-.14-.57-.19-.06-.02-.11-.03-.17-.05-.12-.03-.23-.07-.34-.1-.06-.02-.11-.03-.17-.04-.09-.02-.18-.04-.26-.06-.05-.01-.1-.02-.15-.03-.08-.01-.15-.03-.22-.04-.04,0-.08-.01-.11-.02-.07,0-.12-.02-.18-.02-.03,0-.06,0-.08,0-.06,0-.12,0-.16-.01,0,0-.02,0-.03,0-.05,0-.08,0-.11,0-.02,0-.04,0-.04,0h0s-.01,0-.03,0c-.04,0-.11,0-.19.01-.2.02-.47.08-.49.21,0,.05.02.1.05.15.12.13.37.22.37.22,0,0,2.92,1.36,2.98,5.27h0s-.15.06-.22.21c-.02.05-.04.11-.04.19,0,.23.19.36.28.42.03.02.05.03.05.03,0,0-.02,0-.05.02s-.06.03-.1.06c0,0-.01.02-.02.02-.03.03-.06.06-.08.1-.03.05-.05.12-.05.2,0,.18.09.28.17.34.06.05.12.07.12.07,0,0-.01.28-.13.71,0,.03-.02.06-.03.1-.06.22-.15.47-.27.73-.08.18-.18.36-.3.55-.08.12-.16.24-.25.37-.07.1-.15.2-.24.29-.07.08-.14.16-.22.24-.12.13-.23.24-.33.34-.23.24-.41.42-.54.57-.19.22-.3.37-.37.53-.02.05-.04.1-.05.15,0,.02,0,.03-.01.05-.01.06-.02.12-.03.2,0,.06-.01.11-.02.18,0,.09-.01.19-.02.31h0s-.13.05-.2.14c-.02.02-.04.05-.04.08-.02.08.04.17.25.27,0,0-.01.04,0,.09,0,.03.02.07.04.1.01.02.02.03.04.04h0s0,.37.02.97c0,.01,0,.03,0,.04,0,.03,0,.05,0,.08.02.34.05.74.09,1.18.03.31.07.64.12.99.03.2.06.41.09.63.04.23.08.47.13.71.04.21.09.43.14.64.04.18.09.37.14.55.2.75.46,1.49.8,2.17.53,1.09,1.25,2.02,2.21,2.56,0,0-.16.13-.27.31-.04.06-.07.13-.08.2,0,0,0,0,0,.02,0,.04.03.14.18.24,0,0,.31.17.31.5,0,.06,0,.12-.03.18-.02.07-.05.14-.1.21,0,0,0,0-.01.02-.01.02-.04.06-.08.11-.11.13-.31.32-.61.42,0,0-.13.04-.25.11-.13.07-.25.17-.25.29,0,0-.01,0-.02.01-.04.02-.14.1-.22.24-.02.04-.04.08-.05.13,0,0-.06.14-.31.21,0,0-.39.09-.49.36,0,0-.35.18-.35.41l-.02.17s0,.12-.16.19c-.09.04-.39.14-.61.34-.11.1-.2.23-.24.39,0,.02-.02.05-.02.07,0,0-.12.07-.23.19-.02.03-.05.05-.07.08-.03.06-.06.12-.06.19v3.19s-.1.06-.22.16c-.04.03-.08.07-.12.11-.04.04-.08.09-.12.13-.02.03-.04.06-.06.1,0,0-.28.14-.55.44-.17.19-.33.44-.4.77,0,0-.21.17-.32.52-.03.12-.06.26-.05.42,0,.16,0,.3,0,.43,0,.37,0,.58,0,.58,0,0,1.16,2.08,7.48,2.08s7.48-2.08,7.48-2.08c0,0-.01-.37,0-1.01,0-.16-.02-.3-.05-.42-.1-.36-.32-.52-.32-.52-.04-.17-.1-.31-.17-.44-.29-.53-.77-.77-.77-.77-.01-.03-.03-.07-.06-.1-.02-.03-.05-.06-.07-.09-.16-.18-.38-.3-.38-.3h0v-3.19c0-.07-.03-.13-.06-.19-.02-.03-.05-.06-.07-.08-.1-.11-.22-.19-.22-.19,0-.1-.05-.18-.09-.25-.05-.08-.1-.15-.17-.2-.09-.08-.19-.14-.28-.19-.14-.08-.27-.12-.33-.15-.04-.02-.07-.04-.09-.06-.07-.06-.07-.13-.07-.13l-.02-.17s-.01-.03-.02-.05c0-.04-.02-.08-.04-.11-.1-.15-.3-.25-.3-.25-.11-.27-.49-.36-.49-.36-.16-.05-.24-.12-.27-.16-.02-.03-.04-.05-.04-.05-.06-.26-.29-.38-.29-.38,0-.12-.13-.22-.25-.29-.13-.07-.25-.11-.25-.11-.24-.09-.42-.22-.53-.34-.12-.12-.17-.21-.17-.21-.37-.6.18-.89.18-.89.15-.1.18-.2.18-.24,0-.01,0-.02,0-.02-.02-.07-.05-.14-.08-.2-.11-.18-.27-.31-.27-.31.96-.54,1.68-1.47,2.21-2.56.13-.27.25-.55.37-.84.11-.29.21-.58.3-.88.6-1.98.79-4.09.84-5.28h0c.03-.6.02-.97.02-.97.12-.06.08-.23.08-.24.14-.07.21-.13.24-.19,0-.02,0-.03,0-.05,0-.01,0-.02,0-.03,0-.03-.02-.06-.05-.08-.07-.08-.2-.13-.2-.13-.01-.15-.02-.27-.03-.38,0,0,0,0,0-.01,0,0,0,0,0,0,.06.02.12.03.18.03,0,0,0,0,0,0,0,0,.01,0,.02,0,.08,0,.15-.02.22-.05,0,0,.02,0,.03,0,.07-.03.13-.07.19-.11.01,0,.02-.02.03-.02.05-.04.09-.08.12-.11,0,0,.02-.02.02-.02.01-.02.03-.03.03-.04,0,0,0,0,0,0,.09-.08.16-.16.22-.25.05-.08.1-.15.14-.23.04-.08.07-.15.09-.22.02-.05.03-.11.04-.16.03-.13.03-.24.03-.32,0-.08,0-.12,0-.12.04.02.07.03.11.05.05.02.1.05.15.07.04.01.08.01.12.02.03,0,.06.01.09.01h0c.09,0,.16-.02.22-.05.02,0,.03-.01.04-.02.05-.03.1-.07.14-.11,0,0,0,0,0,0,.03-.04.05-.07.07-.1,0,0,0-.01.01-.02,0,0,.01-.02.01-.03,0-.02.02-.04.02-.04.02-.05.03-.1.03-.15.01-.18-.07-.31-.15-.38-.06-.06-.11-.08-.11-.08ZM13.32,13s-.05.06-.05.06c-.02-.04-.05-.07-.07-.1,0,0,0-.01-.01-.02,0-.01-.02-.02-.03-.03-.02-.02-.04-.04-.06-.05,0,0-.02-.01-.03-.02-.02-.01-.05-.02-.07-.03,0,0,0,0,0,0,0,0,0,0-.01,0-.03,0-.05,0-.08,0,0,0,0,0,0,0,0,0,0,0-.01,0-.02,0-.04,0-.05,0,0,0,0,0,0,0,0,0-.02,0-.02,0,0,0,0,0,0,0,0,0,0,0,0,0-.02,0-.04.02-.06.03-.08.04-.14.08-.18.13-.04-.05-.09-.1-.14-.16-.01-.01-.02-.02-.03-.03-.04-.05-.09-.1-.14-.15-.1-.11-.21-.22-.35-.36-.11-.11-.22-.23-.35-.36-.17-.18-.32-.36-.46-.53-.13-.18-.25-.36-.35-.53-.04-.07-.07-.13-.11-.2-.05-.1-.1-.21-.15-.31-.07-.16-.13-.32-.17-.46-.14-.44-.18-.77-.2-.91,0-.04,0-.06,0-.06,0,0,.16-.05.24-.21.03-.05.04-.12.04-.2,0-.24-.17-.34-.25-.38-.03-.01-.05-.02-.05-.02,0,0,.02,0,.05-.03.09-.05.28-.19.28-.42,0-.3-.26-.4-.26-.4.05-.39.11-.75.17-1.08.16-.81.37-1.48.59-2.02l.88.27c.07.1.14.18.22.24.03.02.05.04.08.05.05.04.1.07.16.09.03.01.06.02.09.03.05.02.1.03.15.03.03,0,.06,0,.09,0,.04,0,.08,0,.12,0,.05,0,.11,0,.16-.02.03,0,.06-.01.09-.02.05-.01.09-.03.13-.04.02,0,.05-.02.07-.02.04-.02.07-.03.1-.05,0,0,.02-.01.03-.02.03-.01.05-.03.05-.03.29-.17.51-.37.67-.58.16-.21.27-.42.33-.62.14-.39.12-.69.12-.69h0c.16.01.31,0,.46,0,.08,0,.15,0,.23-.01.09,0,.19-.02.28-.03.07,0,.14-.02.2-.03.09-.02.17-.03.25-.05.06-.01.12-.03.17-.04.08-.02.15-.04.21-.06.05-.02.1-.03.14-.05.07-.02.12-.05.18-.07.04-.01.08-.03.11-.04.05-.02.1-.05.14-.07.02-.01.05-.02.07-.03.04-.02.07-.04.1-.05,0,0,.03-.01.03-.02.03-.02.04-.03.04-.03l.33.46s.08.05.13.08c.81.47.97,1.26.97,1.26.15.6.09,1.18,0,1.64-.13.57-.33.96-.33.96-.08.17-.18.34-.27.5-.19.32-.41.63-.62.9-.52.67-.99,1.13-.99,1.13l-.88.86-.35.35-.81.8c-.06.07-.11.13-.15.19s-.06.11-.08.15c0,0,0,0,0,.01-.01.04-.02.07-.03.09,0,.02,0,.03,0,.03-.05-.04-.11-.07-.16-.1-.02,0-.03-.01-.05-.02-.04-.01-.08-.02-.11-.03-.01,0-.02,0-.03,0-.04,0-.07,0-.1,0,0,0,0,0,0,0-.01,0-.02,0-.02,0,0,0-.02,0-.02,0-.01,0-.03,0-.04,0-.03,0-.05,0-.08.01-.02,0-.05,0-.07.01-.03,0-.05.02-.07.03-.02,0-.04.02-.05.03-.02.01-.04.03-.05.05-.01.01-.03.02-.04.04-.01.02-.03.04-.04.06,0,.01-.02.03-.02.04,0,.02-.02.04-.02.06,0,.01,0,.03-.01.04,0,.02,0,.04-.01.06,0,0,0,.02,0,.03,0,.02,0,.03,0,.05,0,0,0,.01,0,.01,0,.01,0,.02,0,.02,0,.1.03.17.05.23,0,.02.02.03.02.05.02.04.05.08.08.11,0,0,.01.02.02.02.04.03.08.05.13.06.01,0,.02,0,.03,0,.03,0,.07.01.1.01,0,0,0,0,.01,0,0,0,0,0,.02,0,.02,0,.04,0,.05,0,0,0,.01,0,.02,0,.01,0,.02,0,.02,0,0,0,0,0,0,0h0c0,.11-.04.21-.09.31-.05.08-.09.14-.13.19Z"/></symbol><symbol id="logo-glyph" viewBox="0 0 47.88 48"><path fill="currentColor" d="M.05,17.77c.11.07.37-.04.56-.04.48-.04,1.01.04,1.46.01h.08c.71-.07,1.48-.41,2.06-.84,1.35-.99,2.21-2.51,1.81-2.83-.13-.1-.35-.07-.5.03-.41.31-.99.67-1.57.59-.66-.09-1.39-.33-2.04-.11-1.25.43-2.14,1.91-1.86,3.19Z"/><path fill="currentColor" d="M24.19,10.66s.04.09.06.12l.02.03c.69.92,4.85-2.26,4.98-5.92.05-1.17-.42-2.18-.29-3.35.01-.2-.08-.37-.31-.36-1.89.08-3.65,1.09-4.25,2.89-.57,1.46.57,2.81.52,4.27-.08,1.17-.96,1.74-.73,2.31Z"/><path fill="currentColor" d="M2.25,10.11h-.06c-1.56.77-.57,2.61.94,2.54.63-.04,2.18-.16,2.41-.18.14-.05.5-.28.36-.47-.12-.15-.28-.32-.41-.46-.85-.93-1.92-1.62-3.24-1.43Z"/><path fill="currentColor" d="M19.05,45.34c1.58,1.62,4.48,1.97,6.22.35,1.16-1.14,1.04-3.42-.33-4.43-.91-.58-2.33-.29-2.67.08-.21.28.04.66.18.94.22.4.26.86.13,1.33-.29,1.33-2.16,1.01-2.6,0-.35-.84-.14-1.95.45-2.62,1.54-1.38,4.02-1.65,5.94-.95,3.06,1.13,3.96,4.63,6.66,6.19,2.54,1.51,6.67,2.47,9.64,1.1,2.06-.67,4.08-1.51,5.02-3.67.58-1.01-.31-2.55-1.28-2.88l-.07-.02c-1.34-.36-2.76.41-3.44,1.58-.43.8-.89,1.84-1.28,2.64-.11.25-.18.38-.33.47-2.83,1.26-5.9-.58-7.32-3.1-.96-1.6-1.38-3.5-1.17-5.37.27-1.77.78-4.75,3.18-4.52,1.04.19,1.75,1.21,2.83,1.37,1.49.3,2.75-1.03,2.03-2.46-.86-1.17-2.48-1.25-3.7-1.2,1.55-.71,3.53-.4,5.02.23,3.18,1.39,2.81,4.58,4.18,5.03.47.16.82-.37.83-.81.11-1.08.08-2.14.02-3.21-.06-.69-.12-1.25-.55-1.69-.65-.55-1.87-.92-2.68-1.34-2.54-1.13-5.41-1.06-8.09-.54-5.15,1.03-7.63,5.61-6.92,10.66.04.41-.2.37-.49.22-1.92-.91-4.09-1.19-6.26-.93-2.27.37-4.57,1.55-4.28,4.97.12,1,.42,1.87,1.13,2.58Z"/><path fill="currentColor" d="M16.73,32.93s0,0,0,0c-.04.02-.08.04,0,0Z"/><path fill="currentColor" d="M16.01,34.18c.55.86,1.91.45,2.76.51h.06c1.05.05,2.12-.29,3.21-.13.6.05,1.27.29,1.85.07.56-.25.43-1.04.01-1.37-1.94-1.11-2.41-1.67-2.4-4.07.01-1.1-.04-2.75,1.06-3.29.37-.1,1.09.33,1.54.63.86.6,1.99.74,2.93.26.94-.45,1.86-1.4,2.07-2.49-.13-.39-.74-.31-1.07-.51-1.9-1.15-4.51-.64-6.12.53-.24.16-.35.1-.36-.18-.02-1.17-.01-2.38-.03-3.58,0-1.38-.32-3.32.69-4.42,1.18-.9,2.83-.28,3.98.43,2.26,1.27,3.28,4,5.24,5.52,1.71,1.04,3.87,1.53,5.86,1.33,3.6-.45,6.2-4.79,6.76-8.03.06-.87.01-1.83.25-2.67.05-.15.15-.25.32-.34,1.13-.5,3.15-1.4,3.05-2.81-.14-.39-.57-.62-.38-1.11.68-1.73-2.33-4.28-2.88-1.66-.06.57.26,1.52-.05,2.13-.13.3-.25.68-.43.96-.07.1-.13.09-.19-.02-.58-1.47-.7-3.23-.98-4.76-.23-.62-.45-1.4-.86-1.92-1.56-1.89-3.95-2.44-6.23-2.58-.65-.14-1.3-.36-1.95-.57-.15-.04-.27-.03-.35.05-.19.22-.14.6-.14.89.14,1.26.45,2.59.99,3.77,2.09,4.17,5.04,1.81,6.6,4.45.07.12.26.46.07.51-1.12-.25-2.22.03-3.31.38-.82.25-1.65.41-2.48.12-.61-.22-1.46-.25-1.84.37-.48.8.18,1.87.96,2.06.33.08.43.28.27.62-.89,1.6.7,4.41,2.51,4.52.77-.01,1.75-.09,2.18-.83.18-.32.16-.73-.11-.89-.44-.29-1.28.01-1.66-.3-.36-.34-.55-.95-.49-1.42.21-1.05,1-2.06,1.95-2.52,1.54-.17,3.11,1.33,3.24,2.86-.24,3.24-2.82,6.21-6.12,6.25-3.08-.34-3.72-1.78-5.48-3.92-.63-.7-1.33-1.35-2.06-1.88-.1-.13.11-.17.22-.21,5.1-1.03,3.36-7.31.62-5.08-.57.48-1.07,1.17-1.58,1.72-1.5,1.59-3.91,1.24-5.87,1.12-1.93-.17-3.95-.82-5.71.24-.4.24-.94.86-.46,1.24.53.4,1.73.39,2.13.99.72,1.35.64,3.28.68,4.78-.11,2.96.2,5.97.22,8.96-.01.14.02.31-.09.24-.6-1.07-1.43-2.31-2.46-3.03-.28-.25-.4-.48-.74-.62-3.66-1.55-7.42-1.23-9.67,2.41-1.03,1.49-1.99,3.42-2.09,4.85-.06.86,0,1.84-.27,2.66-.5.61-1.59.72-2.2,1.27-.74.58-1.55,1.46-.93,2.17.15.16.24.37.2.59-.77,1.78,2.15,4.46,2.85,1.89.08-.63-.27-1.6.09-2.27.16-.29.22-.78.49-.96.82,1.5.68,3.53,1.16,5.15.74,2.75,3.81,4.07,6.41,4.12.96,0,1.92.65,2.84.65.09-.05.15-.18.17-.33.09-1.17-.3-2.32-.62-3.46-.66-2.26-2.64-3.79-4.92-3.92-.98-.16-1.79-.72-2.18-1.74-.03-.02,0-.2.04-.17,1.13.2,2.25-.02,3.35-.39.82-.25,1.65-.41,2.48-.12.35.11.72.2,1.09.12,1.47-.28.94-2.29-.22-2.55-.28-.07-.43-.23-.3-.54.83-1.58-.31-3.59-1.67-4.39-.84-.38-1.99-.23-2.74.3-.36.29-.58,1.01-.08,1.26.56.28,1.45-.16,1.8.51.59.88.16,1.96-.46,2.69-.42.44-.87,1.06-1.53,1.04-1.49-.16-3.01-1.58-2.91-3.17.4-3.88,4.21-6.93,8.04-5.81,1.83.76,2.85,2.73,3.48,4.51.2.49-.13,1-.57,1.21-.41.17-.83.69-.59,1.17ZM35.76,3.57l.03-.04c2.17-.46,1.93,1.82,2.96,3.39-1.35-.55-2.64-1.85-2.99-3.35ZM12.02,44.46l-.03.04c-2.17.46-1.93-1.82-2.96-3.39,1.35.55,2.64,1.85,2.99,3.35ZM16.8,32.91s0,0-.01,0c0,0,0,0,0,0,0,0,0,0,.01,0ZM16.79,32.91s0,0,0,0c0,0,0,0-.01,0,0,0,0,0,.01,0Z"/><path fill="currentColor" d="M16.15.23c-1.71.18-3.44.43-5.14.12-.57-.08-1.14-.17-1.71-.17-2.22.09-4.29.45-6.49-.1C.3-.33.33,1.11.08,3.07c-.07.87-.16,3.75.71,4.13h.05c.63-.14.96-1.14,1.23-1.73.4-.93.75-2.07,1.7-2.6,1.15-.58,2.77-.55,3.75.29.88.76.8,2,.83,3.08,0,2.59-.15,5.89-.15,8.45-.01,1.04-.13,1.97-.63,2.85-.69,1.18-1.76,1.42-2.27,2.07-1.51,2.71,4.02.92,5.2,1.22,1.01.04,2.07.27,3.08.16.69-.08.6-1.01.26-1.4-.41-.52-1.21-.83-1.61-1.45-.64-.88-.83-2.04-.89-3.11-.12-2.16-.18-4.92-.18-7.11-.09-3.86.66-5.56,4.93-5.45.75.05,1.04.72,1.22,1.35.21.65.43.97.89,1.59.47.6,1.56,1.97,1.89.53.32-1.31.12-2.59.15-3.95.15-2.61-2.33-1.98-4.09-1.77Z"/><path fill="currentColor" d="M38.9,38.1c-1.99.11-1.89,3.2.06,3.22h.08c2.08,0,1.96-3.39-.14-3.22Z"/><path fill="currentColor" d="M3.53,22.9h-.08c-2.08,0-1.96,3.39.14,3.22,1.99-.11,1.89-3.2-.06-3.22Z"/><path fill="currentColor" d="M16.4,10.57h.08c2.08,0,1.96-3.39-.14-3.22-1.99.11-1.89,3.2.06,3.22Z"/><path fill="currentColor" d="M44.44,25.62h.08c2.08,0,1.96-3.39-.14-3.22-1.99.11-1.89,3.2.06,3.22Z"/></symbol>
+</svg>
+
+<div class="note">
+  <h1>thefreemancup.com, the family scoreboard (v6)</h1>
+  <p>One public page, no sign-in. Who's winning the cup, what's happening on the course right now, how this thing works. Shown mid-morning on Day 2.</p>
+  <p><b>Changed in v6:</b> moment lines now say who did what: "Kyle and Matt win the 1st hole with Matt's par, 1 up." The scorecards gained a par row so those lines have something to stand on. The bottom of the page is reorganized: "New here?" is folded into a one-tap "How the cup works" accordion directly under the cup strip, where a first-time visitor actually needs it; Teams and MVP race are merged into one "The players" roster with each player's record and points and the MVP leaders marked in brass; "The page's other lives" was a note to you, not page content, so it moved into the notes below. Nothing random left under the tee sheet except the footer.</p>
+</div>
+
+<div class="site">
+  <header class="shd">
+    <div class="wrap">
+      <div class="brandrow">
+        <svg width="38" height="38"><use href="#logo-glyph"/></svg>
+        <div>
+          <div class="t1">The Freeman Cup</div>
+          <div class="t2">Sand Valley · Oct 8 to 10</div>
+        </div>
+      </div>
+      <div class="hdright">
+        <div class="livepill"><span class="d"></span>Live</div>
+        <a class="sibtn" href="#signin">Player sign-in</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="strip">
+    <div class="day">Day 2 of 3 · The Commons</div>
+    <div class="striptop">
+      <div class="sside cel"><span class="pt">1</span><span class="nm">Celts</span></div>
+      <div class="jugwrap">
+        <svg width="29" height="48" style="width:29px;height:48px"><use href="#claretjug"/></svg>
+        <span class="juglbl">The Lassie</span>
+      </div>
+      <div class="sside r vik"><span class="nm">Vikes</span><span class="pt">3</span></div>
+    </div>
+    <div class="tug">
+      <div class="f fc" style="width:7.4%"></div>
+      <div class="f fv" style="width:22.2%"></div>
+      <div class="livez" style="left:7.4%;right:22.2%"></div>
+      <div class="tick" style="left:55.6%"></div>
+      <div class="tick" style="right:55.6%"></div>
+    </div>
+    <div class="striplbl"><span>4 of 13½ decided</span><span>Vikes lead · 4½ to clinch</span></div>
+  </div>
+  <div class="howbar">
+    <input type="checkbox" class="hx" id="how">
+    <label class="hl" for="how"><span>New here? How the cup works</span><span class="ar">▾</span></label>
+    <div class="hb">
+      <div class="wrap">
+        <p><b>It's match play.</b> Nobody counts total strokes. Each hole is its own contest. Win the hole and you're 1 up. A match ends when one side leads by more holes than remain, which is what 4 &amp; 3 means.</p>
+        <p><b>Every match is one point.</b> Win it, your team gets 1. All square after 18 is halved, half a point each. First team to 7½ of the 13½ takes the cup.</p>
+        <p><b>The Lassie</b> is the trophy, a silver claret jug that lives with the winning side for a year and gets talked about for the other eleven months.</p>
+      </div>
+    </div>
+  </div>
+
+  <section class="sect">
+    <div class="wrap">
+      <h2>Out on the course now</h2>
+      <p class="sub">Scores come in from the players hole by hole.</p>
+      <div class="wxcard">
+        <div class="wh"><span>Today · The Commons · 8a to 1p</span><em>Nekoosa, WI</em></div>
+        <div class="wxrow">
+          <div class="wxc"><div class="h">8A</div><svg width="26" height="26"><use href="#wx-part"/></svg><div class="tp">44°</div><div class="wd">W 6</div><div class="pp">0%</div></div>
+          <div class="wxc"><div class="h">9A</div><svg width="26" height="26"><use href="#wx-part"/></svg><div class="tp">48°</div><div class="wd">W 7</div><div class="pp">0%</div></div>
+          <div class="wxc now sun"><div class="h">10A</div><svg width="26" height="26"><use href="#wx-sun"/></svg><div class="tp">52°</div><div class="wd">SW 8</div><div class="pp">0%</div></div>
+          <div class="wxc sun"><div class="h">11A</div><svg width="26" height="26"><use href="#wx-sun"/></svg><div class="tp">56°</div><div class="wd">SW 9</div><div class="pp">0%</div></div>
+          <div class="wxc sun"><div class="h">12P</div><svg width="26" height="26"><use href="#wx-sun"/></svg><div class="tp">60°</div><div class="wd">SW 11</div><div class="pp">0%</div></div>
+          <div class="wxc"><div class="h">1P</div><svg width="26" height="26"><use href="#wx-part"/></svg><div class="tp">62°</div><div class="wd">SW 12</div><div class="pp">10%</div></div>
+        </div>
+      </div>
+
+      <!-- MATCH 1 -->
+      <div class="mc">
+        <div class="top"><span class="fmt">Aggregate Match Play</span><span class="meta">Teed off 8:10<i>·</i>Thru 11</span></div>
+        <div class="face vik-lead">
+          <div class="side cel"><div class="tm">Celts</div><div class="p">Brad &amp; Chris</div></div>
+          <div class="mid"><div class="st vik">2 UP</div><div class="sl">Vikes</div></div>
+          <div class="side vik"><div class="tm">Vikes</div><div class="p">Kyle &amp; Matt</div></div>
+        </div>
+        <div class="act">
+          <div class="ah"><span>Latest</span><span>9 moments</span></div>
+          <div class="ev vik"><span class="t">10:12</span><span><span class="who vik">Kyle and Matt</span> win the 11th hole with Kyle's birdie, <b>2 up</b>.</span></div>
+          <div class="ev cel"><span class="t">10:03</span><span><span class="who cel">Brad and Chris</span> take the 10th hole with two bogeys after a Vikes stumble, <b>1 down</b>.</span></div>
+          <div class="ev cel"><span class="t">9:48</span><span><span class="who cel">Brad and Chris</span> win the 8th hole with Brad's net birdie, <b>2 down</b>.</span></div>
+          <div class="ev gold"><span class="t">9:38</span><span><span class="who vik">Kyle and Matt</span> win the 7th hole with Kyle's <b>net eagle</b>, <b>4 up</b>.</span></div>
+          <div class="ev vik"><span class="t">9:30</span><span><span class="who vik">Kyle and Matt</span> win the 6th hole with Matt's net birdie, <b>3 up</b>.</span></div>
+          <input type="checkbox" class="xp" id="x1">
+          <div class="more">
+            <div class="ev cel"><span class="t">9:14</span><span><span class="who cel">Brad and Chris</span> win the 4th hole with Chris's birdie, <b>2 down</b>.</span></div>
+            <div class="ev vik"><span class="t">9:03</span><span><span class="who vik">Kyle and Matt</span> win the 3rd hole with Kyle's net par, <b>2 up</b>.</span></div>
+            <div class="ev vik"><span class="t">8:47</span><span><span class="who vik">Kyle and Matt</span> win the 1st hole with Matt's par, <b>1 up</b>.</span></div>
+            <div class="ev"><span class="t">8:10</span><span>Teed off on the 1st.</span></div>
+          </div>
+          <label class="xl" for="x1"><span class="a">Show all 9 ▾</span><span class="b">Show latest 5 ▴</span></label>
+        </div>
+        <input type="checkbox" class="sc-x" id="sc1"><label class="sc-l" for="sc1"><span>Full scorecard</span><span class="ar">▾</span></label>
+        <div class="holecard">
+          <table>
+            <tr><th class="pl hd">Hole</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th><th>17</th><th>18</th></tr>
+<tr class="par"><td class="pl hd">Par</td><td>4</td><td>4</td><td>3</td><td>5</td><td>4</td><td>4</td><td>4</td><td>3</td><td>4</td><td>4</td><td>5</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td></tr>
+            <tr><td class="pl c">Brad</td><td>5</td><td>4</td><td>5</td><td>5</td><td>4</td><td>6</td><td>4</td><td class="net">3</td><td>5</td><td>5</td><td>4</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td></tr>
+            <tr><td class="pl c">Chris</td><td>5</td><td>5</td><td>6</td><td>4</td><td>5</td><td>5</td><td>5</td><td>5</td><td>4</td><td>5</td><td>6</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td></tr>
+            <tr class="sum"><td class="pl hd">Celts net</td><td>10</td><td>9</td><td>11</td><td>9</td><td>9</td><td>11</td><td>9</td><td>7</td><td>9</td><td>10</td><td>10</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td></tr>
+            <tr class="sum"><td class="pl hd">Vikes net</td><td>9</td><td>9</td><td>8</td><td>11</td><td>9</td><td>8</td><td>6</td><td>9</td><td>9</td><td>11</td><td>9</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td></tr>
+            <tr><td class="pl v">Kyle</td><td>5</td><td>4</td><td class="net">4</td><td>6</td><td>4</td><td>5</td><td class="net">3</td><td>5</td><td>4</td><td>5</td><td>4</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td></tr>
+            <tr><td class="pl v">Matt</td><td>4</td><td>5</td><td>5</td><td>5</td><td>5</td><td class="net">4</td><td>4</td><td>4</td><td>5</td><td>6</td><td>5</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td></tr>
+            <tr class="res"><td class="pl hd">Hole to</td><td class="v">VIK</td><td class="h">½</td><td class="v">VIK</td><td class="c">CEL</td><td class="h">½</td><td class="v">VIK</td><td class="v">VIK</td><td class="c">CEL</td><td class="h">½</td><td class="c">CEL</td><td class="v">VIK</td><td class="h"></td><td class="h"></td><td class="h"></td><td class="h"></td><td class="h"></td><td class="h"></td><td class="h"></td></tr>
+          </table>
+          <div class="holenote"><b>Gross scores.</b> A brass number means that player got a stroke there, so it counts one less. The two net rows decide each hole. Swipe for more holes.</div>
+        </div>
+      </div>
+
+      <!-- MATCH 2 -->
+      <div class="mc">
+        <div class="top"><span class="fmt">Aggregate Match Play</span><span class="meta">Teed off 8:20<i>·</i>Thru 9</span></div>
+        <div class="face cel-lead">
+          <div class="side cel"><div class="tm">Celts</div><div class="p">Nate &amp; Joe</div></div>
+          <div class="mid"><div class="st cel">1 UP</div><div class="sl">Celts</div></div>
+          <div class="side vik"><div class="tm">Vikes</div><div class="p">Danny &amp; Pete</div></div>
+        </div>
+        <div class="act">
+          <div class="ah"><span>Latest</span><span>6 moments</span></div>
+          <div class="ev cel"><span class="t">9:52</span><span><span class="who cel">Nate and Joe</span> win the 9th hole with Joe's par, <b>1 up</b> at the turn.</span></div>
+          <div class="ev gold"><span class="t">9:41</span><span><span class="who vik">Danny and Pete</span> win the 7th hole with Danny's <b>net eagle</b>, <b>all square</b>.</span></div>
+          <div class="ev vik"><span class="t">9:22</span><span><span class="who vik">Danny and Pete</span> win the 5th hole with a pair of pars, <b>1 down</b>.</span></div>
+          <div class="ev cel"><span class="t">9:05</span><span><span class="who cel">Nate and Joe</span> win the 3rd hole with pars from Joe and Nate, <b>2 up</b>.</span></div>
+          <div class="ev cel"><span class="t">8:44</span><span><span class="who cel">Nate and Joe</span> win the 1st hole with Joe's par, <b>1 up</b>.</span></div>
+          <input type="checkbox" class="xp" id="x2">
+          <div class="more">
+            <div class="ev"><span class="t">8:20</span><span>Teed off on the 1st.</span></div>
+          </div>
+          <label class="xl" for="x2"><span class="a">Show all 6 ▾</span><span class="b">Show latest 5 ▴</span></label>
+        </div>
+        <input type="checkbox" class="sc-x" id="sc2"><label class="sc-l" for="sc2"><span>Full scorecard</span><span class="ar">▾</span></label>
+        <div class="holecard">
+          <table>
+            <tr><th class="pl hd">Hole</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th><th>17</th><th>18</th></tr>
+<tr class="par"><td class="pl hd">Par</td><td>4</td><td>3</td><td>4</td><td>5</td><td>4</td><td>4</td><td>4</td><td>3</td><td>4</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td></tr>
+            <tr><td class="pl c">Nate</td><td>5</td><td>4</td><td class="net">5</td><td>4</td><td>5</td><td>4</td><td>5</td><td>4</td><td>5</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td></tr>
+            <tr><td class="pl c">Joe</td><td>4</td><td>5</td><td>4</td><td>5</td><td>4</td><td>5</td><td>4</td><td>5</td><td>4</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td></tr>
+            <tr class="sum"><td class="pl hd">Celts net</td><td>9</td><td>9</td><td>8</td><td>9</td><td>9</td><td>9</td><td>9</td><td>9</td><td>9</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td></tr>
+            <tr class="sum"><td class="pl hd">Vikes net</td><td>10</td><td>9</td><td>9</td><td>9</td><td>8</td><td>9</td><td>7</td><td>9</td><td>10</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td></tr>
+            <tr><td class="pl v">Danny</td><td>5</td><td>5</td><td>4</td><td>5</td><td>4</td><td>4</td><td class="net">3</td><td>5</td><td>5</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td></tr>
+            <tr><td class="pl v">Pete</td><td>5</td><td>4</td><td>5</td><td>4</td><td class="net">5</td><td>5</td><td>5</td><td>4</td><td>5</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td><td class="o">·</td></tr>
+            <tr class="res"><td class="pl hd">Hole to</td><td class="c">CEL</td><td class="h">½</td><td class="c">CEL</td><td class="h">½</td><td class="v">VIK</td><td class="h">½</td><td class="v">VIK</td><td class="h">½</td><td class="c">CEL</td><td class="h"></td><td class="h"></td><td class="h"></td><td class="h"></td><td class="h"></td><td class="h"></td><td class="h"></td><td class="h"></td><td class="h"></td></tr>
+          </table>
+          <div class="holenote"><b>Gross scores.</b> Brass numbers got a stroke. The two net rows decide each hole.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sect">
+    <div class="wrap">
+      <h2>Round by round</h2>
+      <p class="sub">Tee times and results.</p>
+
+      <!-- DAY 1 -->
+      <div class="dayblk vik-won">
+        <input type="checkbox" class="dx" id="d1">
+        <label class="dh" for="d1">
+          <span class="n">Day 1 · Mammoth Dunes<small>Thursday · Fourball · Final</small></span>
+          <span class="fs"><b class="c">1</b><i>to</i><b class="v">3</b></span>
+          <span class="ar">▾</span>
+        </label>
+        <div class="dbody">
+          <div class="tee">
+            <div class="r"><span class="tt">8:00</span><span class="who"><span class="c">Brad &amp; Chris</span><i>vs</i><span class="v">Kyle &amp; Matt</span></span><span class="sc v">Vikes 4 &amp; 3</span></div>
+            <div class="r"><span class="tt">8:10</span><span class="who"><span class="c">Nate &amp; Joe</span><i>vs</i><span class="v">Danny &amp; Pete</span></span><span class="sc v">Vikes 2 &amp; 1</span></div>
+            <div class="r"><span class="tt">8:20</span><span class="who"><span class="c">Nate &amp; Chris</span><i>vs</i><span class="v">Kyle &amp; Danny</span></span><span class="sc v">Vikes 3 &amp; 2</span></div>
+            <div class="r"><span class="tt">8:30</span><span class="who"><span class="c">Brad &amp; Joe</span><i>vs</i><span class="v">Matt &amp; Pete</span></span><span class="sc c">Celts 1 up</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DAY 2 -->
+      <div class="dayblk live">
+        <input type="checkbox" class="dx" id="d2" checked>
+        <label class="dh" for="d2">
+          <span class="n">Day 2 · The Commons<small>Friday · Aggregate · In play</small></span>
+          <span class="fs"><b class="c">0</b><i>to</i><b class="v">0</b></span>
+          <span class="ar">▾</span>
+        </label>
+        <div class="dbody">
+          <div class="tee">
+            <div class="r"><span class="tt">8:10</span><span class="who"><span class="c">Brad &amp; Chris</span><i>vs</i><span class="v">Kyle &amp; Matt</span></span><span class="sc lv">Vikes 2 up · 11</span></div>
+            <div class="r"><span class="tt">8:20</span><span class="who"><span class="c">Nate &amp; Joe</span><i>vs</i><span class="v">Danny &amp; Pete</span></span><span class="sc lv">Celts 1 up · 9</span></div>
+            <div class="r"><span class="tt">1:30</span><span class="who"><span class="c">Brad &amp; Nate</span><i>vs</i><span class="v">Kyle &amp; Pete</span></span><span class="sc tb">Wave 2</span></div>
+            <div class="r"><span class="tt">1:40</span><span class="who"><span class="c">Chris &amp; Joe</span><i>vs</i><span class="v">Matt &amp; Danny</span></span><span class="sc tb">Wave 2</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DAY 3 -->
+      <div class="dayblk">
+        <input type="checkbox" class="dx" id="d3">
+        <label class="dh" for="d3">
+          <span class="n">Day 3 · Sand Valley<small>Saturday · Singles</small></span>
+          <span class="fs tba">Pairings<br>Fri night</span>
+          <span class="ar">▾</span>
+        </label>
+        <div class="dbody">
+          <div class="tee">
+            <div class="r"><span class="tt">7:50</span><span class="who"><span class="c">Celt</span><i>vs</i><span class="v">Vike</span></span><span class="sc tb">Match 1</span></div>
+            <div class="r"><span class="tt">8:00</span><span class="who"><span class="c">Celt</span><i>vs</i><span class="v">Vike</span></span><span class="sc tb">Match 2</span></div>
+            <div class="r"><span class="tt">8:10</span><span class="who"><span class="c">Celt</span><i>vs</i><span class="v">Vike</span></span><span class="sc tb">Match 3</span></div>
+            <div class="r"><span class="tt">8:20</span><span class="who"><span class="c">Celt</span><i>vs</i><span class="v">Vike</span></span><span class="sc tb">Match 4</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sect">
+    <div class="wrap">
+      <h2>The players</h2>
+      <p class="sub">Record and points won across the week. Brass marks the MVP race leaders.</p>
+      <div class="teams">
+        <div class="team cel">
+          <div class="th"><span>The Celts</span><span class="tp">1 pt</span></div>
+          <ul>
+            <li><span class="nm">Brad <i>Captain</i></span><span class="rec">1–1–0</span><span class="pts">1</span></li>
+            <li><span class="nm">Joe</span><span class="rec">1–1–0</span><span class="pts">1</span></li>
+            <li><span class="nm">Chris</span><span class="rec">0–2–0</span><span class="pts">0</span></li>
+            <li><span class="nm">Nate</span><span class="rec">0–2–0</span><span class="pts">0</span></li>
+          </ul>
+        </div>
+        <div class="team vik">
+          <div class="th"><span>The Vikes</span><span class="tp">3 pts</span></div>
+          <ul>
+            <li class="lead"><span class="nm">Danny</span><span class="rec">2–0–0</span><span class="pts">2</span></li>
+            <li class="lead"><span class="nm">Kyle</span><span class="rec">2–0–0</span><span class="pts">2</span></li>
+            <li><span class="nm">Matt <i>Captain</i></span><span class="rec">1–1–0</span><span class="pts">1</span></li>
+            <li><span class="nm">Pete</span><span class="rec">1–1–0</span><span class="pts">1</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="sfoot">
+    <svg width="14" height="28"><use href="#claretjug"/></svg>
+    <p>Scores are entered on the course by the players and land here within a minute.<br>The Freeman Cup · an annual tradition · Sand Valley, Wisconsin</p>
+  </footer>
+</div>
+
+<div class="note tail">
+  <h2>How it would actually run</h2>
+  <p><b>The page's other lives.</b> Same URL all year. Before the trip the strip becomes a countdown ("34 days to Sand Valley") over the tee sheet and rosters, which is what the invite email links to. After Saturday it becomes the record: final score in the strip, MVP marked in the roster, every scorecard still openable, and the footer line naming who holds the Lassie until next October.</p>
+  <p><b>Moment lines.</b> Each hole-won event carries the winning side, the hole, the standout score on the winning side (the best net result against par, described as par, birdie, net birdie, net eagle, or for the ugly ones "two bogeys after a stumble"), and the new match state. Halved holes stay out of the feed but show in the scorecard. The same generator can feed the app's moments and the recap email so the voice matches everywhere.</p>
+  <p><b>Weather.</b> Open-Meteo's free forecast API needs no key and allows browser calls, so the page fetches hourly temp, wind, and rain chance for Nekoosa client-side and shows the five hours from the day's first tee time. On non-play days the strip shows the next round's window once it is inside the forecast horizon, otherwise it hides.</p>
+  <p><b>Tee times.</b> These need a home in the data. Simplest is a start time per match on the existing matches table, set from the commissioner desk when pairings lock, which the pairings email already needs anyway. The scoreboard RPC returns it with the match.</p>
+  <p><b>Per-card moments.</b> Same event stream the app's moments system produces, filtered to the match. The card shows the latest five; the expander reveals the rest. Match closes still land in the card as its final moment, and the card's center swaps the live status for the result.</p>
+  <p><b>Still open:</b> four Day 1 matches, four Day 2 matches, and eight singles is 16 points, not 13½, and the Day 3 tee sheet above shows four rows for singles where there should be eight. Tell me the real session structure and I'll set the tug bar, the "of 13½" line, and the tee sheets to match. Names and team assignments are placeholders.</p>
+</div>
+</body>
+</html>

@@ -1,3 +1,7 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/(.*)", "has": [{ "type": "host", "value": "thefreemancup.com" }], "destination": "/scoreboard.html" },
+    { "source": "/(.*)", "has": [{ "type": "host", "value": "www.thefreemancup.com" }], "destination": "/scoreboard.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
