@@ -17,7 +17,7 @@ a{color:inherit}
 
 
 body{background:var(--ink);color:var(--bone);font-family:var(--body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100%}
-.wrap{max-width:680px;margin:0 auto;padding:0 22px}
+.wrap{max-width:1004px;margin:0 auto;padding:0 22px}   /* 960 of content */
 .shd{border-bottom:1px solid var(--line)}
 .shd .wrap{display:flex;align-items:center;justify-content:space-between;padding-top:18px;padding-bottom:18px}
 .brandrow{display:flex;align-items:center;gap:12px}
@@ -33,7 +33,7 @@ body{background:var(--ink);color:var(--bone);font-family:var(--body);font-size:1
 /* cup strip: Celts left, Vikes right, always */
 .strip{padding:22px 22px 18px;border-bottom:1px solid var(--line);background:var(--ink-2)}
 .day{text-align:center;font-family:var(--clock);font-size:14px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--moss);padding-bottom:14px}
-.striptop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;max-width:636px;margin-left:auto;margin-right:auto}
+.striptop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;max-width:960px;margin-left:auto;margin-right:auto}
 .sside{display:flex;align-items:baseline;gap:10px;flex:1;min-width:0}
 .sside.r{justify-content:flex-end}
 .sside .nm{font-size:12.5px;color:var(--moss);white-space:nowrap}
@@ -42,17 +42,17 @@ body{background:var(--ink);color:var(--bone);font-family:var(--body);font-size:1
 .jugwrap{display:flex;flex-direction:column;align-items:center;gap:7px;flex:none;padding:0 4px}
 .jugwrap svg{color:var(--brass)}
 .juglbl{font-family:var(--display);font-size:14px;font-weight:600;color:var(--brass);white-space:nowrap}
-.tug{position:relative;height:26px;background:var(--ink-3);border:1px solid var(--line);overflow:hidden;max-width:636px;margin:0 auto}
+.tug{position:relative;height:26px;background:var(--ink-3);border:1px solid var(--line);overflow:hidden;max-width:960px;margin:0 auto}
 .tug .f{position:absolute;top:0;bottom:0}
 .tug .fc{left:0;background:var(--blue)} .tug .fv{right:0;background:var(--red)}
 .tug .livez{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(135deg,rgba(240,235,220,.10) 0 5px,transparent 5px 10px)}
 .tick{position:absolute;top:-1px;bottom:-1px;width:2px;background:var(--brass);z-index:3}
-.striplbl{display:flex;justify-content:space-between;margin-top:8px;font-size:11.5px;color:var(--moss-dim);max-width:636px;margin-left:auto;margin-right:auto}
+.striplbl{display:flex;justify-content:space-between;margin-top:8px;font-size:11.5px;color:var(--moss-dim);max-width:960px;margin-left:auto;margin-right:auto}
 
 /* how-it-works bar under the strip */
 .howbar{border-bottom:1px solid var(--line);background:var(--ink)}
 .hx{display:none}
-.hl{display:flex;justify-content:space-between;align-items:center;max-width:680px;margin:0 auto;padding:11px 22px;font-family:var(--clock);font-size:12.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--moss);cursor:pointer}
+.hl{display:flex;justify-content:space-between;align-items:center;max-width:1004px;margin:0 auto;padding:11px 22px;font-family:var(--clock);font-size:12.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--moss);cursor:pointer}
 .hl .ar{color:var(--brass);transition:transform .15s}
 .hx:checked ~ .hl .ar{transform:rotate(180deg)}
 .hb{display:none;padding-bottom:14px}

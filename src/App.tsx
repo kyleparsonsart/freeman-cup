@@ -33,7 +33,7 @@ export default function App() {
   }, []);
 
   return (
-    <div className="phone" ref={root}>
+    <div className={`phone${auth.ready && !auth.session ? ' signedout' : ''}`} ref={root}>
       {!auth.ready ? null : !auth.session ? (
         <div className="body">
           <section className="view on siview">
