@@ -1,7 +1,10 @@
 {
-  "rewrites": [
-    { "source": "/(.*)", "has": [{ "type": "host", "value": "thefreemancup.com" }], "destination": "/scoreboard.html" },
-    { "source": "/(.*)", "has": [{ "type": "host", "value": "www.thefreemancup.com" }], "destination": "/scoreboard.html" },
-    { "source": "/(.*)", "destination": "/index.html" }
+  "routes": [
+    { "src": "^/sw\\.js$", "has": [{ "type": "host", "value": "www.thefreemancup.com" }], "dest": "/sw-reset.js" },
+    { "src": "^/sw\\.js$", "has": [{ "type": "host", "value": "thefreemancup.com" }], "dest": "/sw-reset.js" },
+    { "src": "^/(?!assets/|icons/|brand/|fonts/|email/|manifest\\.json|workbox-|sw-reset\\.js|scoreboard\\.html).*", "has": [{ "type": "host", "value": "www.thefreemancup.com" }], "dest": "/scoreboard.html" },
+    { "src": "^/(?!assets/|icons/|brand/|fonts/|email/|manifest\\.json|workbox-|sw-reset\\.js|scoreboard\\.html).*", "has": [{ "type": "host", "value": "thefreemancup.com" }], "dest": "/scoreboard.html" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }

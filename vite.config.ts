@@ -28,7 +28,7 @@ export default defineConfig({
       workbox: {
         // the app shell (index.html + hashed js/css) is precached by default;
         // the scoreboard page is a different site and stays out of it
-        globIgnores: ['**/scoreboard*'],
+        globIgnores: ['**/scoreboard*', '**/sw-reset.js'],
         navigateFallbackDenylist: [/^\/scoreboard/],
         runtimeCaching: [
           {
