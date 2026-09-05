@@ -3,7 +3,7 @@
 @font-face{font-family:'Young Serif';font-style:normal;font-weight:100 900;font-display:swap;
   src:url('/fonts/YoungSerif-Regular.woff2') format('woff2')}
 :root{
-  --ink-15:#13231C;
+  --ink-15:#162820;
   --ink:#0F1E19; --ink-2:#172B24; --ink-3:#1E362D; --line:#26443A;
   --bone:#F0EBDC; --moss:#8CA79B; --moss-dim:#5D7268;
   --red:#C8402F; --blue:#4C86C4; --brass:#D8A93F;
@@ -256,13 +256,13 @@ body{background:var(--ink);color:var(--bone);font-family:var(--body);font-size:1
 /* the badge lattice on either side of the content column (desktop), fading
    into the page under the content. Two fixed layers behind everything:
    the pattern, then an ink gradient that is solid across the 960 column. */
-@media(min-width:1100px){
+@media(min-width:760px){
   body{position:relative}
   body::before{content:'';position:fixed;inset:0;z-index:-2;background:var(--ink-15);pointer-events:none;
-    -webkit-mask:url(/brand/badge-tile.svg) center top/240px 240px repeat;
-    mask:url(/brand/badge-tile.svg) center top/240px 240px repeat}
+    -webkit-mask:url(/brand/badge-tile.svg) center top/194px 194px repeat;
+    mask:url(/brand/badge-tile.svg) center top/194px 194px repeat}
   body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
-    background:linear-gradient(90deg,rgba(15,30,25,0) 0,rgba(15,30,25,.35) calc(50% - 720px),var(--ink) calc(50% - 480px),var(--ink) calc(50% + 480px),rgba(15,30,25,.35) calc(50% + 720px),rgba(15,30,25,0) 100%)}
+    background:linear-gradient(90deg,rgba(15,30,25,0) 0,rgba(15,30,25,0) calc(50% - 640px),var(--ink) calc(50% - 470px),var(--ink) calc(50% + 470px),rgba(15,30,25,0) calc(50% + 640px),rgba(15,30,25,0) 100%)}
   /* full-bleed bands sit over the lattice; keep them to the column so it shows beside them */
   .shd,.strip,.howbar{max-width:1004px;margin-left:auto;margin-right:auto}
   .shd,.howbar{background:var(--ink)}
