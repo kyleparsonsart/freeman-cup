@@ -14,7 +14,9 @@ import { matchMoments, clockCT } from './moments';
 import { fetchHours, windowFor, spanFor, hourLabel, type WxHour } from './weather';
 import { SYMBOLS } from './symbols';
 
-const APP_URL = 'https://freeman-cup.vercel.app';
+// thefreemancup.com/playersignin 308s to the app (vercel.json). The app's own
+// origin never changes: sessions, the write queue and home-screen installs live there.
+const APP_URL = '/playersignin';
 const TZ = 'America/Chicago';
 const REFETCH_MS = 60_000;
 

@@ -1,10 +1,77 @@
 {
   "routes": [
-    { "src": "^/sw\\.js$", "has": [{ "type": "host", "value": "www.thefreemancup.com" }], "dest": "/sw-reset.js" },
-    { "src": "^/sw\\.js$", "has": [{ "type": "host", "value": "thefreemancup.com" }], "dest": "/sw-reset.js" },
-    { "src": "^/(?!assets/|icons/|brand/|fonts/|email/|manifest\\.json|workbox-|sw-reset\\.js|scoreboard\\.html).*", "has": [{ "type": "host", "value": "www.thefreemancup.com" }], "dest": "/scoreboard.html" },
-    { "src": "^/(?!assets/|icons/|brand/|fonts/|email/|manifest\\.json|workbox-|sw-reset\\.js|scoreboard\\.html).*", "has": [{ "type": "host", "value": "thefreemancup.com" }], "dest": "/scoreboard.html" },
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    {
+      "src": "^/playersignin/?$",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.thefreemancup.com"
+        }
+      ],
+      "status": 308,
+      "headers": {
+        "Location": "https://freeman-cup.vercel.app/"
+      }
+    },
+    {
+      "src": "^/playersignin/?$",
+      "has": [
+        {
+          "type": "host",
+          "value": "thefreemancup.com"
+        }
+      ],
+      "status": 308,
+      "headers": {
+        "Location": "https://freeman-cup.vercel.app/"
+      }
+    },
+    {
+      "src": "^/sw\\.js$",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.thefreemancup.com"
+        }
+      ],
+      "dest": "/sw-reset.js"
+    },
+    {
+      "src": "^/sw\\.js$",
+      "has": [
+        {
+          "type": "host",
+          "value": "thefreemancup.com"
+        }
+      ],
+      "dest": "/sw-reset.js"
+    },
+    {
+      "src": "^/(?!assets/|icons/|brand/|fonts/|email/|manifest\\.json|workbox-|sw-reset\\.js|scoreboard\\.html).*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.thefreemancup.com"
+        }
+      ],
+      "dest": "/scoreboard.html"
+    },
+    {
+      "src": "^/(?!assets/|icons/|brand/|fonts/|email/|manifest\\.json|workbox-|sw-reset\\.js|scoreboard\\.html).*",
+      "has": [
+        {
+          "type": "host",
+          "value": "thefreemancup.com"
+        }
+      ],
+      "dest": "/scoreboard.html"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
   ]
 }
