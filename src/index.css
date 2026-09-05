@@ -1169,17 +1169,16 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 
 /* ============ sign-in on a desktop (Sep 5 2026) ============
    Signed out, the phone frame is the wrong metaphor: a normal centered
-   sign-in panel over a field of tessellated badges, one shade lighter
-   than the ground. Phones are untouched (the frame only ever existed
-   above 520px wide). */
+   sign-in panel over a lattice of badges (brand/badge-tile.svg, rotated
+   45deg, air between them) a shade lighter than the ground. Phones are
+   untouched (the frame only ever existed above 520px wide). */
+:root{--ink-15:#13231C}
 @media(min-width:700px){
   .phone.signedout{position:fixed;inset:0;width:auto;max-width:none;height:auto;border-radius:0;
     box-shadow:none;background:var(--ink);align-items:center;justify-content:center;overflow:auto}
-  .phone.signedout::before,.phone.signedout::after{content:'';position:absolute;inset:-60px;
-    background:var(--ink-2);pointer-events:none;
-    -webkit-mask:url(/brand/logo-badge.svg) 0 0/150px 150px repeat;
-    mask:url(/brand/logo-badge.svg) 0 0/150px 150px repeat}
-  .phone.signedout::after{-webkit-mask-position:75px 75px;mask-position:75px 75px}
+  .phone.signedout::before{content:'';position:absolute;inset:0;background:var(--ink-15);pointer-events:none;
+    -webkit-mask:url(/brand/badge-tile.svg) center/240px 240px repeat;
+    mask:url(/brand/badge-tile.svg) center/240px 240px repeat}
   .phone.signedout > .body{position:relative;z-index:1;flex:none;width:100%;max-width:460px;
     margin:40px 24px;background:var(--ink);border:1px solid var(--line);border-radius:20px;
     box-shadow:0 30px 80px rgba(0,0,0,.55);overflow:hidden}
