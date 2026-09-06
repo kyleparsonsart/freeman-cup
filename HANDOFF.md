@@ -84,6 +84,8 @@ Second Vite page in the same repo, no app code touched. `scoreboard.html` + `src
 - Pasting SQL from chat can turn `'` into curly quotes. Copy from the `.sql` files in the repo.
 - The Add user form demands a password; any throwaway works, the app never uses it.
 - Agents running in a sandbox that can't delete files leave `.git/*.lock` and `.git/stale-*` behind; `rm .git/stale-*` when git complains.
+- A one-bar signal leaves a Supabase fetch hanging far longer than airplane mode does, and the boot screen sat on top of the app until it returned (Sep 6). `useEventData` now paints from the IndexedDB snapshot first and gives the network 8 s before falling back to it. Scores entered meanwhile go through the write queue as before.
+- Press-and-hold buttons don't survive iOS: the long press turns into text selection and the pointer is cancelled (Sep 6). "Clear all scores" is a confirmation drawer with plain buttons now; don't bring the hold back.
 
 The original warnings still stand: don't let anyone rewrite `calc()` or `derive()`; RLS that silently returns empty sets is the standard failure; copy the stylesheet, don't translate it; scope creep is the biggest risk to Oct 7.
 

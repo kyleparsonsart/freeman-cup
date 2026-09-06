@@ -56,6 +56,15 @@ interface RawTables {
   switches?: DbFeedEvent[];
 }
 
+const FETCH_TIMEOUT_MS = 8000;
+
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`No answer from the clubhouse in ${ms / 1000}s`)), ms);
+    p.then(v => { clearTimeout(t); resolve(v); }, e => { clearTimeout(t); reject(e); });
+  });
+}
+
 const FMT_MAP: Record<string, 'Four-ball' | 'Foursomes' | 'Aggregate' | 'Singles'> = {
   'four-ball': 'Four-ball',
   'foursomes': 'Foursomes',
@@ -130,8 +139,11 @@ export function useEventData() {
   // more run after the current one finishes.
   const inflight = useRef(false);
   const again = useRef(false);
+  // whether anything has been painted yet; the first paint comes from the
+  // cached snapshot so the app is usable before (or without) the network
+  const painted = useRef(false);
 
-  const doLoad = useCallback(async () => {
+  const doLoad = useCallback(async (source: 'snapshot' | 'network' = 'network') => {
     let raw: RawTables;
     let offline = false;
 
@@ -144,20 +156,32 @@ export function useEventData() {
     // still has the row, so the overlay keeps the score on screen.
     const queuedBefore = await getQueuedWrites();
 
-    try {
-      raw = await fetchTables();
-      // remember this fetch for offline opens; best-effort
-      idbPut('snapshot', 'tables', raw).catch(() => {});
-    } catch (e) {
-      // server unreachable (or errored): fall back to the last good snapshot
+    if (source === 'snapshot') {
+      // Open from the last good fetch straight away. No snapshot means a
+      // first-ever open; the boot screen stays until the network answers.
       const snap = await idbGet<RawTables>('snapshot', 'tables').catch(() => undefined);
-      if (!snap) {
-        setError(e instanceof Error ? e.message : String(e));
-        setLoading(false);
-        return;
-      }
+      if (!snap) return;
       raw = snap;
       offline = true;
+    } else {
+      try {
+        // A phone with one bar can leave a fetch hanging for a minute or
+        // more; on the course that reads as a frozen app. Give up after
+        // FETCH_TIMEOUT_MS and run from the snapshot instead.
+        raw = await withTimeout(fetchTables(), FETCH_TIMEOUT_MS);
+        // remember this fetch for offline opens; best-effort
+        idbPut('snapshot', 'tables', raw).catch(() => {});
+      } catch (e) {
+        // server unreachable (or errored): fall back to the last good snapshot
+        const snap = await idbGet<RawTables>('snapshot', 'tables').catch(() => undefined);
+        if (!snap) {
+          setError(e instanceof Error ? e.message : String(e));
+          setLoading(false);
+          return;
+        }
+        raw = snap;
+        offline = true;
+      }
     }
 
     // first sign-in on this seat: bind the auth account to the player row
@@ -329,13 +353,16 @@ export function useEventData() {
     });
     setError(null);
     setLoading(false);
+    painted.current = true;
   }, []);
 
   const load = useCallback(async () => {
     if (inflight.current) { again.current = true; return; }
     inflight.current = true;
     try {
-      await doLoad();
+      // first open: paint from the snapshot, then let the network catch up
+      if (!painted.current) await doLoad('snapshot');
+      await doLoad('network');
     } catch (e) {
       console.error('load failed', e);
     } finally {

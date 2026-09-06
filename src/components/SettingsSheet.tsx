@@ -41,7 +41,6 @@ type Outcome = PromiseLike<{ error: { message: string } | null }>;
  */
 export default function SettingsSheet({ data, acting = 'player', onActing, moments = null, open, onClose, reload, signOut }: Props) {
   const [err, setErr] = useState<string | null>(null);
-  const [confirmClear, setConfirmClear] = useState(false);
   const [cleared, setCleared] = useState(false);
   const [theme, setThemeState] = useState<Theme>(getTheme());
   const flipTheme = () => {
@@ -107,36 +106,22 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
     setRoundState(id, state);
   };
 
+  // Clearing everything asks once, in a drawer with real buttons. (The
+  // press-and-hold it replaces never fired on iOS: the long press became a
+  // text-selection gesture and the pointer was cancelled.)
+  const [askClear, setAskClear] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const underway = data.matchHoles.length > 0;
   const clearAll = async () => {
-    if (!confirmClear) { setConfirmClear(true); return; }
     setErr(null);
-    setConfirmClear(false);
+    setClearing(true);
     const { error } = await supabase.rpc('reset_event');
+    setClearing(false);
+    setAskClear(false);
     if (error) { setErr(error.message); return; }
     setCleared(true);
     setTimeout(() => setCleared(false), 1600);
     reload();
-  };
-
-  // Once the Cup is under way, clearing takes a two-second hold.
-  const underway = data.matchHoles.length > 0;
-  const [holding, setHolding] = useState(false);
-  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const startHold = () => {
-    setErr(null);
-    setHolding(true);
-    holdTimer.current = setTimeout(async () => {
-      setHolding(false);
-      const { error } = await supabase.rpc('reset_event');
-      if (error) { setErr(error.message); return; }
-      setCleared(true);
-      setTimeout(() => setCleared(false), 1600);
-      reload();
-    }, 2000);
-  };
-  const cancelHold = () => {
-    setHolding(false);
-    if (holdTimer.current) { clearTimeout(holdTimer.current); holdTimer.current = null; }
   };
 
   const unbindSeat = (pid: string) =>
@@ -521,32 +506,39 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
                 Clears every score, reopens every card, puts all four rounds back
                 to Not started. The history table keeps the record.
                 {underway
-                  ? ' The Cup is under way, so this takes a two-second hold — releasing early cancels.'
+                  ? ' The Cup is under way, so you will be asked to confirm.'
                   : ' Do this once, before Thursday.'}
               </div>
             </div>
             <div className="danger">
-              {underway ? (
-                <button
-                  className={`dbtn hold${holding ? ' holding' : ''}`}
-                  onPointerDown={startHold}
-                  onPointerUp={cancelHold}
-                  onPointerLeave={cancelHold}
-                  onPointerCancel={cancelHold}
-                  onContextMenu={e => e.preventDefault()}
-                >
-                  {cleared ? 'Cleared' : holding ? 'Hold on…' : 'Hold to clear everything'}
-                </button>
-              ) : (
-                <button className="dbtn" onClick={clearAll} onBlur={() => setConfirmClear(false)}>
-                  {cleared ? 'Cleared' : confirmClear ? 'Tap again to clear everything' : 'Clear all scores'}
-                </button>
-              )}
+              <button className="dbtn" onClick={() => { setErr(null); setAskClear(true); }}>
+                {cleared ? 'Cleared' : 'Clear all scores…'}
+              </button>
             </div>
             </>}
           </>
         )}
       </div>
+      {askClear && (
+        <>
+          <div className="scrim hi on rise" onClick={() => !clearing && setAskClear(false)} />
+          <div className="drawer cardin confirm on" role="dialog" aria-modal="true" aria-label="Clear all scores">
+            <div className="dh" />
+            <div className="cihd">Clear every score?</div>
+            <div className="cisub">
+              {underway
+                ? 'The Cup is under way. This wipes every hole on every card, reopens the cards, and puts all four rounds back to Not started. The history table keeps the record.'
+                : 'Every hole on every card is cleared and all four rounds go back to Not started. The history table keeps the record.'}
+            </div>
+            <button className="dbtn" style={{ marginTop: 16 }} onClick={clearAll} disabled={clearing}>
+              {clearing ? 'Clearing…' : 'Yes, clear everything'}
+            </button>
+            <button className="aghost" style={{ alignSelf: 'center', marginTop: 12 }} onClick={() => setAskClear(false)} disabled={clearing}>
+              Keep the scores
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
