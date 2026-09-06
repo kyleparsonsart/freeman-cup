@@ -202,7 +202,7 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
       {data && <PullSync bodyRef={bodyRef} onSync={reload} />}
       <div className="body" ref={bodyRef}>
         {header}
-        {data && <SyncBanner offline={data.offline} onOpenScoring={() => goTab('scoring')} />}
+        {data && <SyncBanner offline={data.offline} syncedAt={data.syncedAt} onOpenScoring={() => goTab('scoring')} />}
         {loading && (
           <div className="boot" aria-label="Loading">
             <span className="bootlogo" />

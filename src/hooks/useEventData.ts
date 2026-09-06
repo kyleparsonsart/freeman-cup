@@ -41,6 +41,8 @@ export interface EventData {
   unclaimed: boolean;
   /** true when the server was unreachable and this came from the cached snapshot */
   offline: boolean;
+  /** when the tables on screen last came from the server (ISO), if known */
+  syncedAt: string | null;
 }
 
 /** The raw tables of one good fetch — cached in IndexedDB for offline opens. */
@@ -54,6 +56,8 @@ interface RawTables {
   matches: DbMatch[];
   matchHoles: DbMatchHole[];
   switches?: DbFeedEvent[];
+  /** when this came from the server (ISO); set when the snapshot is saved */
+  fetched_at?: string;
 }
 
 const FETCH_TIMEOUT_MS = 8000;
@@ -168,9 +172,8 @@ export function useEventData() {
         // A phone with one bar can leave a fetch hanging for a minute or
         // more; on the course that reads as a frozen app. Give up after
         // FETCH_TIMEOUT_MS and run from the snapshot instead.
-        raw = await withTimeout(fetchTables(), FETCH_TIMEOUT_MS);
-        // remember this fetch for offline opens; best-effort
-        idbPut('snapshot', 'tables', raw).catch(() => {});
+        raw = { ...await withTimeout(fetchTables(), FETCH_TIMEOUT_MS), fetched_at: new Date().toISOString() };
+        // (the snapshot is saved below, once the queue is overlaid)
       } catch (e) {
         // server unreachable (or errored): fall back to the last good snapshot
         const snap = await idbGet<RawTables>('snapshot', 'tables').catch(() => undefined);
@@ -218,6 +221,14 @@ export function useEventData() {
     const tgList = raw.teeGroups;
     const matchList = raw.matches;
     const holeList = overlayQueue(raw.matchHoles, queued);
+
+    // Remember what this phone knows, not just what the server said: the
+    // snapshot carries the queue overlaid, so a cold open after a flush
+    // that never got its follow-up fetch still shows the holes entered
+    // here. Best-effort.
+    if (!offline || queued.length) {
+      idbPut('snapshot', 'tables', { ...raw, matchHoles: holeList }).catch(() => {});
+    }
 
     // Latest handoff per tee group (rows arrive newest first)
     const handoffs: Record<string, Handoff> = {};
@@ -350,6 +361,7 @@ export function useEventData() {
       switches: raw.switches || [],
       scoringSessions, scoringMatches, playerMap, playerById,
       mePlayerId, meKey, meIsCommissioner, unclaimed, offline,
+      syncedAt: raw.fetched_at ?? null,
     });
     setError(null);
     setLoading(false);

@@ -8,9 +8,17 @@ import { getQueuedWrites, onQueueChange } from '../lib/writeQueue';
  * blocked scores go amber with a door to Scoring. When everything is
  * healthy this renders nothing at all.
  */
-export default function SyncBanner({ offline, onOpenScoring }: {
+const clock = (iso: string): string => {
+  const d = new Date(iso);
+  const h = d.getHours(), m = d.getMinutes();
+  return `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')}`;
+};
+
+export default function SyncBanner({ offline, syncedAt, onOpenScoring }: {
   /** the last fetch failed and the app is running on its snapshot */
   offline: boolean;
+  /** when the snapshot on screen last came from the server (ISO) */
+  syncedAt?: string | null;
   onOpenScoring: () => void;
 }) {
   const [navOffline, setNavOffline] = useState(
@@ -63,11 +71,14 @@ export default function SyncBanner({ offline, onOpenScoring }: {
     );
   }
   if (isOffline) {
+    // say what the screen is (the phone's last look at the server, and
+    // when) rather than just "offline"; entering scores is still fine
+    const seen = syncedAt ? ` as of ${clock(syncedAt)}` : '';
     return (
       <div className="syncbar">
         {pending > 0
-          ? `Offline · ${pending} score${pending === 1 ? '' : 's'} saved on this phone`
-          : 'Offline — scores entered here sync when you’re back'}
+          ? `Offline · showing this phone's scores${seen} · ${pending} saved here`
+          : `Offline · showing what this phone last saw${seen} · scores you enter are saved`}
       </div>
     );
   }
