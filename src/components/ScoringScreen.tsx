@@ -459,7 +459,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
   // Before the round goes live: the brief instead of a dead scoreboard
   if (s.state === 'upcoming' && r.played === 0 && !peek) {
     return (
-      <div className={`hero${tabbed ? ' tabbed' : ''}`} ref={heroRef}>
+      <div className={`hero brief${tabbed ? ' tabbed' : ''}`} ref={heroRef}>
         <MatchBrief
           m={m}
           session={s}
@@ -467,24 +467,6 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
           scorerKey={scorerKey}
           onPeek={iAmScorer || data.meIsCommissioner ? () => setPeek(true) : undefined}
         />
-        {/* a wireframe of the card to come, so the tab reads as the place scores go */}
-        <div className="quiet scoring">
-          <div className="ghostcard" aria-hidden="true">
-            <div className="ghole"><i style={{ width: 28, height: 22 }} /><i style={{ width: 54 }} /><i style={{ width: 40, marginLeft: 'auto' }} /></div>
-            {[0, 1, 2, 3].map(r => (
-              <div key={r} className="gplayer">
-                <i style={{ width: [64, 52, 58, 44][r] }} />
-                <span>{[0, 1, 2, 3, 4].map(k => <i key={k} className={`gk${k === 1 ? ' on' : ''}`} />)}</span>
-              </div>
-            ))}
-          </div>
-          <div className="empty">
-            <IconGolf />
-            <b>Scores go in here</b>
-            Once the round is live, {scorerKey ? `${fn(P[scorerKey]?.n) || 'the scorer'} enters` : 'the scorer enters'} every player's
-            gross score hole by hole and the app works out the match.
-          </div>
-        </div>
       </div>
     );
   }

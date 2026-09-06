@@ -1202,8 +1202,9 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 
 /* Live before the first score: the empty state over a wireframe of the
    feed to come, drawn in a green one shade up from the ground */
-.quiet{position:relative;min-height:calc(100dvh - 330px);display:flex;align-items:center;justify-content:center}
-.quiet.scoring{min-height:0;flex:1;margin-top:4px}
+.quiet{position:relative;flex:1;min-height:240px;display:flex;align-items:center;justify-content:center}
+/* Live with nothing to say fills the space between the strip and the tabs, no scroll */
+#v-live.on:has(.quiet){display:flex;flex-direction:column;flex:1;padding-bottom:0}
 .ghostfeed{position:absolute;inset:0;padding:0 0 20px;overflow:hidden;
   -webkit-mask:linear-gradient(180deg,#000 55%,transparent 100%);mask:linear-gradient(180deg,#000 55%,transparent 100%)}
 .ghostfeed i{display:inline-block;height:10px;border-radius:5px;background:var(--ink-15)}
@@ -1214,25 +1215,13 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .ghostfeed .grow span{flex:1;display:flex;flex-direction:column;gap:8px}
 .quiet .empty{position:relative;z-index:1;padding:34px 18px;
   background:radial-gradient(ellipse at center,var(--ink) 40%,rgba(15,30,25,.85) 70%,transparent 100%)}
-/* the score card wireframe: a hole strip and four player rows of keys */
-.ghostcard{position:absolute;inset:0;padding:0 14px 20px;overflow:hidden;
-  -webkit-mask:linear-gradient(180deg,#000 50%,transparent 100%);mask:linear-gradient(180deg,#000 50%,transparent 100%)}
-.ghostcard i{display:inline-block;height:10px;border-radius:5px;background:var(--ink-15)}
-.ghostcard .ghole{display:flex;gap:10px;align-items:center;padding:14px 4px 12px;border-bottom:1px solid var(--ink-15)}
-.ghostcard .gplayer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 4px;border-bottom:1px solid var(--ink-15)}
-.ghostcard .gplayer span{display:flex;gap:6px}
-.ghostcard .gk{width:36px;height:36px;border-radius:8px;background:transparent;border:1px solid var(--ink-15)}
-.ghostcard .gk.on{background:var(--ink-15)}
 /* empty states rise in */
 .empty{animation:riseIn .55s cubic-bezier(.22,1,.36,1) both}
-.ghostfeed,.ghostcard{animation:fadeIn .7s ease both;animation-delay:.1s}
+.ghostfeed{animation:fadeIn .7s ease both;animation-delay:.1s}
 @keyframes riseIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@media(prefers-reduced-motion:reduce){.empty,.ghostfeed,.ghostcard{animation:none}}
-/* the scoring wireframe sits on the hero (ink-2), so its shade steps up from there */
-.hero:has(.quiet.scoring){display:flex;flex-direction:column}
-.hero .ghostcard i{background:var(--ink-3)}
-.hero .ghostcard .gk{background:transparent;border-color:var(--ink-3)}
-.hero .ghostcard .gk.on{background:var(--ink-3)}
-.hero .ghostcard .ghole,.hero .ghostcard .gplayer{border-color:var(--ink-3)}
-.hero .quiet .empty{background:radial-gradient(ellipse at center,var(--ink-2) 40%,rgba(23,43,36,.85) 70%,transparent 100%)}
+@media(prefers-reduced-motion:reduce){.empty,.ghostfeed{animation:none}}
+/* Scoring before the round is live: the brief runs edge to edge, its brass
+   rule sitting on the bottom of the group tabs */
+.hero.brief{margin-top:0;border-top:none}
+.hero.brief .mymatch{margin:0;border-left:none;border-right:none;border-bottom:none}
