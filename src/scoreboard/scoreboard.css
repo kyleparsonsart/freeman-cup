@@ -276,3 +276,9 @@ body::before{content:'';position:fixed;inset:0 0 -140px 0;z-index:-2;background:
   .howbar{border-bottom:none}
   .hl{padding-left:22px;padding-right:22px}
 }
+
+/* entrance choreography, the app's dayIn: fade in and up, staggered by
+   inline animation-delay, only on mount (refetches re-render in place) */
+.dayfade{animation:dayIn .5s cubic-bezier(.22,.8,.3,1) both}
+@keyframes dayIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.dayfade{animation:none}}
