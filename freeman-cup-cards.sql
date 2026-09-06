@@ -78,14 +78,17 @@ create trigger tee_group_card_in_trg
   after update on tee_group
   for each row execute function log_card_in();
 
--- The pre-Thursday reset also reopens every card.
+-- The pre-Thursday reset also reopens every card. The "where true" is not
+-- decoration: Supabase runs the safeupdate guard, which refuses a DELETE
+-- or UPDATE without a WHERE even inside a definer function (Sep 6 2026,
+-- "DELETE requires a WHERE clause" from the desk).
 create or replace function reset_event() returns void as $$
 begin
   if not is_commissioner() then
     raise exception 'commissioner only';
   end if;
-  delete from match_hole;
-  update round set state = 'upcoming';
-  update event set shootout = null;
-  update tee_group set submitted_at = null, submitted_by = null;
+  delete from match_hole where true;
+  update round set state = 'upcoming' where true;
+  update event set shootout = null where true;
+  update tee_group set submitted_at = null, submitted_by = null where true;
 end $$ language plpgsql security definer;
