@@ -1,7 +1,8 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import CupStrip from './CupStrip';
 import { buildFeed, clock, type FeedItem } from '../lib/feed';
-import { half, CFG, P, roundState } from '../lib/scoring';
+import { half, CFG } from '../lib/scoring';
+import { IconBinoculars } from './icons';
 import type { MomentsState } from '../lib/moments';
 import type { EventData } from '../hooks/useEventData';
 
@@ -92,7 +93,28 @@ export default function LiveScreen({ data, moments = null, onMoment, strip = tru
         </button>
       )}
       {!days.length ? (
-        <PreLive data={data} />
+        <div className="quiet">
+          {/* a wireframe of the feed to come, one shade up from the ground */}
+          <div className="ghostfeed" aria-hidden="true">
+            {[0, 1].map(d => (
+              <div key={d} className="gday">
+                <div className="ghd"><i style={{ width: 48 }} /><i style={{ width: 34 }} /></div>
+                {[80, 62, 90, 54].slice(0, d ? 2 : 4).map((w, i) => (
+                  <div key={i} className="grow">
+                    <i className="gt" />
+                    <span><i style={{ width: `${w}%` }} />{w > 70 && <i style={{ width: `${w - 45}%` }} />}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+          <div className="empty">
+            <IconBinoculars />
+            <b>Quiet out there</b>
+            Every hole won, every match that turns, and every card handed in
+            lands here the moment it happens.
+          </div>
+        </div>
       ) : days.map((g, i) => {
         const [dow, ...rest] = g.day.split(' ');
         const open = i === openDay;
@@ -169,66 +191,3 @@ function FeedRow({ e, delay = 0, onOpen }: { e: FeedItem; delay?: number; onOpen
   );
 }
 
-
-/**
- * Before the first hole is scored the feed has nothing to say, so Live
- * shows what is coming: the next round (course, date, format, tee sheet
- * with pairings where set) and the two rosters with handicap indexes.
- */
-function PreLive({ data }: { data: EventData }) {
-  const s = data.scoringSessions.find(x => roundState(x) !== 'final') ?? data.scoringSessions[0];
-  const round = s ? data.rounds.find(r => r.id === s.id) : undefined;
-  const course = round ? data.courses.find(c => c.id === round.course_id) : undefined;
-  const par = course ? course.par.reduce((t, x) => t + x, 0) : null;
-  const ms = s ? data.scoringMatches.filter(m => m.s === s.id) : [];
-  const fn = (k: string) => (P[k]?.n || k).split(' ')[0];
-  const side = (keys: string[]) => keys.length ? keys.map(fn).join(' / ') : 'TBA';
-  const players = (t: 'a' | 'b') =>
-    Object.entries(P).filter(([, p]) => p.t === t)
-      .sort(([, x], [, y]) => Number(y.cap || 0) - Number(x.cap || 0) || x.n.localeCompare(y.n));
-  const idx = data.scoringSessions.findIndex(x => x === s);
-
-  return (
-    <div className="prelive">
-      {s && (
-        <>
-          <div className="rtop">
-            <div>
-              <div className="t1">{s.course}</div>
-              <div className="t2">
-                {s.day} · {idx >= 0 ? `Round ${idx + 1}` : s.rd} · {s.fmt} · {s.holes} holes{par ? ` · par ${par}` : ''}
-              </div>
-            </div>
-            <span className="state upcoming">{s.tees[0] || ''}</span>
-          </div>
-          {ms.map((m, i) => (
-            <div key={m.id} className="mrow2">
-              <span className="p">
-                <span className="a">{side(m.a)}</span>
-                <span className="v">V</span>
-                <span className="b">{side(m.b)}</span>
-              </span>
-              <span className="s n">{s.tees[m.g] || `Match ${i + 1}`}</span>
-            </div>
-          ))}
-          <div className="rfoot">
-            <span>Every hole won, every match that turns, and every card handed in lands here the moment it happens.</span>
-          </div>
-        </>
-      )}
-      <div className="roster">
-        {(['a', 'b'] as const).map(t => (
-          <div key={t} className={`rcol ${t}`}>
-            <h4>{CFG.teams[t].name}</h4>
-            {players(t).map(([k, p]) => (
-              <div key={k} className="pl">
-                <span>{fn(k)}{p.cap && <span className="cap">C</span>}</span>
-                <span className="hc">{p.h.toFixed(1)}</span>
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
