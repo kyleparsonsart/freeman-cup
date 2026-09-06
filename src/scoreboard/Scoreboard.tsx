@@ -13,6 +13,7 @@ import { shape, teeClock, teeClockAmPm, type Shaped, type Snapshot } from './sha
 import { matchMoments, clockCT } from './moments';
 import { fetchHours, windowFor, spanFor, hourLabel, type WxHour } from './weather';
 import { SYMBOLS } from './symbols';
+import { reveal } from './reveal';
 
 // thefreemancup.com/playersignin 308s to the app (vercel.json). The app's own
 // origin never changes: sessions, the write queue and home-screen installs live there.
@@ -139,12 +140,12 @@ export default function Scoreboard() {
         </div>
       </header>
 
-      <div className="cupcard dayfade">
+      <div className="cupcard dayfade" ref={reveal}>
         <Strip d={d} phase={phase} totals={totals} clinch={clinch} total={total} rounds={rounds} onCourse={onCourse} />
-        <HowBar open={phase === 'pre'} clinch={clinch} total={total} trophy={d.snap.event.trophy} />
+        <HowBar open={false} clinch={clinch} total={total} trophy={d.snap.event.trophy} />
       </div>
 
-      <section className="sect dayfade" style={{ animationDelay: '110ms' }}>
+      <section className="sect dayfade" ref={reveal}>
         <div className="wrap">
           <div className="secthd">
             <h2>{phase === 'final' ? 'The final day' : onCourse.length ? 'Out on the course now' : 'Out on the course'}</h2>
@@ -157,24 +158,24 @@ export default function Scoreboard() {
           </p>
           {phase !== 'final' && wxRound && <Weather round={wxRound} hours={wx} today={today} />}
           {phase === 'final'
-            ? rounds[rounds.length - 1].ms.map((m, i) => <MatchCard key={m.id} d={d} m={m} s={rounds[rounds.length - 1].s} delay={i} />)
+            ? rounds[rounds.length - 1].ms.map(m => <MatchCard key={m.id} d={d} m={m} s={rounds[rounds.length - 1].s} />)
             : onCourse.length
-              ? onCourse.flatMap(r => r.ms).map((m, i) => <MatchCard key={m.id} d={d} m={m} s={rounds.find(r => r.s.id === m.s)!.s} teeTime={d.teeTimeOf(m)} delay={i} />)
+              ? onCourse.flatMap(r => r.ms).map(m => <MatchCard key={m.id} d={d} m={m} s={rounds.find(r => r.s.id === m.s)!.s} teeTime={d.teeTimeOf(m)} />)
               : next && <NextCard d={d} r={next} first={next === first} />}
         </div>
       </section>
 
-      <section className="sect dayfade" style={{ animationDelay: '220ms' }}>
+      <section className="sect dayfade" ref={reveal}>
         <div className="wrap">
           <h2>Round by round</h2>
           <p className="sub">{phase === 'pre' ? 'Tee times. Pairings post the night before each round.' : 'Tee times and results.'}</p>
-          {rounds.map((r, i) => <DayBlock key={r.s.id} d={d} r={r} delay={i} open={r.state === 'live' || (r.state === 'upcoming' && r === next && !liveRounds.length)} />)}
+          {rounds.map(r => <DayBlock key={r.s.id} d={d} r={r} open={r.state === 'live' || (r.state === 'upcoming' && r === next && !liveRounds.length)} />)}
         </div>
       </section>
 
       <Players d={d} phase={phase} totals={totals} />
 
-      <footer className="sfoot dayfade" style={{ animationDelay: '440ms' }}>
+      <footer className="sfoot dayfade" ref={reveal}>
         <svg width="14" height="28"><use href="#claretjug" /></svg>
         <p>Scores are entered on the course by the players and land here within a minute.<br />
           {d.snap.event.name} · an annual tradition · {d.snap.event.venue}, Wisconsin</p>
@@ -328,7 +329,7 @@ const addDays = (d: string, n: number) => {
 
 /* ---------------- match card ---------------- */
 
-function MatchCard({ d, m, s, teeTime, delay = 0 }: { d: Shaped; m: Match; s: Session; teeTime?: string; delay?: number }) {
+function MatchCard({ d, m, s, teeTime }: { d: Shaped; m: Match; s: Session; teeTime?: string }) {
   const r = calc(m);
   const started = r.played > 0;
   const leader: Side | 'h' | null = r.w;
@@ -340,7 +341,7 @@ function MatchCard({ d, m, s, teeTime, delay = 0 }: { d: Shaped; m: Match; s: Se
   const latest = moments.slice(0, 5), more = moments.slice(5);
   const meta = !started ? `Group ${String.fromCharCode(65 + m.g)}` : r.done ? `Final · ${r.played} holes` : `Teed off ${teeClock(teeTime || d.teeTimeOf(m))} · Thru ${r.played}`;
   return (
-    <div className={`mc dayfade${r.done ? ' done' : ''}`} style={{ animationDelay: `${200 + delay * 90}ms` }}>
+    <div className={`mc dayfade${r.done ? ' done' : ''}`} ref={reveal}>
       <div className="top"><span className="fmt">{s.fmt === 'Aggregate' ? 'Aggregate match play' : s.fmt}</span><span className="meta">{meta}</span></div>
       <div className={`face ${face}`}>
         <div className="side cel"><div className="tm">{CFG.teams.b.name}</div><div className="p">{names(d, m.b) || 'TBA'}</div></div>
@@ -417,12 +418,12 @@ function Scorecard({ d, m, s }: { d: Shaped; m: Match; s: Session }) {
 
 /* ---------------- round by round ---------------- */
 
-function DayBlock({ d, r, open, delay = 0 }: { d: Shaped; r: RoundView; open: boolean; delay?: number }) {
+function DayBlock({ d, r, open }: { d: Shaped; r: RoundView; open: boolean }) {
   const won: Side | null = r.state === 'final' ? (r.pts.a > r.pts.b ? 'a' : r.pts.b > r.pts.a ? 'b' : null) : null;
   const fmt = r.s.fmt === 'Aggregate' ? 'Aggregate' : r.s.fmt;
   const small = `${dow(r.date)} ${shortDate(r.date).split(' ')[1] ? shortDate(r.date) : ''} · ${fmt}${r.state === 'final' ? ' · Final' : r.state === 'live' ? ' · In play' : ''}`;
   return (
-    <div className={`dayblk dayfade${won ? ` ${cls(won)}-won` : ''}${r.state === 'live' ? ' live' : ''}`} style={{ animationDelay: `${300 + delay * 90}ms` }}>
+    <div className={`dayblk dayfade${won ? ` ${cls(won)}-won` : ''}${r.state === 'live' ? ' live' : ''}`} ref={reveal}>
       <input type="checkbox" className="dx" id={`d-${r.s.id}`} defaultChecked={open} />
       <label className="dh" htmlFor={`d-${r.s.id}`}>
         <span className="n">{r.s.rd} · {r.s.course}<small>{small}</small></span>
@@ -490,7 +491,7 @@ function Players({ d, phase, totals }: { d: Shaped; phase: 'pre' | 'live' | 'fin
       );
     });
   return (
-    <section className="sect dayfade" style={{ animationDelay: '330ms' }}>
+    <section className="sect dayfade" ref={reveal}>
       <div className="wrap">
         <h2>{pre ? 'The teams' : 'The players'}</h2>
         <p className="sub">{pre ? 'Four a side. Records and the MVP race appear once play starts.' : 'Record, points won, and net against par across the week. Brass marks the MVP race leader.'}</p>
