@@ -2,7 +2,7 @@
 <!-- Badge tile for backgrounds: a 240-unit square with one badge at the centre
      and one on each corner (the corners wrap when tiled), about 4 units apart.
      Corner badges lean 45deg, the centre badge -45deg, so alternate columns of
-     the lattice lean opposite ways. Scale with mask-size (194px gives ~90px
+     the lattice lean opposite ways. Scale with mask-size (140px gives ~65px
      crests). Used as a CSS mask; fill colour comes from the element. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
 <g transform="translate(120 120) rotate(-45) scale(2.97) translate(-23.5 -24)">
