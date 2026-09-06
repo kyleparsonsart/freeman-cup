@@ -239,7 +239,7 @@ function Strip({ d, phase, totals, clinch, total, rounds, onCourse }: {
       <div className="striptop">
         <div className={`sside cel${phase === 'pre' ? ' dim' : ''}`}><span className="pt">{half(totals.b)}</span><span className="nm">{CFG.teams.b.name}</span></div>
         <div className="jugwrap">
-          <svg width="29" height="48" style={{ width: 29, height: 48 }}><use href="#claretjug" /></svg>
+          <svg width="29" height="48" style={{ width: 29, height: 48 }}><use href="#claretjug-body" /></svg>
           <span className="juglbl">{decided && winner ? `${CFG.teams[winner].name} take ${ev.trophy}` : ev.trophy}</span>
         </div>
         <div className={`sside r vik${phase === 'pre' ? ' dim' : ''}`}><span className="nm">{CFG.teams.a.name}</span><span className="pt">{half(totals.a)}</span></div>
