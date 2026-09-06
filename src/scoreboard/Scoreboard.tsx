@@ -134,18 +134,22 @@ export default function Scoreboard() {
             </div>
           </div>
           <div className="hdright">
-            {phase === 'live' && liveRounds.length > 0 && <div className="livepill"><span className="d" />Live</div>}
             <a className="sibtn" href={APP_URL}>Player sign-in</a>
           </div>
         </div>
       </header>
 
-      <Strip d={d} phase={phase} totals={totals} clinch={clinch} total={total} rounds={rounds} onCourse={onCourse} />
-      <HowBar open={phase === 'pre'} clinch={clinch} total={total} trophy={d.snap.event.trophy} />
+      <div className="cupcard">
+        <Strip d={d} phase={phase} totals={totals} clinch={clinch} total={total} rounds={rounds} onCourse={onCourse} />
+        <HowBar open={phase === 'pre'} clinch={clinch} total={total} trophy={d.snap.event.trophy} />
+      </div>
 
       <section className="sect">
         <div className="wrap">
-          <h2>{phase === 'final' ? 'The final day' : onCourse.length ? 'Out on the course now' : 'Out on the course'}</h2>
+          <div className="secthd">
+            <h2>{phase === 'final' ? 'The final day' : onCourse.length ? 'Out on the course now' : 'Out on the course'}</h2>
+            {phase === 'live' && liveRounds.length > 0 && <div className="livepill"><span className="d" />Live</div>}
+          </div>
           <p className="sub">
             {phase === 'final' ? 'Every card is signed. Tap any match for the scorecard.'
               : onCourse.length ? 'Scores come in from the players hole by hole.'
@@ -215,6 +219,14 @@ function Strip({ d, phase, totals, clinch, total, rounds, onCourse }: {
   const dayLabel = phase === 'final' ? 'Final' : phase === 'live'
     ? `Day ${dayIdx || rounds.length} of ${rounds.length}${onCourse[0] ? ` · ${onCourse[0].s.course}` : ''}` : '';
 
+  // the bars grow in from zero on mount (CSS transitions the widths), as in the app
+  const [grown, setGrown] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => requestAnimationFrame(() => setGrown(true)));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  const paw = grown ? pa : 0, pbw = grown ? pb : 0;
+
   return (
     <div className="strip">
       {phase === 'pre' ? (
@@ -233,9 +245,9 @@ function Strip({ d, phase, totals, clinch, total, rounds, onCourse }: {
         <div className={`sside r vik${phase === 'pre' ? ' dim' : ''}`}><span className="nm">{CFG.teams.a.name}</span><span className="pt">{half(totals.a)}</span></div>
       </div>
       <div className="tug">
-        <div className="f fc" style={{ width: `${pb}%` }} />
-        <div className="f fv" style={{ width: `${pa}%` }} />
-        {!decided && <div className="livez" style={{ left: `${pb}%`, right: `${pa}%` }} />}
+        <div className="f fc" style={{ width: `${pbw}%` }} />
+        <div className="f fv" style={{ width: `${paw}%` }} />
+        {!decided && <div className="livez" style={{ left: `${pbw}%`, right: `${paw}%` }} />}
         <div className="tick" style={{ left: `${cp}%` }} />
         <div className="tick" style={{ right: `${cp}%` }} />
       </div>

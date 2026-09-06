@@ -2,7 +2,7 @@
  * Per-match moment lines for the public scoreboard, derived from the
  * hole results the same way the app's feed is. One line per hole won,
  * newest first, in the house voice:
- *   "Kyle and Matt win the 1st hole with Matt's par, 1 up."
+ *   "Kyle & Matt win the 1st hole with Matt's par, 1 up."
  * plus a closing line once the match is decided.
  */
 import { calc, getsStroke, runningAt, CFG, P, type Match, type Session } from '../lib/scoring';
@@ -19,7 +19,7 @@ export interface Moment {
 const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
 const fn = (k: string) => esc((P[k]?.n || k).split(' ')[0]);
 const list = (xs: string[]) => xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`;
-const who = (side: 'a' | 'b', keys: string[]) => `<span class="who ${side === 'a' ? 'vik' : 'cel'}">${list(keys.map(fn))}</span>`;
+const who = (side: 'a' | 'b', keys: string[]) => `<span class="who ${side === 'a' ? 'vik' : 'cel'}">${keys.map(fn).join(' &amp; ')}</span>`;
 const ord = (n: number) => `${n}${n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th'}`;
 const poss = (n: string) => `${n}'${n.endsWith('s') ? '' : 's'}`;
 
