@@ -78,7 +78,9 @@ create trigger tee_group_card_in_trg
   after update on tee_group
   for each row execute function log_card_in();
 
--- The pre-Thursday reset also reopens every card. The "where true" is not
+-- The pre-Thursday reset also reopens every card and empties the feed
+-- (scorer switches and cards-in from the test rounds otherwise linger on
+-- Live). match_hole_history still keeps the record. The "where true" is not
 -- decoration: Supabase runs the safeupdate guard, which refuses a DELETE
 -- or UPDATE without a WHERE even inside a definer function (Sep 6 2026,
 -- "DELETE requires a WHERE clause" from the desk).
@@ -91,4 +93,5 @@ begin
   update round set state = 'upcoming' where true;
   update event set shootout = null where true;
   update tee_group set submitted_at = null, submitted_by = null where true;
+  delete from feed_event where true;
 end $$ language plpgsql security definer;

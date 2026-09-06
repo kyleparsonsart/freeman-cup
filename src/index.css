@@ -1011,8 +1011,9 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 /* the pre-round match brief */
 .mymatch{margin:14px;border:1px solid var(--line);border-top:2px solid var(--brass);background:var(--ink-2);padding:16px}
 .mmk{font-family:var(--clock);font-size:13.5px;letter-spacing:.05em;color:var(--brass);margin-bottom:8px}
-.mmvs{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;font-family:var(--display);font-size:26px;
-  letter-spacing:-.015em;font-synthesis:none;line-height:1.15}
+.mmvs{display:flex;align-items:baseline;gap:10px;flex-wrap:nowrap;font-family:var(--display);
+  font-size:clamp(17px,5.4vw,22px);letter-spacing:-.015em;font-synthesis:none;line-height:1.15;white-space:nowrap}
+.mmvs .a,.mmvs .b{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .mmvs .a{color:var(--red)} .mmvs .b{color:var(--blue)}
 .mmvs .vv{font-family:var(--num);font-size:15px;color:var(--moss-dim)}
 .mml{font-size:13.5px;color:var(--moss);margin:6px 0 12px}
