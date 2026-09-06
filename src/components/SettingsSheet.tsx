@@ -111,14 +111,23 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
   // text-selection gesture and the pointer was cancelled.)
   const [askClear, setAskClear] = useState(false);
   const [clearing, setClearing] = useState(false);
+  const [clearErr, setClearErr] = useState<string | null>(null);
   const underway = data.matchHoles.length > 0;
   const clearAll = async () => {
-    setErr(null);
+    setClearErr(null);
     setClearing(true);
-    const { error } = await supabase.rpc('reset_event');
+    try {
+      const { error } = await supabase.rpc('reset_event');
+      if (error) throw new Error(error.message);
+    } catch (e) {
+      // stay open and say so; the top-of-sheet error line is off screen here
+      console.error('reset_event failed', e);
+      setClearErr(e instanceof Error ? e.message : String(e));
+      setClearing(false);
+      return;
+    }
     setClearing(false);
     setAskClear(false);
-    if (error) { setErr(error.message); return; }
     setCleared(true);
     setTimeout(() => setCleared(false), 1600);
     reload();
@@ -509,7 +518,7 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
               </div>
             </div>
             <div className="danger">
-              <button className="dbtn" onClick={() => { setErr(null); setAskClear(true); }}>
+              <button type="button" className="dbtn" onClick={() => { setErr(null); setClearErr(null); setAskClear(true); }}>
                 {cleared ? 'Cleared' : 'Clear all scores…'}
               </button>
             </div>
@@ -528,10 +537,11 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
                 ? 'The Cup is under way. This wipes every hole on every card, reopens the cards, and puts all four rounds back to Not started. The history table keeps the record.'
                 : 'Every hole on every card is cleared and all four rounds go back to Not started. The history table keeps the record.'}
             </div>
-            <button className="dbtn" style={{ marginTop: 16 }} onClick={clearAll} disabled={clearing}>
-              {clearing ? 'Clearing…' : 'Yes, clear everything'}
+            {clearErr && <div className="cisync warn" role="alert">Didn't clear: {clearErr}</div>}
+            <button type="button" className="dbtn" style={{ marginTop: 16 }} onClick={clearAll} disabled={clearing}>
+              {clearing ? 'Clearing…' : clearErr ? 'Try again' : 'Yes, clear everything'}
             </button>
-            <button className="aghost" style={{ alignSelf: 'center', marginTop: 12 }} onClick={() => setAskClear(false)} disabled={clearing}>
+            <button type="button" className="aghost" style={{ alignSelf: 'center', marginTop: 12 }} onClick={() => { setAskClear(false); setClearErr(null); }} disabled={clearing}>
               Keep the scores
             </button>
           </div>
