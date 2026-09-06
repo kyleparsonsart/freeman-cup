@@ -601,7 +601,7 @@ function Desk({ desk, data, onLive, onComplete }: {
           </div>
           <div className="deskrow">
             <span className="dk">Format</span>
-            <span className="dv">{s.fmt} \u00b7 {s.holes} holes</span>
+            <span className="dv">{s.fmt} · {s.holes} holes</span>
             <span className="dtick" />
           </div>
           <button
