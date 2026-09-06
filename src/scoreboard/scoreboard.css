@@ -264,7 +264,8 @@ body{background:var(--ink);color:var(--bone);font-family:var(--body);font-size:1
    from 760px an ink gradient, solid across the 960 column, fades it out under
    the content and it lives either side. The header stays plain ink. */
 body{position:relative}
-body::before{content:'';position:fixed;inset:0;z-index:-2;background:var(--ink-15);pointer-events:none;
+body::before{content:'';position:fixed;inset:0 0 -140px 0;z-index:-2;background:var(--ink-15);pointer-events:none;
+  transform:translate3d(0,var(--par,0px),0);will-change:transform;
   -webkit-mask:url(/brand/badge-tile.svg) center top/140px 140px repeat;
   mask:url(/brand/badge-tile.svg) center top/140px 140px repeat}
 @media(min-width:760px){
