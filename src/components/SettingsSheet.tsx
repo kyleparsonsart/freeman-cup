@@ -219,9 +219,7 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
               </label>
               <button className="aghost" onClick={signOut}>Sign out</button>
             </div>
-            <div className="hint" style={{ padding: '2px 18px 14px', color: 'var(--moss-dim)' }}>
-              Build {__BUILD_STAMP__}
-            </div>
+            <div className="build">Build {__BUILD_STAMP__}</div>
           </>
         )}
 
@@ -344,8 +342,8 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
               const ms = data.matches.filter(m => m.round_id === r.id).sort((a, b) => a.seq - b.seq);
               return (
                 <div key={r.id}>
-                  <div className="grp" style={{ paddingTop: 10 }}>
-                    <h3 style={{ color: 'var(--bone)', fontSize: 14 }}>{r.label} · {s?.fmt}</h3>
+                  <div className="grp sub">
+                    <h3>{r.label} · {s?.fmt}</h3>
                   </div>
                   {ms.map(m => {
                     const gi = tgs.findIndex(t => t.id === m.tee_group_id);

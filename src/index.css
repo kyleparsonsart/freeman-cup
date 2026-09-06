@@ -1184,3 +1184,17 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
     box-shadow:0 30px 80px rgba(0,0,0,.55);overflow:hidden}
   .phone.signedout .signin{padding:44px 40px 40px}
 }
+
+/* ============ settings rhythm (Sep 6 2026) ============
+   One rule per section, hints flush with their heading, and a fixed
+   ladder of gaps: 24 above a heading, 6 to its hint, 12 to the first
+   row. Sub-headings (per-round pairings) are small caps, not a second
+   brass heading. The generic .hint indent was leaking into .grp. */
+.grp{padding:24px 18px 12px;border-top:1px solid var(--line)}
+.setbody > .grp:first-child,.setbody > .holine + .grp{border-top:none;padding-top:18px}
+.grp .hint{padding:0;margin-top:6px;font-size:13px;line-height:1.55;color:var(--moss-dim)}
+.grp.sub{padding:14px 18px 4px;border-top:none}
+.grp.sub h3{font-family:var(--clock);font-size:12.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--moss)}
+.setbody > .seg{margin:12px 18px 6px;flex:none}
+.setbody > .fld:last-child,.setbody > .rdrow:last-child{border-bottom:1px solid var(--line)}
+.setbody .build{padding:10px 18px 0;font-size:12px;color:var(--moss-dim)}
