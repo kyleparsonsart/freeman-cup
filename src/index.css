@@ -1199,3 +1199,10 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .setbody > .seg{margin:12px 18px 6px;flex:none}
 .setbody > .fld:last-child,.setbody > .rdrow:last-child{border-bottom:1px solid var(--line)}
 .setbody .build{padding:10px 18px 0;font-size:12px;color:var(--moss-dim)}
+
+/* Live before the first score: the next round and the rosters */
+.prelive{border-top:1px solid var(--line)}
+.prelive .rtop{background:var(--ink-2)}
+.prelive .rfoot{justify-content:flex-start;line-height:1.5}
+.prelive .roster{border-top:none;margin-top:12px}
+.prelive .rcol h4{font-family:var(--display);font-size:16px;font-weight:600;font-synthesis:none}
