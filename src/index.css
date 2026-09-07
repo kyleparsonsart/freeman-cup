@@ -1225,3 +1225,46 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
    rule sitting on the bottom of the group tabs */
 .hero.brief{margin-top:0;border-top:none}
 .hero.brief .mymatch{margin:0;border-left:none;border-right:none;border-bottom:none}
+
+/* ---- The rulebook (header book icon → full sheet) ---- */
+.cog.book svg{width:21px;height:21px}
+.rbsearch{flex:none;padding:12px 18px 0;border-bottom:1px solid var(--line)}
+.rbfield{display:flex;align-items:center;gap:10px;background:var(--ink-2);border:1px solid var(--line);border-radius:10px;padding:0 12px 0 14px}
+.rbfield svg{width:18px;height:18px;flex:none;color:var(--moss-dim)}
+.rbfield input{flex:1;min-width:0;background:none;border:none;color:var(--bone);font:inherit;font-size:16px;padding:12px 0;outline:none;-webkit-appearance:none;appearance:none}
+.rbfield input::placeholder{color:var(--moss-dim)}
+.rbfield input::-webkit-search-cancel-button{display:none}
+.rbclear{color:var(--moss-dim);font-size:13px;font-weight:600;padding:10px 0 10px 8px}
+.rbchips{display:flex;flex-wrap:wrap;gap:8px;padding:12px 0 14px}
+.rbchips .chip{color:var(--moss)}
+.rbsearch:has(.rbchips){padding-bottom:0}
+.rbsearch:not(:has(.rbchips)){padding-bottom:12px}
+.rbbody{padding-bottom:calc(34px + env(safe-area-inset-bottom,0px))}
+.rbmeta{color:var(--moss-dim);font-size:12.5px;padding:14px 18px 4px;line-height:1.45}
+.rbmeta b{color:var(--bone);font-weight:600}
+.rbtoc{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:15px 18px;border-bottom:1px solid var(--line);color:var(--bone)}
+.rbtoc .n{font-family:var(--num);font-size:15px;font-weight:600;color:var(--brass);width:22px;flex:none}
+.rbtoc .t{flex:1;font-family:var(--display);font-size:17px;font-weight:600;letter-spacing:-.015em;font-synthesis:none;line-height:1.25}
+.rbtoc .c{display:block;color:var(--moss-dim);font-size:12.5px;margin-top:3px;font-family:var(--body);font-weight:400;letter-spacing:0}
+.rbtoc .chev{color:var(--moss-dim);font-size:18px}
+.rbhit{display:block;width:100%;text-align:left;padding:16px 18px;border-bottom:1px solid var(--line);color:var(--bone)}
+.rbhit .k,.rbclause .k,.rbart .k{display:block;color:var(--brass);font-family:var(--num);font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.rbhit .h{display:block;font-family:var(--display);font-size:17px;font-weight:600;letter-spacing:-.01em;font-synthesis:none;margin-top:3px;line-height:1.25}
+.rbhit .s{display:block;margin-top:7px;font-size:14.5px;line-height:1.45;color:var(--bone)}
+.rbhit .more{display:inline-block;margin-top:9px;color:var(--brass);font-size:13px;font-weight:600}
+.rulebook mark{background:none;color:var(--brass);font-weight:600;text-decoration:underline;text-decoration-color:rgba(216,169,63,.5);text-underline-offset:3px}
+.rbnone{padding:30px 18px;text-align:center;color:var(--moss);font-size:14.5px;line-height:1.6}
+.rbnone b{display:block;color:var(--bone);font-family:var(--display);font-weight:600;font-size:17px;margin-bottom:6px;font-synthesis:none}
+.rbartbar{display:flex;justify-content:space-between;align-items:center;padding:10px 18px;background:var(--ink-2);border-bottom:1px solid var(--line);color:var(--moss-dim);font-size:12.5px;position:sticky;top:0;z-index:2}
+.rbback{color:var(--brass);font-size:13px;font-weight:600}
+.rbart{padding:18px 18px 4px}
+.rbart h3{font-family:var(--display);font-size:22px;font-weight:600;letter-spacing:-.015em;font-synthesis:none;margin-top:4px;color:var(--bone)}
+.rbclause{padding:16px 18px 18px;border-bottom:1px solid var(--line);scroll-margin-top:44px}
+.rbclause h4{font-family:var(--display);font-size:18px;font-weight:600;letter-spacing:-.01em;font-synthesis:none;margin-top:3px;line-height:1.25}
+.rbclause .short{margin-top:8px;font-size:15.5px;line-height:1.45;color:var(--bone)}
+.rbclause .long{margin-top:8px;font-size:14px;line-height:1.5;color:var(--moss)}
+.rbsee{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.rbsee button{border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:12.5px;color:var(--moss);font-weight:600}
+.rbnav{display:flex;justify-content:space-between;gap:12px;padding:16px 18px 6px}
+.rbnav button{color:var(--brass);font-size:13px;font-weight:600;text-align:left;max-width:48%}
+.rbnav button:last-child{text-align:right}
