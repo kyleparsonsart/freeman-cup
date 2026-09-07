@@ -4,7 +4,7 @@ import { setContext, type Session, type Match, type HoleData, type Player } from
 import { idbGet, idbPut } from '../lib/db';
 import { getQueuedWrites, overlayQueue, onQueueChange, type QueuedHoleWrite } from '../lib/writeQueue';
 import type {
-  DbEvent, DbTeam, DbPlayer, DbCourse, DbRound, DbTeeGroup, DbMatch, DbMatchHole, DbFeedEvent,
+  DbEvent, DbTeam, DbPlayer, DbCourse, DbRound, DbTeeGroup, DbMatch, DbMatchHole, DbFeedEvent, DbCaptainSheet, DbSheetStatus,
 } from '../lib/types';
 
 /** The most recent scorer switch for a tee group (from feed_event). */
@@ -28,6 +28,10 @@ export interface EventData {
   handoffs: Record<string, Handoff>;
   /** every scorer switch, for the feed */
   switches: DbFeedEvent[];
+  /** captain's sheets this phone may read (RLS: own, both after reveal, all once posted) */
+  sheets: DbCaptainSheet[];
+  /** who has sealed and opened, for every round, no lineups */
+  sheetStatus: DbSheetStatus[];
   /* scoring engine shapes */
   scoringSessions: Session[];
   scoringMatches: Match[];
@@ -56,6 +60,8 @@ interface RawTables {
   matches: DbMatch[];
   matchHoles: DbMatchHole[];
   switches?: DbFeedEvent[];
+  sheets?: DbCaptainSheet[];
+  sheetStatus?: DbSheetStatus[];
   /** when this came from the server (ISO); set when the snapshot is saved */
   fetched_at?: string;
 }
@@ -100,6 +106,8 @@ async function fetchTables(): Promise<RawTables> {
     { data: matches, error: e7 },
     { data: matchHoles, error: e8 },
     { data: switches, error: e9 },
+    { data: sheets, error: e10 },
+    { data: sheetStatus, error: e11 },
   ] = await Promise.all([
     supabase.from('event').select('*'),
     supabase.from('team').select('*'),
@@ -110,9 +118,11 @@ async function fetchTables(): Promise<RawTables> {
     supabase.from('match').select('*').order('seq'),
     supabase.from('match_hole').select('*'),
     supabase.from('feed_event').select('*').in('kind', ['scorer_switch', 'card_in']).order('occurred_at', { ascending: false }),
+    supabase.from('captain_sheet').select('*'),
+    supabase.rpc('sheet_status'),
   ]);
 
-  const err = e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8 || e9;
+  const err = e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8 || e9 || e10 || e11;
   if (err) throw new Error(err.message);
 
   const event = (events as DbEvent[])[0];
@@ -128,6 +138,8 @@ async function fetchTables(): Promise<RawTables> {
     matches: matches as DbMatch[],
     matchHoles: matchHoles as DbMatchHole[],
     switches: switches as DbFeedEvent[],
+    sheets: (sheets || []) as DbCaptainSheet[],
+    sheetStatus: (sheetStatus || []) as DbSheetStatus[],
   };
 }
 
@@ -359,6 +371,8 @@ export function useEventData() {
       event, teams: teamList, players: playerList, courses: courseList,
       rounds: roundList, teeGroups: tgList, matches: matchList, matchHoles: holeList, handoffs,
       switches: raw.switches || [],
+      sheets: raw.sheets || [],
+      sheetStatus: raw.sheetStatus || [],
       scoringSessions, scoringMatches, playerMap, playerById,
       mePlayerId, meKey, meIsCommissioner, unclaimed, offline,
       syncedAt: raw.fetched_at ?? null,
@@ -396,7 +410,8 @@ export function useEventData() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tee_group' }, () => { load(); })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'feed_event' }, () => { load(); })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'round' }, () => { load(); })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'match' }, () => { load(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'match' }, () => { load(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'captain_sheet' }, () => { load(); })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'event' }, () => { load(); })
       .subscribe();
 

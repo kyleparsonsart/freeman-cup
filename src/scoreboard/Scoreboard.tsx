@@ -513,7 +513,7 @@ function Players({ d, phase, totals }: { d: Shaped; phase: 'pre' | 'live' | 'fin
 /* ---------------- next round card ---------------- */
 
 function NextCard({ d, r, first }: { d: Shaped; r: RoundView; first: boolean }) {
-  const n = r.ms.length;
+  const n = r.ms.length || (r.s.fmt === 'Singles' ? 4 : 2);   // pairings may not be posted yet
   const fmt = r.s.fmt === 'Aggregate' ? 'aggregate' : r.s.fmt.toLowerCase();
   return (
     <div className="emp">

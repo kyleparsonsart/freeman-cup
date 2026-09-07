@@ -10,6 +10,7 @@ import {
 } from '../lib/scoring';
 import { IconGolf } from './icons';
 import type { EventData } from '../hooks/useEventData';
+import CaptainSheet from './CaptainSheet';
 
 /** Display rule: first names only, everywhere. */
 const fn = (name?: string | null) => (name || '').split(' ')[0];
@@ -64,6 +65,13 @@ export default function ScoringScreen({ data, reload }: Props) {
   const hero = roundMatches.find(m => m.id === heroId)
     || (meKey ? roundMatches.find(m => m.a.includes(meKey) || m.b.includes(meKey)) : undefined)
     || roundMatches[0];
+
+  // No matches yet: the night before, this is the captain's sheet (or
+  // "pairings post tonight" for everyone else). See CaptainSheet.
+  const dbRound = todayRound ? data.rounds.find(r => r.id === todayRound.id) : undefined;
+  if (todayRound && dbRound && !roundMatches.length && todayRound.state !== 'final') {
+    return <CaptainSheet data={data} round={dbRound} session={todayRound} reload={reload} />;
+  }
 
   if (!todayRound || !hero) {
     return (

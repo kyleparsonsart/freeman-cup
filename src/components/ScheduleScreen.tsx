@@ -131,7 +131,7 @@ function RoundCard({ s, ms, isOpen, toggle }: RoundCardProps) {
     ? <div className="rscore"><span className="a">{half(a)}</span><span className="d">–</span><span className="b">{half(b)}</span></div>
     : st === 'live'
     ? <div className="rscore live">{done} of {ms.length} in</div>
-    : <div className="rscore up">{ms.length} point{ms.length === 1 ? '' : 's'}</div>;
+    : <div className="rscore up">{ms.length || (s.fmt === 'Singles' ? 4 : 2)} points</div>;
 
   return (
     <div className="rcard">
@@ -174,7 +174,7 @@ function RoundCard({ s, ms, isOpen, toggle }: RoundCardProps) {
       })}
 
       {st === 'upcoming' && (
-        <div className="rfoot"><span>Pairings set. Cards handed in the night before.</span></div>
+        <div className="rfoot"><span>{ms.length ? 'Pairings set. Cards handed in the night before.' : 'Pairings post the night before, from the captains’ sheets.'}</span></div>
       )}
     </div>
   );

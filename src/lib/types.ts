@@ -57,6 +57,8 @@ export interface DbRound {
   holes: number;
   locked: boolean;
   state: 'upcoming' | 'live' | 'final';
+  /** set when the commissioner hands out the envelopes (captain's sheet) */
+  revealed_at?: string | null;
 }
 
 export interface DbTeeGroup {
@@ -100,4 +102,26 @@ export interface DbFeedEvent {
   tier: 'none' | 'other_group' | 'all';
   body: Record<string, unknown>;
   occurred_at: string;
+}
+
+/** A captain's sealed lineup; slots are player ids, one array per tee slot. */
+export interface DbCaptainSheet {
+  id: string;
+  round_id: string;
+  team_id: string;
+  slots: string[][];
+  sealed_at: string;
+  sealed_by: string | null;
+  auto: boolean;
+  opened_at: string | null;
+  opened_by: string | null;
+}
+
+/** sheet_status(): who has sealed and opened, with no lineups attached */
+export interface DbSheetStatus {
+  round_id: string;
+  team_id: string;
+  sealed_at: string;
+  auto: boolean;
+  opened_at: string | null;
 }
