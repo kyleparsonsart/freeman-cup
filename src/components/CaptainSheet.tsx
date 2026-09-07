@@ -14,14 +14,15 @@ import type { DbCaptainSheet, DbPlayer, DbRound, DbTeam } from '../lib/types';
 import type { Session } from '../lib/scoring';
 import { sheetView, usedPairs, pairingOptions, clockLocal, type SheetView } from '../lib/sheets';
 
-interface Props { data: EventData; round: DbRound; session: Session; reload: () => void }
+interface Props { data: EventData; round: DbRound; session: Session; reload: () => void; secondary?: boolean }
 
 const first = (p: DbPlayer | undefined) => (p?.name || '').split(' ')[0];
 
-export default function CaptainSheet({ data, round, session, reload }: Props) {
+export default function CaptainSheet({ data, round, session, reload, secondary = false }: Props) {
   const view = useMemo(() => sheetView({
     round, teams: data.teams, players: data.players, sheets: data.sheets, status: data.sheetStatus,
-    mePlayerId: data.mePlayerId, meIsCommissioner: data.meIsCommissioner,
+    mePlayerId: data.mePlayerId, meIsCommissioner: data.meIsCommissionerAccount,
+    rounds: data.rounds, teeGroups: data.teeGroups, matches: data.matches,
   }), [round, data]);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -37,15 +38,16 @@ export default function CaptainSheet({ data, round, session, reload }: Props) {
 
   // Past the deadline the first phone to look settles the round.
   useEffect(() => {
-    if (view.pastDue && !data.offline) supabase.rpc('sheet_tick', { r: round.id }).then(({ error }) => { if (!error) reload(); });
+    if (view.pastDue && view.earlierPosted && !data.offline) supabase.rpc('sheet_tick', { r: round.id }).then(({ error }) => { if (!error) reload(); });
   }, [view.pastDue, round.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const by = (id: string) => first(data.playerById[id]);
   const names = (ids: string[]) => ids.map(by).join(' & ');
 
   return (
-    <div className="hero brief capsheet" id="heroSlot">
+    <div className={`hero brief capsheet${secondary ? ' secondary' : ''}`} id={secondary ? undefined : 'heroSlot'}>
       {err && <div className="holine err">{err}</div>}
+      {view.stage === 'locked' && <Locked view={view} session={session} />}
       {view.canReveal && (
         <RevealCard view={view} busy={busy} onReveal={() => run(supabase.rpc('reveal_sheets', { r: round.id }))} />
       )}
@@ -72,7 +74,7 @@ function StatusRows({ view }: { view: SheetView }) {
         <div key={s.team.id} className="shrow">
           <span className="who"><i className={`dot${s.sealed ? ' ok' : ''}`} />{s.team.name} · {first(s.captain || undefined) || 'captain'}</span>
           <span className={`st${s.sealed ? ' ok' : ''}`}>
-            {!s.sealed ? 'Not sealed' : s.sealed.auto ? 'Defaulted at 9:00 pm' : `Sealed ${clockLocal(s.sealed.sealed_at)}`}
+            {!s.sealed ? 'Not sealed' : s.sealed.auto ? `Defaulted at ${clockLocal(view.due)}` : `Sealed ${clockLocal(s.sealed.sealed_at)}`}
             {s.sealed?.opened_at && view.revealed ? ' · opened' : ''}
           </span>
         </div>
@@ -103,13 +105,23 @@ function RevealCard({ view, busy, onReveal }: { view: SheetView; busy: boolean; 
   );
 }
 
+function Locked({ view, session }: { view: SheetView; session: Session }) {
+  return (
+    <div className="mymatch">
+      <div className="mmk">{session.rd} · {session.fmt}</div>
+      <div className="mmt">Sheet opens when the round before posts</div>
+      <div className="mml">The rotation check needs the earlier pairings on the record. Due {clockLocal(view.due)} course time, the app fills it in from there.</div>
+    </div>
+  );
+}
+
 function Waiting({ view, session }: { view: SheetView; session: Session }) {
   return (
     <div className="mymatch">
       <div className="mmk">{session.rd} · {session.fmt}</div>
       <div className="mmt">Pairings post tonight</div>
       <div className="mml">
-        The captains are sealing their sheets. Both open at dinner, <b>9:00 pm</b> at the latest, and your match lands here.
+        The captains are sealing their sheets. Both open at dinner, <b>{clockLocal(view.due)}</b> at the latest, and your match lands here.
       </div>
       <StatusRows view={view} />
       <div className="mmst"><i className="ldot" /><span>{session.course} · {session.holes} holes · tees {session.tees.join(' and ')}</span></div>
@@ -123,7 +135,7 @@ function Sealed({ view, session, names }: { view: SheetView; session: Session; n
     <div className="mymatch">
       <div className="mmk locked"><LockIcon /> Sealed {clockLocal(mine.sealed_at)}</div>
       <div className="mmt">{view.status.find(s => s.team.id !== view.myTeam?.id)?.sealed ? 'Waiting on the reveal' : `Waiting on ${first(view.status.find(s => s.team.id !== view.myTeam?.id)?.captain || undefined)}`}</div>
-      <div className="mml">Your sheet is in and can’t change. Envelopes go out when the commissioner reveals, or at <b>9:00 pm</b>.</div>
+      <div className="mml">Your sheet is in and can’t change. Envelopes go out when the commissioner reveals, or at <b>{clockLocal(view.due)}</b>.</div>
       <div className="shsub">Your slots</div>
       {mine.slots.map((slot, i) => (
         <div key={i} className="shslot"><span className="tt">{teeFor(session, view.round, i)}<small>SLOT {i + 1}</small></span><span className={`pair ${view.myTeam?.side}`}>{names(slot)}</span></div>
@@ -224,7 +236,7 @@ function SheetEditor({ data, round, session, team, view, busy, onSeal }: {
 
       <StatusRows view={view} />
       <div className="shfoot">
-        <div className="hint">Sealed sheets can’t be changed. Envelopes go out when the commissioner reveals, or at 9:00 pm.</div>
+        <div className="hint">Sealed sheets can’t be changed. Envelopes go out when the commissioner reveals, or at {clockLocal(view.due)}.</div>
         {!sure
           ? <button className="abtn" disabled={!slots.length} onClick={() => setSure(true)}>Seal the sheet</button>
           : <div className="shconfirm">

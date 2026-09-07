@@ -1336,3 +1336,5 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .env.open{margin-top:96px}
 .envmo .next{width:100%;align-items:center;display:flex;flex-direction:column;gap:12px;margin-top:8px}
 .envmo .abtn{max-width:280px}
+.hero.capsheet.secondary{flex:none;margin-top:14px;border-top:1px solid var(--line)}
+.hero.capsheet.secondary .mymatch{border-top:1px solid var(--brass)}

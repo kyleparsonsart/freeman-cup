@@ -41,6 +41,8 @@ export interface EventData {
   mePlayerId: string;
   meKey: string;
   meIsCommissioner: boolean;
+  /** the account is the commissioner, whatever view it's acting in (never masked by App) */
+  meIsCommissionerAccount: boolean;
   /** signed in, but no player row carries this account (seat not claimable) */
   unclaimed: boolean;
   /** true when the server was unreachable and this came from the cached snapshot */
@@ -374,7 +376,7 @@ export function useEventData() {
       sheets: raw.sheets || [],
       sheetStatus: raw.sheetStatus || [],
       scoringSessions, scoringMatches, playerMap, playerById,
-      mePlayerId, meKey, meIsCommissioner, unclaimed, offline,
+      mePlayerId, meKey, meIsCommissioner, meIsCommissionerAccount: meIsCommissioner, unclaimed, offline,
       syncedAt: raw.fetched_at ?? null,
     });
     setError(null);

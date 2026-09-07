@@ -19,11 +19,16 @@ const M = (round_id: string, a: string[], b: string[]): DbMatch => ({ id: `${rou
 
 describe('sheetDue', () => {
   it('is 9:00 pm Chicago the evening before', () => {
-    const d = sheetDue({ play_date: '2026-10-08' });
+    const d = sheetDue(rounds[0]);
     expect(d.toISOString()).toBe('2026-10-08T02:00:00.000Z'); // Oct 7, 21:00 CDT (UTC-5)
   });
   it('handles standard time too', () => {
-    expect(sheetDue({ play_date: '2027-01-10' }).toISOString()).toBe('2027-01-10T03:00:00.000Z'); // CST
+    expect(sheetDue(R(9, 'singles', '2027-01-10')).toISOString()).toBe('2027-01-10T03:00:00.000Z'); // CST
+  });
+  it('a second round on the same day is due 90 minutes before its first tee', () => {
+    const tgs = [{ id: 'G31', round_id: 'R3', seq: 1, tee_time: '13:10:00', scorer_player_id: null }, { id: 'G32', round_id: 'R3', seq: 2, tee_time: '13:20:00', scorer_player_id: null }];
+    expect(sheetDue(rounds[2], rounds, tgs as never).toISOString()).toBe('2026-10-09T16:40:00.000Z'); // 11:40 CDT
+    expect(sheetDue(rounds[1], rounds, tgs as never).toISOString()).toBe('2026-10-09T02:00:00.000Z');
   });
 });
 
@@ -58,6 +63,12 @@ describe('sheetView', () => {
 
   it('a non-captain waits', () => {
     expect(sheetView({ ...base, mePlayerId: 'phil', meIsCommissioner: false }).stage).toBe('waiting');
+  });
+  it('a captain is locked until the earlier rounds post', () => {
+    const v = sheetView({ ...base, round: rounds[1], rounds, matches: [], mePlayerId: 'kyle', meIsCommissioner: true });
+    expect(v.stage).toBe('locked');
+    const v2 = sheetView({ ...base, round: rounds[1], rounds, matches: [M('R1', ['griffin', 'matt'], ['kyle', 'jt'])], mePlayerId: 'kyle', meIsCommissioner: true });
+    expect(v2.stage).toBe('open');
   });
   it('a captain with no sheet is open, then sealed', () => {
     expect(sheetView({ ...base, mePlayerId: 'kyle', meIsCommissioner: true }).stage).toBe('open');

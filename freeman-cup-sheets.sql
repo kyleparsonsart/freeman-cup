@@ -53,10 +53,17 @@ returns table (round_id uuid, team_id uuid, sealed_at timestamptz, auto boolean,
   select round_id, team_id, sealed_at, auto, opened_at from captain_sheet;
 $$ language sql stable security definer;
 
--- 9:00 pm the evening before, course time.
+-- 9:00 pm the evening before, course time. A second round on the same
+-- day (Friday afternoon) can't be sealed until the morning round has
+-- posted, so its deadline is 90 minutes before its first tee instead.
 create or replace function sheet_due(r uuid) returns timestamptz as $$
-  select ((play_date - 1)::timestamp + time '21:00') at time zone 'America/Chicago'
-    from round where id = r;
+  select case
+    when exists (select 1 from round x where x.event_id = me.event_id and x.play_date = me.play_date and x.seq < me.seq)
+      then (me.play_date::timestamp + (select min(tee_time) from tee_group where round_id = me.id) - interval '90 minutes')
+           at time zone 'America/Chicago'
+    else ((me.play_date - 1)::timestamp + time '21:00') at time zone 'America/Chicago'
+  end
+  from round me where me.id = r;
 $$ language sql stable;
 
 -- Pairs this team has already used in earlier team rounds.
@@ -185,6 +192,16 @@ begin
       array(select (jsonb_array_elements_text(a_slots -> (i - 1)))::uuid),
       array(select (jsonb_array_elements_text(b_slots -> (i - 1)))::uuid));
   end loop;
+  -- The pencil: a seeded scorer who isn't in his group any more can't hold
+  -- it. Keep him if he is; otherwise the first Celt in the group's first
+  -- match holds it until the group hands it on.
+  update tee_group g
+     set scorer_player_id = coalesce(
+       (select g.scorer_player_id where exists (
+          select 1 from match m where m.tee_group_id = g.id
+             and (g.scorer_player_id = any(m.side_a) or g.scorer_player_id = any(m.side_b)))),
+       (select m.side_b[1] from match m where m.tee_group_id = g.id order by m.seq limit 1))
+   where g.round_id = r;
 end $$ language plpgsql;
 
 -- Past the deadline: fill what's missing, reveal, open, build. Safe to
@@ -213,6 +230,12 @@ begin
   t := my_captain_team();
   if t is null then raise exception 'captains only'; end if;
   if exists (select 1 from match where round_id = r) then raise exception 'pairings are already posted'; end if;
+  -- the rotation check reads earlier matches, so earlier rounds must be posted first
+  if exists (select 1 from round x where x.event_id = (select event_id from round where id = r)
+               and x.seq < (select seq from round where id = r)
+               and not exists (select 1 from match where round_id = x.id)) then
+    raise exception 'the earlier round has to post first';
+  end if;
   if exists (select 1 from captain_sheet where round_id = r and team_id = t) then
     raise exception 'your sheet is already sealed';
   end if;

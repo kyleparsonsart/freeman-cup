@@ -11,6 +11,7 @@ import {
 import { IconGolf } from './icons';
 import type { EventData } from '../hooks/useEventData';
 import CaptainSheet from './CaptainSheet';
+import { sheetDue } from '../lib/sheets';
 
 /** Display rule: first names only, everywhere. */
 const fn = (name?: string | null) => (name || '').split(' ')[0];
@@ -86,6 +87,16 @@ export default function ScoringScreen({ data, reload }: Props) {
 
   const tabbed = roundMatches.length > 1;
 
+  // The next round without pairings, surfaced under today's brief once its
+  // sheet is worth looking at (Friday afternoon's sheet during Friday morning).
+  const nextSheet = (() => {
+    const r = data.rounds.find(x => x.seq > (dbRound?.seq ?? 0) && !scoringMatches.some(m => m.s === x.id) && x.state !== 'final');
+    const s = r && scoringSessions.find(x => x.id === r.id);
+    if (!r || !s) return null;
+    const due = sheetDue(r, data.rounds, data.teeGroups).getTime();
+    return due - Date.now() < 36 * 3600_000 ? { r, s } : null;
+  })();
+
   return (
     <>
       {tabbed && (
@@ -110,6 +121,7 @@ export default function ScoringScreen({ data, reload }: Props) {
           tabbed={tabbed}
         />
       </div>
+      {nextSheet && <CaptainSheet data={data} round={nextSheet.r} session={nextSheet.s} reload={reload} secondary />}
     </>
   );
 }
