@@ -322,13 +322,9 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
           card={card}
           year={Number(data.event.year) || 2026}
           venue={data.event.venue || 'Sand Valley'}
+          data={data}
           onClose={closeMoment}
           onOpen={k => { markCardSeen(moKey); setMoKey(k); }}
-          extra={
-            card.kind === 'won' || card.kind === 'day' ? { label: card.kind === 'won' ? 'See how it happened' : 'See the full day', onClick: () => { setTab('live'); closeMoment(); } }
-            : card.kind === 'match' ? { label: 'See the scorecard', onClick: () => { setTab('schedule'); closeMoment(); } }
-            : null
-          }
         />
       )}
       {data && moments && moKey === 'duel' && (

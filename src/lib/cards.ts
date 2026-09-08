@@ -8,8 +8,9 @@
  * can be reopened later from Schedule or Live and a correction re-derives
  * the card instead of leaving a stale one behind. Keys are strings so the
  * same state slot that opens a moment can open a card:
- *   match:<id> · day:<day> · won · shootout · player:<key> · week:<key>
- *   · live · spike:<type>:<matchId>:<hole>
+ *   match:<id> · day:<day> · won · shootout · player:<key> · live
+ *   · spike:<type>:<matchId>:<hole>
+ * The week in review is folded into the player card once golf is played.
  */
 import { calc, P, CFG, type Match, type Session, type CalcResult } from './scoring';
 import type { DbPlayer, DbTeeGroup, DbMatch } from './types';

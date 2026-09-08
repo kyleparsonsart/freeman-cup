@@ -5,7 +5,6 @@ import { mvpBoard, roundRaces, relLabel } from '../lib/standings';
 import type { MomentsState } from '../lib/moments';
 import { IconMedal } from './icons';
 import type { EventData } from '../hooks/useEventData';
-import { recordOf, recordLabel } from '../lib/cards';
 
 const fn = (n?: string | null) => (n || '').split(' ')[0];
 const names = (keys: string[]) => keys.map(k => fn(P[k]?.n) || k).join(' / ');
@@ -23,8 +22,6 @@ export default function ScheduleScreen({ data, moments = null, onMoment }: {
   const days = [...new Set(sessions.map(x => x.day))];
 
   const won = moments?.won ?? null;
-  const me = data.meKey;
-  const myPlayed = me ? matches.some(m => (m.a.includes(me) || m.b.includes(me)) && calc(m).played > 0) : false;
 
   return (
     <>
@@ -71,13 +68,6 @@ export default function ScheduleScreen({ data, moments = null, onMoment }: {
           </div>
         );
       })}
-
-      {me && myPlayed && onMoment && (
-        <button className="shrow week" onClick={() => onMoment(`week:${me}`)}>
-          <span>Your week · {recordLabel(recordOf(data, me))}</span>
-          <span className="go">Open ›</span>
-        </button>
-      )}
 
       <TheField onOpen={onMoment} />
       <TheRaces sessions={sessions} matches={matches} />

@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { half, CFG } from '../lib/scoring';
 import {
   type CardData, type MatchCard, type DayCard, type FinaleCard, type ShootoutCard,
@@ -6,7 +6,6 @@ import {
   matchCard, dayCard, finaleCard, shootoutCard, playerCard, weekCard, liveCard, spikeCard,
   names, first, dowOf, teeOf, ordinal, recordLabel, other,
 } from '../lib/cards';
-import { sharePoster, canShareFiles, type ShareOutcome } from '../lib/poster';
 import { TIEBREAK } from '../lib/moments';
 
 export type Card = MatchCard | DayCard | FinaleCard | ShootoutCard | PlayerCard | WeekCard | LiveCard | SpikeCard;
@@ -26,7 +25,6 @@ export function resolveCard(
   if (kind === 'match') return matchCard(d, rest);
   if (kind === 'day') return dayCard(d, rest);
   if (kind === 'player') return playerCard(d, rest);
-  if (kind === 'week') return weekCard(d, rest);
   if (kind === 'spike') return spikeCard(d, key);
   return null;
 }
@@ -35,41 +33,24 @@ interface Props {
   card: Card;
   year: number;
   venue: string;
+  data: CardData;
   onClose: () => void;
   onOpen: (key: string) => void;
-  /** a second action under Share, when the card has a natural next step */
-  extra?: { label: string; onClick: () => void } | null;
 }
 
 /**
- * The full-screen share card. The 9:16 poster fills the screen so a plain
- * screenshot works; Share renders the same poster to a story-sized PNG.
+ * The full-screen moment. The 9:16 poster fills the screen above a single
+ * Close, so a plain screenshot is the share.
  */
-export default function ShareCard({ card, year, venue, onClose, onOpen, extra }: Props) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [busy, setBusy] = useState(false);
-  const [note, setNote] = useState<string | null>(null);
-  const share = async () => {
-    if (!ref.current || busy) return;
-    setBusy(true); setNote(null);
-    const out: ShareOutcome = await sharePoster(ref.current, `freeman-cup-${card.key.replace(/[^a-z0-9]+/gi, '-')}`);
-    setBusy(false);
-    if (out === 'unsupported') setNote('This phone won’t take the image. A screenshot of this screen works just as well.');
-    if (out === 'failed') setNote('Couldn’t hand the image over. Try again, or take a screenshot.');
-  };
-  const foot = <div className="pfoot"><span className="k">The Freeman Cup · {venue}</span><span className="yr">{year}</span></div>;
+export default function ShareCard({ card, year, venue, data, onClose, onOpen }: Props) {
   return (
-    <div className="moment poster" role="dialog" aria-modal="true" aria-label="Share card">
-      <div className="pc" ref={ref}>
-        <Body card={card} onOpen={onOpen} year={year} />
-        {foot}
+    <div className="moment poster" role="dialog" aria-modal="true" aria-label="Moment">
+      <div className="pc">
+        <Body card={card} onOpen={onOpen} year={year} data={data} />
+        <div className="pfoot"><span className="k">The Freeman Cup · {venue}</span><span className="yr">{year}</span></div>
       </div>
       <div className="pacts">
-        <button className="abtn" onClick={share} disabled={busy}>{busy ? 'Making the image…' : 'Share'}</button>
-        {extra && <button className="aghost" onClick={extra.onClick}>{extra.label}</button>}
-        <button className="aghost" onClick={onClose}>Close</button>
-        {note && <div className="pnote">{note}</div>}
-        {!note && !canShareFiles() && <div className="pnote">Or just screenshot this screen.</div>}
+        <button className="abtn" onClick={onClose}>Close</button>
       </div>
     </div>
   );
@@ -94,14 +75,13 @@ function Name({ k, side, onOpen }: { k: string; side: Side; onOpen: (key: string
   return <button className={`pname ${tc(side)}`} onClick={() => onOpen(`player:${k}`)}>{first(k)}</button>;
 }
 
-function Body({ card, onOpen, year }: { card: Card; onOpen: (key: string) => void; year: number }) {
+function Body({ card, onOpen, year, data }: { card: Card; onOpen: (key: string) => void; year: number; data: CardData }) {
   switch (card.kind) {
     case 'match': return <MatchBody c={card} onOpen={onOpen} />;
     case 'day': return <DayBody c={card} />;
     case 'won': return <FinaleBody c={card} year={year} />;
     case 'shootout': return <ShootoutBody c={card} />;
-    case 'player': return <PlayerBody c={card} year={year} />;
-    case 'week': return <WeekBody c={card} year={year} />;
+    case 'player': return <PlayerBody c={card} year={year} week={weekCard(data, card.pkey)} />;
     case 'live': return <LiveBody c={card} />;
     case 'spike': return <SpikeBody c={card} />;
   }
@@ -237,35 +217,40 @@ function ShootoutBody({ c }: { c: ShootoutCard }) {
   );
 }
 
-/* 5 · player card */
-function PlayerBody({ c, year }: { c: PlayerCard; year: number }) {
-  const initials = c.name.split(/\s+/).map(x => x[0]).join('').slice(0, 2).toUpperCase();
+/* 5 · player card: who they are before the trip, what they did once it starts */
+function PlayerBody({ c, year, week }: { c: PlayerCard; year: number; week: WeekCard | null }) {
+  const played = c.played > 0 && week;
   return (
-    <div className="pcenter ply">
-      <div className="ptop full"><Badge /><div className="k">The field<br />{year}</div></div>
-      <div className="pavatar">{initials}</div>
-      <h2 className="name">{c.name}</h2>
-      <div className={`k ${tc(c.side)}`} style={{ marginTop: 8 }}>{CFG.teams[c.side].name}{c.captain ? ' · Captain' : ''}</div>
-      <div className="ptiles">
-        <div className="tile"><div className="pnum">{c.hcp}</div><div className="k dim">Handicap</div></div>
-        <div className="tile"><div className="pnum">{c.played ? recordLabel(c.record) : '0-0-0'}</div><div className="k dim">{c.played ? 'This week' : 'Record'}</div></div>
-        {c.first && <div className="tile wide"><div className="pnum sm">{dowOf(c.first.s.day).slice(0, 3)} · {c.first.tee}</div><div className="k dim">First tee · {c.first.s.course}</div></div>}
+    <>
+      <Top l1="The field" l2={String(year)} />
+      <div className="pblock tight">
+        <div className={`k ${tc(c.side)}`}>{CFG.teams[c.side].name}{c.captain ? ' · Captain' : ''}{played ? ` · ${c.hcp}` : ''}</div>
+        <h2 className="name">{c.name}</h2>
       </div>
-    </div>
+      {played ? (
+        <>
+          <div className="pblock tight">
+            <div className="k">Record</div>
+            <div className="pnum huge">{week.record.w}<span className="dim">-</span>{week.record.l}<span className="dim">-</span>{week.record.h}</div>
+          </div>
+          <WeekTiles c={week} />
+        </>
+      ) : (
+        <div className="ptiles left">
+          <div className="tile"><div className="pnum">{c.hcp}</div><div className="k dim">Handicap</div></div>
+          <div className="tile"><div className="pnum">{c.record.w + c.record.l + c.record.h ? recordLabel(c.record) : '0-0-0'}</div><div className="k dim">Record</div></div>
+          {c.first && <div className="tile wide"><div className="pnum sm">{dowOf(c.first.s.day).slice(0, 3)} · {c.first.tee}</div><div className="k dim">First tee · {c.first.s.course}</div></div>}
+        </div>
+      )}
+    </>
   );
 }
 
-/* 6 · week in review */
-function WeekBody({ c, year }: { c: WeekCard; year: number }) {
-  const [w, l, h] = [c.record.w, c.record.l, c.record.h];
+/* 6 · the week's numbers, shared by the player card */
+function WeekTiles({ c }: { c: WeekCard }) {
   const close = c.closeouts[c.closeouts.length - 1];
   return (
     <>
-      <Top l1={`${first(c.pkey)}’s week`} l2={String(year)} />
-      <div className="pblock tight">
-        <div className="k">Record</div>
-        <div className="pnum huge">{w}<span className="dim">-</span>{l}<span className="dim">-</span>{h}</div>
-      </div>
       <div className="ptiles left">
         <div className="tile"><div className="pnum">{c.holesWon}</div><div className="k dim">Holes won</div></div>
         <div className="tile"><div className="pnum">{c.birdies + c.eagles}</div><div className="k dim">{c.eagles ? 'Birdies & eagles' : 'Birdies'}</div></div>
@@ -274,11 +259,15 @@ function WeekBody({ c, year }: { c: WeekCard; year: number }) {
           : <div className="tile"><div className="pnum">{c.partners.length}</div><div className="k dim">Partners</div></div>}
         <div className="tile"><div className="pnum">{c.streak ? c.streak.n : '–'}</div><div className="k dim">{c.streak ? `Straight holes, ${dowOf(c.streak.s.day).slice(0, 3)}` : 'Straight holes'}</div></div>
       </div>
-      <div className="phr" />
-      <div className="pline left">
-        {c.best && <>Best hole: <b>{c.best.what.toLowerCase()} on {c.best.hole}, {c.best.s.course}</b><br /></>}
-        {c.partners.length > 0 && <>Partners: <b>{c.partners.join(', ')}</b></>}
-      </div>
+      {(c.best || c.partners.length > 0) && (
+        <>
+          <div className="phr" />
+          <div className="pline left">
+            {c.best && <>Best hole: <b>{c.best.what.toLowerCase()} on {c.best.hole}, {c.best.s.course}</b><br /></>}
+            {c.partners.length > 0 && <>Partners: <b>{c.partners.join(', ')}</b></>}
+          </div>
+        </>
+      )}
     </>
   );
 }
