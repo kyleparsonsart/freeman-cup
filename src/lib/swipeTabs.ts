@@ -15,7 +15,7 @@ export type SwipeOpts<T extends string> = {
 };
 
 const IGNORE = '.tgs, .ftabs, input, textarea, select, [data-noswipe]';
-const OVERLAY = '.settings, .moment, .drawer.on, .auth';
+const OVERLAY = '.settings.on, .moment, .drawer.on, .auth';
 
 export function attachSwipeTabs<T extends string>(root: HTMLElement, o: SwipeOpts<T>): () => void {
   let x0 = 0, y0 = 0, t0 = 0, dx = 0;
