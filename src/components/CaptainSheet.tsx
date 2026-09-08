@@ -24,7 +24,7 @@ const Named = ({ p }: { p: DbPlayer | undefined }) => <>{first(p)}<small classNa
 export default function CaptainSheet({ data, round, session, reload, secondary = false }: Props) {
   const view = useMemo(() => sheetView({
     round, teams: data.teams, players: data.players, sheets: data.sheets, status: data.sheetStatus,
-    mePlayerId: data.mePlayerId, meIsCommissioner: data.meIsCommissionerAccount,
+    mePlayerId: data.mePlayerId, meIsCommissioner: data.meIsCommissioner,   // the Reveal card only while acting as commissioner
     rounds: data.rounds, teeGroups: data.teeGroups, matches: data.matches,
   }), [round, data]);
   const [err, setErr] = useState<string | null>(null);
