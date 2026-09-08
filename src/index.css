@@ -1389,3 +1389,20 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 #v-scoring.on:has(.hero.brief){display:flex;flex-direction:column;flex:1;min-height:0;padding-bottom:0}
 #v-scoring.on:has(.hero.brief) #heroSlot.fill{flex:1;min-height:0}
 #v-scoring.on:has(.hero.brief) .hero.brief{flex:1}
+
+/* ---------- Sep 8: smoother tab switch. One brass bar slides between the
+   tabs; the title and the page arrive from the side you came from ---------- */
+.tabs{position:relative}
+.tabbar{position:absolute;top:-1px;left:0;width:33.3333%;height:2px;background:var(--brass);
+  transition:transform .34s cubic-bezier(.25,.8,.35,1);pointer-events:none}
+.tab{transition:color .22s}
+.tab[aria-selected="true"]{border-top-color:transparent}
+.hdtext.from-right{animation:hdFromRight .38s cubic-bezier(.2,.7,.2,1)}
+.hdtext.from-left{animation:hdFromLeft .38s cubic-bezier(.2,.7,.2,1)}
+@keyframes hdFromRight{from{transform:translateX(22px);opacity:0}to{transform:none;opacity:1}}
+@keyframes hdFromLeft{from{transform:translateX(-22px);opacity:0}to{transform:none;opacity:1}}
+.view.from-right{animation:pgFromRight .3s cubic-bezier(.2,.7,.2,1)}
+.view.from-left{animation:pgFromLeft .3s cubic-bezier(.2,.7,.2,1)}
+@keyframes pgFromRight{from{transform:translateX(10px);opacity:0}to{transform:none;opacity:1}}
+@keyframes pgFromLeft{from{transform:translateX(-10px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.tabbar{transition:none}.hdtext,.view{animation:none!important}}

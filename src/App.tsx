@@ -80,10 +80,12 @@ function lastSync(data: import('./hooks/useEventData').EventData): string {
   return `Last sync: ${t} by ${who}`;
 }
 
-function Header({ title, sub, right }: { title?: string; sub?: string | null; right?: React.ReactNode }) {
+const TAB_ORDER = ['live', 'scoring', 'schedule'] as const;
+
+function Header({ title, sub, right, slide }: { title?: string; sub?: string | null; right?: React.ReactNode; slide?: string }) {
   return (
     <header className="hd">
-      <div>
+      <div key={slide} className={slide ? `hdtext ${slide}` : 'hdtext'}>
         <h1>{title ?? 'The Freeman Cup'}</h1>
         {sub !== null && <div className="sub">{sub ?? '5th Annual · Sand Valley · Oct 2026'}</div>}
       </div>
@@ -161,11 +163,15 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
   useEffect(() => {
     bodyRef.current?.scrollTo(0, 0);
   }, [tab]);
+  // Tabs sit Live, Scoring, Schedule left to right. The brass bar slides to
+  // the new tab and the title and page arrive from the side you came from.
+  const [slide, setSlide] = useState<string>('');
   const goTab = (t: 'scoring' | 'live' | 'schedule') => {
     if (t === tab) {
       bodyRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
+    setSlide(TAB_ORDER.indexOf(t) > TAB_ORDER.indexOf(tab) ? `from-right ${t}` : `from-left ${t}`);
     setTab(t);
   };
 
@@ -222,9 +228,9 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
     ? `${round.rd} · ${round.fmt} · ${teeLine(round.tees)}`
     : null;
   const header = !data ? <Header right={cog} />
-    : tab === 'scoring' ? <Header title={round ? round.course : 'The Freeman Cup 2026'} sub={scoringSub} right={cog} />
-    : tab === 'schedule' ? <Header title="The Freeman Cup 2026" sub="5th Annual Invitational" right={cog} />
-    : <Header title={`The Road to ${half(Number(data.event.clinch_points) || 5.5)}`} sub={lastSync(data)} right={cog} />;
+    : tab === 'scoring' ? <Header title={round ? round.course : 'The Freeman Cup 2026'} sub={scoringSub} right={cog} slide={slide} />
+    : tab === 'schedule' ? <Header title="The Freeman Cup 2026" sub="5th Annual Invitational" right={cog} slide={slide} />
+    : <Header title={`The Road to ${half(Number(data.event.clinch_points) || 5.5)}`} sub={lastSync(data)} right={cog} slide={slide} />;
 
   return (
     <>
@@ -248,23 +254,24 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
           </div>
         )}
         {data && tab === 'scoring' && (
-          <section id="v-scoring" className="view on">
+          <section id="v-scoring" className={`view on ${slide}`}>
             <ScoringScreen data={data} reload={reload} onOpenLetter={id => setAgainRound(id)} />
           </section>
         )}
         {data && tab === 'live' && (
-          <section id="v-live" className="view on">
+          <section id="v-live" className={`view on ${slide}`}>
             <LiveScreen data={data} moments={moments} onMoment={setMoKey} />
           </section>
         )}
         {data && tab === 'schedule' && (
-          <section id="v-schedule" className="view on">
+          <section id="v-schedule" className={`view on ${slide}`}>
             <ScheduleScreen data={data} moments={moments} onMoment={setMoKey} />
           </section>
         )}
       </div>
 
       <nav className="tabs" role="tablist">
+        <span className="tabbar" style={{ transform: `translateX(${TAB_ORDER.indexOf(tab) * 100}%)` }} aria-hidden="true" />
         <button className="tab" role="tab" aria-selected={tab === 'live'} onClick={() => goTab('live')}>
           Live{anyLive && <span className="pulse" />}
         </button>
