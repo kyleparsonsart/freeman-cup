@@ -106,6 +106,23 @@ export function buildFeed(input: FeedInput): FeedDay[] {
           });
         }
 
+        // four in a row for one side: a streak card
+        if (h.r !== 'H' && i >= 3) {
+          const w = h.r === 'A' ? 'A' : 'B';
+          const four = [i - 1, i - 2, i - 3].every(k => m.hs[k]?.r === w);
+          const five = i >= 4 && m.hs[i - 4]?.r === w;
+          if (four && !five) {
+            const side = w === 'A' ? 'a' : 'b';
+            events.push({
+              key: `st:${m.id}:${i + 1}`, day: s.day, at: at + 1, side,
+              tag: 'Streak', tagGold: true,
+              who: { side, name: s.fmt === 'Singles' ? firstOf(m[side]) : names(m[side]) },
+              text: ` won four in a row, ${i - 2} through ${i + 1}.`,
+              sub: `${firstOf(m.a)} v ${firstOf(m.b)} · ${runningAt(m, i)}`,
+            });
+          }
+        }
+
         // dormie: up by exactly what remains
         let a2 = 0, b2 = 0;
         for (let k = 0; k <= i; k++) {

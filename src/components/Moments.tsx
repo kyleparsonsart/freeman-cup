@@ -1,24 +1,21 @@
 import { CFG, half } from '../lib/scoring';
-import { TrophySvg } from './CupStrip';
-import { TIEBREAK, type MomentsState, type DayMoment, type WonMoment } from '../lib/moments';
+import { TIEBREAK, type MomentsState } from '../lib/moments';
 
 interface Props {
   ms: MomentsState;
   openKey: string;              // 'won' | 'duel' | 'day:...'
   commissioner: boolean;
   onClose: () => void;
-  onSeeLive: () => void;
+  onSeeLive?: () => void;
   onEnterScores: () => void;
 }
 
 /**
- * The full-screen recap moments. Which one shows is decided by the key;
- * dismissing goes back to the app, where each moment keeps a home — the
- * strip and feed for the finale, the pinned banner for a pending
- * shootout, the feed and Schedule chips for day recaps.
+ * The Captains Shootout call-to-action, the one recap moment that is not
+ * a share card: the day recap and the finale live in ShareCard now, so a
+ * player can share them as they are.
  */
-export default function MomentOverlay({ ms, openKey, commissioner, onClose, onSeeLive, onEnterScores }: Props) {
-  if (openKey === 'won' && ms.won) return <Won w={ms.won} onClose={onClose} onSeeLive={onSeeLive} />;
+export default function MomentOverlay({ ms, openKey, commissioner, onClose, onEnterScores }: Props) {
   if (openKey === 'duel' && ms.tie) {
     return (
       <Duel
@@ -29,80 +26,7 @@ export default function MomentOverlay({ ms, openKey, commissioner, onClose, onSe
       />
     );
   }
-  const d = ms.days.find(x => x.key === openKey);
-  if (d) return <Day d={d} onClose={onClose} onSeeLive={onSeeLive} />;
   return null;
-}
-
-function Day({ d, onClose, onSeeLive }: { d: DayMoment; onClose: () => void; onSeeLive: () => void }) {
-  return (
-    <div className="moment" role="dialog" aria-modal="true" aria-label={`${d.dow} recap`}>
-      <div className="mo">
-        <div className="kick">{d.dow} · {d.courses} · in the book</div>
-        <h1>{d.headline}</h1>
-        <div className="score">
-          <span className="pt a">{half(d.pts.a)}</span>
-          <span className="d">–</span>
-          <span className="pt b">{half(d.pts.b)}</span>
-          <span className="nm">today</span>
-        </div>
-        <div className="rule" />
-        {d.rows.map((r, i) => (
-          <div key={i} className="mrow3">
-            <span className="p">{r.a}<span className="vv">V</span>{r.b}</span>
-            <span className={`s ${r.w}`}>{r.label}</span>
-          </div>
-        ))}
-        <div className="cupline">
-          <span>{CFG.trophy}: {CFG.teams.a.name} {half(d.cum.a)} · {CFG.teams.b.name} {half(d.cum.b)}</span>
-          <span>{d.toClinch <= 0 ? 'Clinched' : `${half(d.toClinch)} to clinch`}</span>
-        </div>
-        <div className="next">
-          {d.next && (
-            <div className="nextcard">
-              <div className="t1">Tomorrow: {d.next.course}</div>
-              <div className="t2">{d.next.rd} · {d.next.fmt} · {d.next.holes} holes · tees {d.next.tees}</div>
-            </div>
-          )}
-          <button className="abtn" onClick={onSeeLive}>See the full day</button>
-          <button className="aghost" onClick={onClose}>Good night</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Won({ w, onClose, onSeeLive }: { w: WonMoment; onClose: () => void; onSeeLive: () => void }) {
-  const t = CFG.teams[w.winner];
-  return (
-    <div className="moment" role="dialog" aria-modal="true" aria-label="The finale">
-      <div className="mo won">
-        <div className="kick">{w.kick}</div>
-        <span className="jugbig"><TrophySvg /></span>
-        <h1>The {t.name} win {CFG.trophy}</h1>
-        <div className="final">
-          <span className="pt a">{half(w.pts.a)}</span>
-          <span className="d">–</span>
-          <span className="pt b">{half(w.pts.b)}</span>
-        </div>
-        {w.viaShootout && w.shootout && (
-          <div className="shline">
-            {TIEBREAK.name}: {w.shootout.a.join('–')} against {w.shootout.b.join('–')} · {w.shootout.ta}–{w.shootout.tb}
-          </div>
-        )}
-        <div className="sub">{w.how}</div>
-        <div className="rule" />
-        <div className="mvp">
-          <b>{w.roster}</b> take the jug.
-          {w.mvp && <><br />MVP of the Freeman Cup: <b>{w.mvp.name}</b> · {w.mvp.line}.</>}
-        </div>
-        <div className="next">
-          <button className="abtn" onClick={onSeeLive}>See how it happened</button>
-          <button className="aghost" onClick={onClose}>Back to the app</button>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 function Duel({ ms, commissioner, onClose, onEnterScores }: {

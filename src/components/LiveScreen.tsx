@@ -64,14 +64,22 @@ export default function LiveScreen({ data, moments = null, onMoment, strip = tru
     return built;
   }, [data, moments]);
 
-  // which moment a feed card opens, if any
-  const openFor = (key: string): string | null => {
-    if (!moments || !onMoment) return null;
-    if (moments.won && (key === 'mw' || key.startsWith('c:'))) return 'won';
+  // which moment or share card a feed line opens, if any
+  const openFor = (e: FeedItem): string | null => {
+    if (!onMoment) return null;
+    const key = e.key;
+    if (moments?.won && (key === 'mw' || key.startsWith('c:'))) return 'won';
     if (key === 'mt') return 'duel';
     if (key.startsWith('mr:')) return key.slice(3);
+    if (key.startsWith('f:')) return `match:${key.slice(2)}`;
+    if (key.startsWith('st:')) return `spike:streak:${key.slice(3)}`;
+    if (key.startsWith('h:') && e.tag === 'Eagle') {
+      const [, mid, i] = key.split(':');
+      return `spike:eagle:${mid}:${Number(i) + 1}`;
+    }
     return null;
   };
+  const isSpike = (e: FeedItem) => e.key.startsWith('st:') || (e.key.startsWith('h:') && e.tag === 'Eagle');
 
   // most recent day open by default; -1 closes them all
   const [openDay, setOpenDay] = useState(0);
@@ -135,12 +143,13 @@ export default function LiveScreen({ data, moments = null, onMoment, strip = tru
               </span>
             </button>
             {open && g.items.map((e, ix) => {
-              const mk = openFor(e.key);
+              const mk = openFor(e);
               return (
                 <FeedRow
                   key={e.key}
                   e={e}
                   delay={i * 110 + Math.min(ix, 12) * 60}
+                  spike={isSpike(e)}
                   onOpen={mk && onMoment ? () => onMoment(mk) : undefined}
                 />
               );
@@ -152,11 +161,11 @@ export default function LiveScreen({ data, moments = null, onMoment, strip = tru
   );
 }
 
-function FeedRow({ e, delay = 0, onOpen }: { e: FeedItem; delay?: number; onOpen?: () => void }) {
+function FeedRow({ e, delay = 0, spike = false, onOpen }: { e: FeedItem; delay?: number; spike?: boolean; onOpen?: () => void }) {
   const tag = e.tag && <span className={`tag${e.tagGold ? ' gold' : ''}`}>{e.tag}</span>;
   return (
     <div
-      className={`ev ${e.side}${e.big ? ' big' : ''}${onOpen ? ' go' : ''} rowfade`}
+      className={`ev ${e.side}${e.big ? ' big' : ''}${onOpen ? ' go' : ''}${spike && onOpen ? ' spk' : ''} rowfade`}
       style={{ animationDelay: `${delay}ms` }}
       onClick={onOpen}
       role={onOpen ? 'button' : undefined}
@@ -178,6 +187,7 @@ function FeedRow({ e, delay = 0, onOpen }: { e: FeedItem; delay?: number; onOpen
           </>
         )}
         {e.sub && <span className="sub2">{e.sub}</span>}
+        {spike && onOpen && <span className="gochip">Open the card ›</span>}
         {e.score && (
           <div className="score">
             <span className="a">{half(e.score.a)}</span>

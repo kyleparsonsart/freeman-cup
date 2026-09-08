@@ -10,6 +10,8 @@ import { deriveMoments, nextUnseen, markSeen } from './lib/moments';
 import { getActing, setActing, type Acting } from './lib/view';
 import LiveScreen from './components/LiveScreen';
 import MomentOverlay from './components/Moments';
+import ShareCard, { resolveCard } from './components/ShareCard';
+import { nextMatchCard, markCardSeen, liveCard } from './lib/cards';
 import ScheduleScreen from './components/ScheduleScreen';
 import SignInScreen from './components/SignInScreen';
 import SettingsSheet from './components/SettingsSheet';
@@ -134,9 +136,35 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
     }
   }, [moments, moKey]);
   const closeMoment = () => {
-    if (moKey) markSeen(moKey);
+    if (moKey) { markSeen(moKey); markCardSeen(moKey); }
     setMoKey(null);
   };
+
+  // Share cards ride the same slot as the moments. A finished match whose
+  // card is in auto-opens once for the players in it; every card can be
+  // reopened from Schedule and Live.
+  const when = useMemo(() => {
+    const w: Record<string, number> = {};
+    data?.matchHoles.forEach(h => { w[`${h.match_id}:${h.hole}`] = new Date(h.updated_at).getTime(); });
+    return w;
+  }, [data]);
+  useEffect(() => {
+    if (!data || moKey) return;
+    const c = nextMatchCard(data);
+    if (c && !autoShown.current.has(c.key)) {
+      autoShown.current.add(c.key);
+      setMoKey(c.key);
+    }
+  }, [data, moKey]);
+  const card = useMemo(
+    () => (data && moKey && moKey !== 'duel' ? resolveCard(data, moKey, when, data.event.shootout ?? null) : null),
+    [data, moKey, when],
+  );
+  const canShareLive = !!data && !!liveCard(data);
+  // a key that no longer resolves (data corrected under it) just closes
+  useEffect(() => {
+    if (data && moKey && moKey !== 'duel' && !card) setMoKey(null);
+  }, [data, moKey, card]);
 
   // The letters: when a round's pairings are sent, every player opens
   // his once. Derived from data so it works on whatever tab is up.
@@ -201,6 +229,13 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
           <path d="M3 8.5 7.6 12 12 5.5 16.4 12 21 8.5 19.2 17H4.8L3 8.5z"/>
           <rect x="4.8" y="18.2" width="14.4" height="1.9"/>
         </svg>
+      )}
+      {tab === 'live' && canShareLive && (
+        <button className="cog book" aria-label="Share the state of the Cup" onClick={() => setMoKey('live')}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 3v12"/><path d="m8 7 4-4 4 4"/><path d="M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>
+          </svg>
+        </button>
       )}
       <button className="cog book" aria-label="The rulebook" onClick={() => setRulesOpen(true)}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
@@ -279,7 +314,21 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
         <button className="tab" role="tab" aria-selected={tab === 'schedule'} onClick={() => goTab('schedule')}>Schedule</button>
       </nav>
 
-      {data && moments && moKey && (
+      {data && moKey && moKey !== 'duel' && card && (
+        <ShareCard
+          card={card}
+          year={Number(data.event.year) || 2026}
+          venue={data.event.venue || 'Sand Valley'}
+          onClose={closeMoment}
+          onOpen={k => { markCardSeen(moKey); setMoKey(k); }}
+          extra={
+            card.kind === 'won' || card.kind === 'day' ? { label: card.kind === 'won' ? 'See how it happened' : 'See the full day', onClick: () => { setTab('live'); closeMoment(); } }
+            : card.kind === 'match' ? { label: 'See the scorecard', onClick: () => { setTab('schedule'); closeMoment(); } }
+            : null
+          }
+        />
+      )}
+      {data && moments && moKey === 'duel' && (
         <MomentOverlay
           ms={moments}
           openKey={moKey}

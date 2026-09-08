@@ -5,6 +5,7 @@ import { mvpBoard, roundRaces, relLabel } from '../lib/standings';
 import type { MomentsState } from '../lib/moments';
 import { IconMedal } from './icons';
 import type { EventData } from '../hooks/useEventData';
+import { recordOf, recordLabel } from '../lib/cards';
 
 const fn = (n?: string | null) => (n || '').split(' ')[0];
 const names = (keys: string[]) => keys.map(k => fn(P[k]?.n) || k).join(' / ');
@@ -21,8 +22,27 @@ export default function ScheduleScreen({ data, moments = null, onMoment }: {
 
   const days = [...new Set(sessions.map(x => x.day))];
 
+  const won = moments?.won ?? null;
+  const me = data.meKey;
+  const myPlayed = me ? matches.some(m => (m.a.includes(me) || m.b.includes(me)) && calc(m).played > 0) : false;
+
   return (
     <>
+      {won && onMoment && (
+        <div className="dayfade">
+          <button className="wonbar" onClick={() => onMoment('won')}>
+            <span className="t"><b className={won.winner}>{CFG.teams[won.winner].name} take {CFG.trophy}</b>
+              <small>{half(won.pts[won.winner])} to {half(won.pts[won.winner === 'a' ? 'b' : 'a'])}{won.viaShootout ? ' · won on the practice green' : ''}</small></span>
+            <span className="go">Open ›</span>
+          </button>
+          {won.viaShootout && won.shootout && (
+            <button className="shrow" onClick={() => onMoment('shootout')}>
+              <span>Captains Shootout · {moments!.captains.a} {won.shootout.ta}, {moments!.captains.b} {won.shootout.tb}</span>
+              <span className="go">Open ›</span>
+            </button>
+          )}
+        </div>
+      )}
       {days.map((d, di) => {
         const rs = sessions.filter(x => x.day === d);
         const holes = rs.reduce((a, x) => a + x.holes, 0);
@@ -45,12 +65,21 @@ export default function ScheduleScreen({ data, moments = null, onMoment }: {
                 ms={matches.filter(m => m.s === x.id)}
                 isOpen={isOpen}
                 toggle={(m, st) => setCards(c => ({ ...c, [m.id]: !isOpen(m, st) }))}
+                onCard={onMoment}
               />
             ))}
           </div>
         );
       })}
 
+      {me && myPlayed && onMoment && (
+        <button className="shrow week" onClick={() => onMoment(`week:${me}`)}>
+          <span>Your week · {recordLabel(recordOf(data, me))}</span>
+          <span className="go">Open ›</span>
+        </button>
+      )}
+
+      <TheField onOpen={onMoment} />
       <TheRaces sessions={sessions} matches={matches} />
     </>
   );
@@ -110,14 +139,42 @@ function TheRaces({ sessions, matches }: { sessions: Session[]; matches: Match[]
   );
 }
 
+/**
+ * The field: everyone playing, by team, with handicaps. Each name opens
+ * the player card, which is the pre-trip share (and the only place to
+ * find it before a ball is struck).
+ */
+function TheField({ onOpen }: { onOpen?: (key: string) => void }) {
+  const keys = Object.keys(P);
+  if (!keys.length) return null;
+  const col = (side: 'a' | 'b') => (
+    <div className="fcol">
+      <div className={`fteam ${side}`}>{CFG.teams[side].name}</div>
+      {keys.filter(k => P[k].t === side).sort((x, y) => Number(!!P[y].cap) - Number(!!P[x].cap) || P[x].n.localeCompare(P[y].n)).map(k => (
+        <button key={k} className="fplayer" onClick={() => onOpen?.(`player:${k}`)} disabled={!onOpen}>
+          <span className="nm">{fn(P[k].n)}{P[k].cap && <span className="capt">Captain</span>}</span>
+          <span className="hc">{P[k].h}</span>
+        </button>
+      ))}
+    </div>
+  );
+  return (
+    <>
+      <div className="sh"><h2>The field</h2><span className="meta">Tap a name for the card</span></div>
+      <div className="field">{col('a')}{col('b')}</div>
+    </>
+  );
+}
+
 interface RoundCardProps {
   s: Session;
   ms: Match[];
   isOpen: (m: Match, st: string) => boolean;
   toggle: (m: Match, st: string) => void;
+  onCard?: (key: string) => void;
 }
 
-function RoundCard({ s, ms, isOpen, toggle }: RoundCardProps) {
+function RoundCard({ s, ms, isOpen, toggle, onCard }: RoundCardProps) {
   const st = roundState(s);
   let a = 0, b = 0;
   ms.forEach(m => { const r = calc(m); a += r.pts.a; b += r.pts.b; });
@@ -164,19 +221,24 @@ function RoundCard({ s, ms, isOpen, toggle }: RoundCardProps) {
         const open = !!r.played && isOpen(m, st);
         return (
           <div key={m.id}>
-            <button
-              className={`mrow2${r.played ? ' ax' : ''}`}
-              aria-expanded={open}
-              onClick={() => { if (r.played) toggle(m, st); }}
-            >
-              <span className="p">
-                <span className="a">{names(m.a)}</span>
-                <span className="v">V</span>
-                <span className="b">{names(m.b)}</span>
-              </span>
-              <span className={`s ${cls}`}>{stat}</span>
-              {r.played > 0 && <span className="cchev">▾</span>}
-            </button>
+            <div className={`mrow2${r.played ? ' ax' : ''}${open ? ' open' : ''}`}>
+              <button
+                className="mmain"
+                aria-expanded={open}
+                onClick={() => { if (r.played) toggle(m, st); }}
+              >
+                <span className="p">
+                  <span className="a">{names(m.a)}</span>
+                  <span className="v">V</span>
+                  <span className="b">{names(m.b)}</span>
+                </span>
+                <span className={`s ${cls}`}>{stat}</span>
+                {r.played > 0 && <span className="cchev">▾</span>}
+              </button>
+              {r.done && onCard && (
+                <button className="cardbtn" aria-label="Open the result card" onClick={() => onCard(`match:${m.id}`)}>Card ›</button>
+              )}
+            </div>
             {open && <div className="inlinecard"><Scorecard match={m} /></div>}
           </div>
         );

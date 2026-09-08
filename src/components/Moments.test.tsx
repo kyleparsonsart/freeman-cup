@@ -33,21 +33,9 @@ const render = (openKey: string, commissioner = false) =>
   );
 
 describe('MomentOverlay', () => {
-  it('renders the day recap with matches and the road ahead', () => {
-    const html = render('day:Thu Oct 8');
-    expect(html).toContain('Vikes take the opening day');
-    expect(html).toContain('in the book');
-    expect(html).toContain('VIK 4 &amp; 3');
-    expect(html).toContain('Tomorrow: The Commons');
-    expect(html).toContain('Good night');
-  });
-
-  it('renders the finale on bone with the MVP', () => {
-    const html = render('won');
-    expect(html).toContain('mo won');
-    expect(html).toContain('win The Lassie');
-    expect(html).toContain('Justin');
-    expect(html).toContain('MVP of the Freeman Cup');
+  it('leaves the day recap and the finale to the share cards', () => {
+    expect(render('day:Thu Oct 8')).toBe('');
+    expect(render('won')).toBe('');
   });
 
   it('renders the shootout intro; the commissioner gets the entry door', () => {
