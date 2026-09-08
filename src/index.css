@@ -1389,8 +1389,3 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 #v-scoring.on:has(.hero.brief){display:flex;flex-direction:column;flex:1;min-height:0;padding-bottom:0}
 #v-scoring.on:has(.hero.brief) #heroSlot.fill{flex:1;min-height:0}
 #v-scoring.on:has(.hero.brief) .hero.brief{flex:1}
-
-/* ---------- Sep 8: swipe between the nav pages ---------- */
-.body{touch-action:pan-y pinch-zoom}
-.body>.view.on{will-change:transform}
-.body.swiping{overflow-y:hidden}
