@@ -214,14 +214,20 @@ function SheetEditor({ data, round, session, team, view, busy, onSeal }: {
               </span>
             </button>
           ))}
-          <div className="shsub">Tee order<small>Slot 1 plays {view.theirTeam?.name || 'their'} slot 1. Tap to swap.</small></div>
-          {slots.map((slot, i) => (
-            <button key={i} className="shslot tap" onClick={() => setLead(l => (l === 0 ? 1 : 0))}>
-              <span className="tt">{teeFor(session, round, i)}<small>SLOT {i + 1}</small></span>
-              <span className={`pair ${team.side}`}><Named p={data.playerById[slot[0]]} /> <i>&amp;</i> <Named p={data.playerById[slot[1]]} /></span>
-              <span className="swap" aria-hidden="true">⇅</span>
+          <div className="shsub">Tee order<small>Slot 1 plays {view.theirTeam?.name || 'their'} slot 1.</small></div>
+          <div className="shslots">
+            {slots.map((slot, i) => (
+              <div key={i} className="shslot">
+                <span className="tt">{teeFor(session, round, i)}<small>SLOT {i + 1}</small></span>
+                <span className={`pair ${team.side}`}><Named p={data.playerById[slot[0]]} /> <i>&amp;</i> <Named p={data.playerById[slot[1]]} /></span>
+              </div>
+            ))}
+            <button className="shswap" aria-label="Swap the tee order" onClick={() => setLead(l => (l === 0 ? 1 : 0))}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3" />
+              </svg>
             </button>
-          ))}
+          </div>
         </>
       )}
 

@@ -49,13 +49,13 @@ Second Vite page in the same repo, no app code touched. `scoreboard.html` + `src
 
 ## Rehearsing the captain's sheet (do this once before Sep 19)
 
-Two phones, two seats that are captains (Kyle and Griffin; or set `is_captain` on a second seat you control), signal on both.
+Two phones is the real thing, but one phone works too: Settings → Setup → Captain's sheets has "Seal as Griffin" (seals his side with the default lineup) and, once revealed, "Open as Griffin" (opens the envelope he would open), so the whole flow can be walked from the commissioner's phone. Two phones, two captain seats, signal on both, for the dress rehearsal.
 
 1. Run `freeman-cup-sheets.sql` in the Supabase SQL editor (safe to re-run). Then Settings → Event → Clear all scores. That drops the seeded pairings; from here the sheets make them.
 2. Phone A (Kyle, Scoring tab): the Round 1 sheet. Pick a pairing, tap the slots to swap the order, Seal. Phone B should show "Celts · Sealed" within a second or two (the seal nudges the round row so non-captains refresh too).
-3. Phone B (Griffin): seal his. Phone A now shows the Reveal card (it shows in player view as well as commissioner view).
+3. Phone B (Griffin): seal his (or Settings → Setup → Seal as Griffin). Phone A now shows the Reveal card (it shows in player view as well as commissioner view).
 4. Phone A: Reveal names. Both phones get the envelope moment. Open on one: the card slides out with the other side's slots. Nothing posts yet.
-5. Open on the other. Both phones flip to the match brief; Schedule shows the matches; thefreemancup.com shows them within 60 seconds.
+5. Open on the other (or Settings → Setup → Open as Griffin). Both phones flip to the match brief; Schedule shows the matches; thefreemancup.com shows them within 60 seconds.
 6. Settings → Setup → Captain's sheets: unseal one side of Round 2 after sealing it, confirm it comes back editable. If the envelopes were out, unseal pulls them back.
 7. Friday: after Round 2 posts, the Round 3 sheet appears under Round 2's brief (it's due 90 min before the first tee, 11:40 am, not 9 pm).
 8. Deadline: to see the default path, set a round's `play_date` to yesterday in the SQL editor and open the app; it fills, reveals, opens and posts on its own. Put the date back.

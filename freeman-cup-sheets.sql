@@ -294,6 +294,30 @@ begin
   update captain_sheet set opened_at = null, opened_by = null where round_id = r;
 end $$ language plpgsql security definer;
 
+-- Rehearsal tools, commissioner only: stand in for the other captain.
+-- seal_for seals a team's sheet with the default lineup; open_for opens
+-- the envelope that captain would open (the OTHER side's sheet). Both
+-- go through the same checks as the real thing.
+create or replace function commish_seal_for(r uuid, t uuid) returns void as $$
+begin
+  if not is_commissioner() then raise exception 'commissioner only'; end if;
+  if exists (select 1 from match where round_id = r) then raise exception 'pairings are already posted'; end if;
+  if exists (select 1 from captain_sheet where round_id = r and team_id = t) then raise exception 'already sealed'; end if;
+  perform validate_slots(r, t, default_slots(r, t));
+  insert into captain_sheet (round_id, team_id, slots, sealed_by) values (r, t, default_slots(r, t), me());
+end $$ language plpgsql security definer;
+
+create or replace function commish_open_for(r uuid, t uuid) returns void as $$
+begin
+  if not is_commissioner() then raise exception 'commissioner only'; end if;
+  if (select revealed_at from round where id = r) is null then raise exception 'not revealed yet'; end if;
+  update captain_sheet set opened_at = coalesce(opened_at, now()), opened_by = coalesce(opened_by, me())
+   where round_id = r and team_id <> t;
+  if (select count(*) from captain_sheet where round_id = r and opened_at is not null) = 2 then
+    perform build_round_matches(r);
+  end if;
+end $$ language plpgsql security definer;
+
 -- Anyone may nudge the deadline path (the app does on open after 9 pm).
 create or replace function sheet_tick(r uuid) returns void as $$
 begin
@@ -307,6 +331,7 @@ revoke all on function default_slots(uuid, uuid) from public, anon, authenticate
 revoke all on function validate_slots(uuid, uuid, jsonb) from public, anon, authenticated;
 revoke all on function used_pairs(uuid, uuid) from public, anon, authenticated;
 grant execute on function seal_sheet(uuid, jsonb), reveal_sheets(uuid), open_envelope(uuid), unseal_sheet(uuid, uuid),
+  commish_seal_for(uuid, uuid), commish_open_for(uuid, uuid),
   sheet_tick(uuid), sheet_status(), sheet_due(uuid), my_captain_team() to authenticated;
 
 -- Realtime: sheets and new matches reach every phone. Sheet rows are

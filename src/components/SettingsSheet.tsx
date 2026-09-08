@@ -306,23 +306,30 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
                   <div className="grp">
                     <h3>Captain’s sheets</h3>
                     <div className="hint">
-                      Rounds whose pairings haven’t posted yet. Unseal puts a sheet
-                      back in the captain’s hands (and pulls the envelopes back if
-                      they were out). Reveal lives on the Scoring tab.
+                      Rounds whose pairings haven’t posted. Unseal hands a sheet
+                      back (and pulls the envelopes back if they were out). The
+                      “as” buttons stand in for the other captain so you can
+                      rehearse the whole flow from one phone; they use his
+                      default lineup.
                     </div>
                   </div>
                   {pending.map(r => (
-                    <div key={r.id} className="fld">
-                      <label>{r.label} · {data.scoringSessions.find(s => s.id === r.id)?.course}
-                        <span className="sub2">{r.revealed_at ? 'Envelopes out' : 'Not revealed'}</span>
-                      </label>
+                    <div key={r.id}>
+                      <div className="grp sub"><h3>{r.label} · {data.scoringSessions.find(s => s.id === r.id)?.course} · {r.revealed_at ? 'envelopes out' : 'not revealed'}</h3></div>
                       {data.teams.map(t => {
                         const st = data.sheetStatus.find(x => x.round_id === r.id && x.team_id === t.id);
+                        const cap = data.players.find(p => p.team_id === t.id && p.is_captain);
+                        const other = data.sheetStatus.find(x => x.round_id === r.id && x.team_id !== t.id);
                         return (
-                          <div key={t.id} className="seatrow">
-                            <span className="sn2">{t.name}</span>
-                            <span className="se">{!st ? 'Not sealed' : st.auto ? 'Defaulted' : `Sealed ${clockLocal(st.sealed_at)}`}{st?.opened_at ? ' · opened' : ''}</span>
-                            {st && <button className="unbind" onClick={() => run(supabase.rpc('unseal_sheet', { r: r.id, t: t.id }))}>Unseal</button>}
+                          <div key={t.id} className="shadmin">
+                            <span className="n">{t.name}</span>
+                            <span className="s">{!st ? 'Not sealed' : st.auto ? 'Defaulted' : `Sealed ${clockLocal(st.sealed_at)}`}{other?.opened_at ? ' · opened his' : ''}</span>
+                            {st
+                              ? <button className="unbind" onClick={() => run(supabase.rpc('unseal_sheet', { r: r.id, t: t.id }))}>Unseal</button>
+                              : <button className="unbind" onClick={() => run(supabase.rpc('commish_seal_for', { r: r.id, t: t.id }))}>Seal as {(cap ? first(cap.id) : t.name)}</button>}
+                            {r.revealed_at && st && !other?.opened_at && (
+                              <button className="unbind" onClick={() => run(supabase.rpc('commish_open_for', { r: r.id, t: t.id }))}>Open as {(cap ? first(cap.id) : t.name)}</button>
+                            )}
                           </div>
                         );
                       })}
