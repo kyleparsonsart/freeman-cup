@@ -113,7 +113,8 @@ export default function Scoreboard() {
   const totals = { a: 0, b: 0 };
   d.matches.forEach(m => { const r = calc(m); totals.a += r.pts.a; totals.b += r.pts.b; });
   const clinch = Number(d.snap.event.clinch_points);
-  const total = d.matches.length;
+  // planned points for the week, so the strip reads "of 10" before every round has posted
+  const total = Math.max(d.matches.length, d.sessions.reduce((n, s) => n + s.tees.length * (s.fmt === 'Singles' ? 2 : 1), 0));
 
   // what "Out on the course" shows, and which round the forecast is for
   const liveRounds = rounds.filter(r => r.state === 'live');
@@ -436,6 +437,13 @@ function DayBlock({ d, r, open }: { d: Shaped; r: RoundView; open: boolean }) {
       </label>
       <div className="dbody">
         <div className="tee">
+          {r.ms.length === 0 && (r.s.fmt === 'Singles' ? r.s.tees.flatMap(t => [t, t]) : r.s.tees).map((t, i) => (
+            <div key={`tbd-${i}`} className="r ph">
+              <span className="tt">{t.replace(/\s*[AP]M$/i, '')}</span>
+              <span className="who"><span className="c">TBD</span><i>vs</i><span className="v">TBD</span></span>
+              <span className="sc tb">Match {i + 1}</span>
+            </div>
+          ))}
           {r.ms.map((m, i) => {
             const c = calc(m);
             const t = d.teeTimeOf(m);

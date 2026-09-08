@@ -334,10 +334,12 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
   // queue — this one needs a signal, and says so.
   const [picking, setPicking] = useState(false);
   const [swapErr, setSwapErr] = useState<string | null>(null);
-  const canSwap = iAmScorer || data.meIsCommissioner;
   const teeGroupId = dbMatch?.tee_group_id;
   const handoff = teeGroupId ? data.handoffs[teeGroupId] : undefined;
   const groupKeys = groupPlayers(m.s, m.g, data.scoringMatches);
+  // nobody holds the pencil until the group picks: anyone in the group may take it
+  const inGroup = !!data.meKey && groupKeys.includes(data.meKey);
+  const canSwap = iAmScorer || data.meIsCommissioner || (!scorerKey && inGroup);
 
   const switchScorer = async (k: string) => {
     if (!teeGroupId) return;
@@ -486,6 +488,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
           data={data}
           scorerKey={scorerKey}
           onPeek={iAmScorer || data.meIsCommissioner ? () => setPeek(true) : undefined}
+          onTake={!scorerKey && inGroup ? () => switchScorer(data.meKey) : undefined}
         />
       </div>
     );
@@ -524,8 +527,10 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
             <span>Card's in — only <b>{commishName}</b> can edit now.</span>
           ) : scorerKey ? (
             <span><b>{fn(P[scorerKey]?.n) || 'The scorer'}</b> has the pencil — scores go in from his phone.</span>
+          ) : inGroup ? (
+            <span>Nobody has the pencil yet. <button className="takepen" onClick={() => switchScorer(data.meKey)}>Take it</button> if you’re keeping the card.</span>
           ) : (
-            <span>Nobody has the pencil yet — <b>{commishName}</b> names a scorer in Settings.</span>
+            <span>Nobody has the pencil yet — someone in the group takes it on the first tee.</span>
           )}
         </div>
       )}
@@ -773,7 +778,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
             </span>
             {canSwap && (
               <button className="swap" onClick={() => { setPicking(p => !p); setSwapErr(null); }}>
-                {picking ? 'Cancel' : 'Switch'}
+                {picking ? 'Cancel' : scorerKey ? 'Switch' : 'Take it'}
               </button>
             )}
           </div>
@@ -969,12 +974,13 @@ function listJoin(xs: number[]): string {
  * The pre-round brief: who you play, when you're off, where the shots
  * land — in place of a dead scoreboard until the round goes live.
  */
-function MatchBrief({ m, session: s, data, scorerKey, onPeek }: {
+function MatchBrief({ m, session: s, data, scorerKey, onPeek, onTake }: {
   m: Match;
   session: EventData['scoringSessions'][0];
   data: EventData;
   scorerKey: string;
   onPeek?: () => void;
+  onTake?: () => void;
 }) {
   const mine = !!data.meKey && (m.a.includes(data.meKey) || m.b.includes(data.meKey));
   const letter = String.fromCharCode(65 + Math.max(0, m.g));
@@ -1022,7 +1028,9 @@ function MatchBrief({ m, session: s, data, scorerKey, onPeek }: {
         </svg>
         {scorerKey
           ? `${fn(P[scorerKey]?.n) || 'Somebody'} keeps the card for ${mine ? 'your' : 'this'} group.`
-          : 'No scorer named yet.'}
+          : mine && onTake
+            ? <>Nobody has the pencil yet. <button className="takepen" onClick={onTake}>Take it</button> if you’re keeping the card.</>
+            : 'Nobody has the pencil yet; the group picks on the first tee.'}
       </div>
       {onPeek && (
         <button className="aghost" style={{ marginTop: 12 }} onClick={onPeek}>

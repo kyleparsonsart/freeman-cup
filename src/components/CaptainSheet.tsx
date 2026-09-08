@@ -57,15 +57,16 @@ export default function CaptainSheet({ data, round, session, reload, secondary =
       {err && <div className="holine err">{err}</div>}
       {data.offline && !err && view.stage !== 'waiting' && <div className="holine">Offline. Sealing and opening need a signal; everything here is read-only until it’s back.</div>}
       {view.stage === 'locked' && <Locked view={view} session={session} />}
-      {view.canReveal && (
-        <RevealCard view={view} busy={busy} onReveal={() => run(supabase.rpc('reveal_sheets', { r: round.id }))} />
-      )}
       {view.stage === 'open' && view.myTeam && (
         <SheetEditor data={data} round={round} session={session} team={view.myTeam} view={view} busy={busy}
           onSeal={slots => run(supabase.rpc('seal_sheet', { r: round.id, slots }))} />
       )}
       {view.stage === 'sealed' && view.mine && (
-        <Sealed view={view} session={session} names={names} />
+        <Sealed view={view} session={session} names={names} busy={busy}
+          onSend={view.canReveal ? () => run(supabase.rpc('reveal_sheets', { r: round.id })) : undefined} />
+      )}
+      {view.stage === 'waiting' && view.canReveal && (
+        <SendFoot view={view} busy={busy} onSend={() => run(supabase.rpc('reveal_sheets', { r: round.id }))} />
       )}
       {view.stage === 'waiting' && <Waiting view={view} session={session} />}
     </div>
@@ -88,24 +89,16 @@ function StatusRows({ view }: { view: SheetView }) {
   );
 }
 
-function RevealCard({ view, busy, onReveal }: { view: SheetView; busy: boolean; onReveal: () => void }) {
-  const [sure, setSure] = useState(false);
+/** The commissioner's footer once both sheets are in (or the deadline has passed). */
+function SendFoot({ view, busy, onSend }: { view: SheetView; busy: boolean; onSend: () => void }) {
   return (
-    <div className="shcard commish">
-      <div className="mmk">{view.bothSealed ? 'Both sheets are in' : 'Past the deadline'}</div>
-      <div className="mmt">Ready to send</div>
-      <div className="mml">
+    <div className="shfoot">
+      <div className="hint">
         {view.bothSealed
-          ? 'Nobody has seen a lineup yet. Send builds the matches and drops a sealed letter on every phone: partner, opponents, tee time.'
-          : 'A sheet is missing. Send fills it with the remaining pairing in roster order and posts the round.'}
+          ? 'Both sheets are in. Send builds the matches and drops a sealed letter on every phone. Can’t be undone.'
+          : 'A sheet is missing and the deadline has passed. Send fills it with the remaining pairing in roster order and posts the round.'}
       </div>
-      {!sure
-        ? <button className="abtn" onClick={() => setSure(true)}>Send pairings</button>
-        : <div className="shconfirm">
-            <button className="abtn" disabled={busy} onClick={onReveal}>{busy ? 'Sending…' : 'Yes, send the letters'}</button>
-            <button className="aghost" onClick={() => setSure(false)}>Not yet</button>
-          </div>}
-      <div className="hint" style={{ padding: '10px 0 0', textAlign: 'center' }}>Commissioner only · can’t be undone</div>
+      <button className="abtn" disabled={busy} onClick={onSend}>{busy ? 'Sending…' : 'Send Pairings'}</button>
     </div>
   );
 }
@@ -114,8 +107,8 @@ function Locked({ view, session }: { view: SheetView; session: Session }) {
   return (
     <div className="mymatch">
       <div className="mmk">{session.rd} · {session.fmt}</div>
-      <div className="mmt">Sheet opens when the round before posts</div>
-      <div className="mml">The rotation check needs the earlier pairings on the record. Due {clockLocal(view.due)} course time; the app fills it in from there.</div>
+      <div className="mmt">{view.waitingOn ? `${view.waitingOn.label}’s pairings go out first` : 'Not yet'}</div>
+      <div className="mml">Your sheet for {session.rd} opens once {view.waitingOn?.label || 'the round before'} is posted; the app has to know which pairs have already played together. Due {clockLocal(view.due)} course time.</div>
     </div>
   );
 }
@@ -134,18 +127,24 @@ function Waiting({ view, session }: { view: SheetView; session: Session }) {
   );
 }
 
-function Sealed({ view, session, names }: { view: SheetView; session: Session; names: (ids: string[]) => React.ReactNode }) {
+function Sealed({ view, session, names, busy, onSend }: {
+  view: SheetView; session: Session; names: (ids: string[]) => React.ReactNode; busy: boolean; onSend?: () => void;
+}) {
   const mine = view.mine!;
+  const other = view.status.find(s => s.team.id !== view.myTeam?.id);
   return (
     <div className="mymatch">
       <div className="mmk locked"><LockIcon /> Sealed {clockLocal(mine.sealed_at)}</div>
-      <div className="mmt">{view.status.find(s => s.team.id !== view.myTeam?.id)?.sealed ? 'Waiting on the send' : `Waiting on ${first(view.status.find(s => s.team.id !== view.myTeam?.id)?.captain || undefined)}`}</div>
-      <div className="mml">Your sheet is in and can’t change. The letters go out when the commissioner sends, or at <b>{clockLocal(view.due)}</b>.</div>
+      <div className="mmt">{onSend ? 'Both sheets are in' : other?.sealed ? 'Waiting on the send' : `Waiting on ${first(other?.captain || undefined)}`}</div>
+      <div className="mml">{onSend
+        ? 'Yours and theirs are sealed. Nobody has seen a lineup yet.'
+        : <>Your sheet is in and can’t change. The letters go out when the commissioner sends, or at <b>{clockLocal(view.due)}</b>.</>}</div>
       <div className="shsub">Your slots</div>
       {mine.slots.map((slot, i) => (
         <div key={i} className="shslot"><span className="tt">{teeFor(session, view.round, i)}<small>SLOT {i + 1}</small></span><span className={`pair ${view.myTeam?.side}`}>{names(slot)}</span></div>
       ))}
       <StatusRows view={view} />
+      {onSend && <SendFoot view={view} busy={busy} onSend={onSend} />}
     </div>
   );
 }
@@ -175,7 +174,6 @@ function SheetEditor({ data, round, session, team, view, busy, onSeal }: {
   const [pick, setPick] = useState(() => Math.max(0, options.findIndex(o => !o.used)));
   const [lead, setLead] = useState(0);                       // which pair takes slot 1
   const [order, setOrder] = useState<string[]>(() => [...mine].sort((a, b) => a.name.localeCompare(b.name)).map(p => p.id));
-  const [sure, setSure] = useState(false);
   const by = (id: string) => first(data.playerById[id]);
 
   const slots: string[][] = singles
@@ -247,13 +245,8 @@ function SheetEditor({ data, round, session, team, view, busy, onSeal }: {
 
       <StatusRows view={view} />
       <div className="shfoot">
-        <div className="hint">Sealed sheets can’t be changed. The letters go out when the commissioner sends, or at {clockLocal(view.due)}.</div>
-        {!sure
-          ? <button className="abtn" disabled={!slots.length} onClick={() => setSure(true)}>Seal the sheet</button>
-          : <div className="shconfirm">
-              <button className="abtn" disabled={busy} onClick={async () => { if (!(await onSeal(slots))) setSure(false); }}>{busy ? 'Sealing…' : 'Seal it, no changes after'}</button>
-              <button className="aghost" onClick={() => setSure(false)}>Let me look again</button>
-            </div>}
+        <div className="hint">Submitted pairings can’t be changed. The letters go out when the commissioner sends, or at {clockLocal(view.due)}.</div>
+        <button className="abtn" disabled={!slots.length || busy} onClick={() => onSeal(slots)}>{busy ? 'Submitting…' : 'Submit Pairings'}</button>
       </div>
     </div>
   );

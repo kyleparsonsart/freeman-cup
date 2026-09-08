@@ -71,6 +71,15 @@ describe('sheetView', () => {
     const v2 = sheetView({ ...base, round: rounds[1], rounds, matches: [M('R1', ['griffin', 'matt'], ['kyle', 'jt'])], mePlayerId: 'kyle', meIsCommissioner: true });
     expect(v2.stage).toBe('open');
   });
+  it('singles never locks on earlier rounds', () => {
+    const v = sheetView({ ...base, round: rounds[3], rounds, matches: [], mePlayerId: 'kyle', meIsCommissioner: true });
+    expect(v.stage).toBe('open');
+  });
+  it('names the round it is waiting on', () => {
+    const v = sheetView({ ...base, round: rounds[2], rounds, matches: [M('R1', ['griffin', 'matt'], ['kyle', 'jt'])], mePlayerId: 'kyle', meIsCommissioner: true });
+    expect(v.stage).toBe('locked');
+    expect(v.waitingOn?.label).toBe('Round 2');
+  });
   it('a captain with no sheet is open, then sealed', () => {
     expect(sheetView({ ...base, mePlayerId: 'kyle', meIsCommissioner: true }).stage).toBe('open');
     expect(sheetView({ ...base, status: [S('TB')], sheets: [sheet('TB')], mePlayerId: 'kyle', meIsCommissioner: true }).stage).toBe('sealed');

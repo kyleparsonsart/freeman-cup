@@ -146,6 +146,15 @@ function RoundCard({ s, ms, isOpen, toggle }: RoundCardProps) {
         <div className="rright">{pill}{scoreline}</div>
       </div>
 
+      {ms.length === 0 && st !== 'final' && (
+        // pairings not posted: keep the card's shape, names TBD
+        (s.fmt === 'Singles' ? s.tees.flatMap(t => [t, t]) : s.tees).map((t, i) => (
+          <div key={i} className="mrow2 tbd">
+            <span className="p"><span className="a">TBD</span><span className="v">V</span><span className="b">TBD</span></span>
+            <span className="s n">{t}</span>
+          </div>
+        ))
+      )}
       {ms.map(m => {
         const r = calc(m);
         const stat = !r.played ? s.tees[m.g]

@@ -192,17 +192,40 @@ begin
       array(select (jsonb_array_elements_text(a_slots -> (i - 1)))::uuid),
       array(select (jsonb_array_elements_text(b_slots -> (i - 1)))::uuid));
   end loop;
-  -- The pencil: a seeded scorer who isn't in his group any more can't hold
-  -- it. Keep him if he is; otherwise the first Celt in the group's first
-  -- match holds it until the group hands it on.
+  -- The pencil: a scorer who isn't in his group any more can't hold it.
+  -- Keep him if he is; otherwise nobody, and the group takes it on the
+  -- first tee. Quietly: this is setup, not a handoff, so no feed line.
+  perform set_config('fc.silent', 'on', true);
   update tee_group g
-     set scorer_player_id = coalesce(
-       (select g.scorer_player_id where exists (
+     set scorer_player_id = (select g.scorer_player_id where exists (
           select 1 from match m where m.tee_group_id = g.id
-             and (g.scorer_player_id = any(m.side_a) or g.scorer_player_id = any(m.side_b)))),
-       (select m.side_b[1] from match m where m.tee_group_id = g.id order by m.seq limit 1))
+             and (g.scorer_player_id = any(m.side_a) or g.scorer_player_id = any(m.side_b))))
    where g.round_id = r;
+  perform set_config('fc.silent', '', true);
 end $$ language plpgsql;
+
+-- The handoff logger stays quiet while fc.silent is on (see above).
+create or replace function log_scorer_handoff() returns trigger as $$
+declare
+  v_event uuid;
+begin
+  if current_setting('fc.silent', true) = 'on' then return new; end if;
+  if new.scorer_player_id is distinct from old.scorer_player_id then
+    select event_id into v_event from round where id = new.round_id;
+    insert into feed_event (event_id, round_id, kind, tier, body)
+    values (
+      v_event, new.round_id, 'scorer_switch', 'none',
+      jsonb_build_object(
+        'tee_group_id', new.id,
+        'seq',          new.seq,
+        'from',         old.scorer_player_id,
+        'to',           new.scorer_player_id,
+        'by',           me()
+      )
+    );
+  end if;
+  return new;
+end $$ language plpgsql security definer;
 
 -- Past the deadline: fill what's missing, reveal, open, build. Safe to
 -- call any time; does nothing before the deadline or once matches exist.
@@ -230,8 +253,9 @@ begin
   t := my_captain_team();
   if t is null then raise exception 'captains only'; end if;
   if exists (select 1 from match where round_id = r) then raise exception 'pairings are already posted'; end if;
-  -- the rotation check reads earlier matches, so earlier rounds must be posted first
-  if exists (select 1 from round x where x.event_id = (select event_id from round where id = r)
+  -- the rotation check reads earlier matches, so earlier team rounds must
+  -- be posted first (singles has no pairs and never waits)
+  if (select format from round where id = r) <> 'singles' and exists (select 1 from round x where x.event_id = (select event_id from round where id = r)
                and x.seq < (select seq from round where id = r)
                and not exists (select 1 from match where round_id = x.id)) then
     raise exception 'the earlier round has to post first';

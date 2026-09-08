@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { totals, half, CFG, MATCHES } from '../lib/scoring';
+import { totals, half, CFG, MATCHES, SESSIONS } from '../lib/scoring';
 
 /**
  * Cup score strip: points each side, the jug, the tug bar, clinch ticks.
@@ -11,7 +11,10 @@ export default function CupStrip({ decided = null, onOpenFinale }: {
   onOpenFinale?: () => void;
 } = {}) {
   const { a, b } = totals();
-  const T = MATCHES.length || 1;
+  // the planned points for the week (2 a team round, 4 singles), so the
+  // total doesn't grow as pairings post round by round
+  const planned = SESSIONS.reduce((n, s) => n + s.tees.length * (s.fmt === 'Singles' ? 2 : 1), 0);
+  const T = Math.max(planned, MATCHES.length) || 1;
   const C = Math.floor(T / 2) + 0.5;
   const pa = a / T * 100, pb = b / T * 100, cp = C / T * 100;
   const lead = a === b ? 'All square' : `${a > b ? CFG.teams.a.name : CFG.teams.b.name} lead`;

@@ -95,6 +95,8 @@ export interface SheetView {
   bothSealed: boolean;
   /** every earlier round has its matches (the rotation check needs them) */
   earlierPosted: boolean;
+  /** the earliest unposted round ahead of this one, when locked */
+  waitingOn: DbRound | null;
   /** the commissioner may send the pairings */
   canReveal: boolean;
 }
@@ -107,7 +109,10 @@ export function sheetView(input: {
   const { round, teams, players, sheets, status, mePlayerId, meIsCommissioner } = input;
   const now = input.now ?? new Date();
   const rounds = input.rounds ?? [];
-  const earlierPosted = rounds.filter(r => r.seq < round.seq).every(r => (input.matches ?? []).some(m => m.round_id === r.id));
+  // singles has no pairs to check, so it never waits on earlier rounds
+  const earlierPosted = round.format === 'singles'
+    || rounds.filter(r => r.seq < round.seq).every(r => (input.matches ?? []).some(m => m.round_id === r.id));
+  const waitingOn = rounds.filter(r => r.seq < round.seq && !(input.matches ?? []).some(m => m.round_id === r.id)).sort((a, b) => a.seq - b.seq)[0] || null;
   const me = players.find(p => p.id === mePlayerId) || null;
   const myTeam = me ? teams.find(t => t.id === me.team_id) || null : null;
   const theirTeam = myTeam ? teams.find(t => t.id !== myTeam.id) || null : null;
@@ -137,6 +142,7 @@ export function sheetView(input: {
     })),
     bothSealed,
     earlierPosted,
+    waitingOn,
     canReveal: meIsCommissioner && !revealed && (bothSealed || pastDue),
   };
 }
