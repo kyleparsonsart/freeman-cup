@@ -16,6 +16,7 @@ import SettingsSheet from './components/SettingsSheet';
 import Rulebook from './components/Rulebook';
 import LetterMoment from './components/Letter';
 import { pendingLetter, markLetterSeen, letterFor } from './lib/letters';
+import { attachSwipeTabs } from './lib/swipeTabs';
 
 function tap() {
   if (navigator.vibrate) navigator.vibrate(10);
@@ -161,6 +162,19 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
   useEffect(() => {
     bodyRef.current?.scrollTo(0, 0);
   }, [tab]);
+  // Tug a page sideways to slide to the neighbouring tab (Live, Scoring,
+  // Schedule). The active view follows the finger; the tab switches once the
+  // pull clears a quarter of the width or a quick flick.
+  const tabRef = useRef(tab); tabRef.current = tab;
+  useEffect(() => {
+    const el = bodyRef.current; if (!el) return;
+    return attachSwipeTabs(el, {
+      order: ['live', 'scoring', 'schedule'] as const,
+      current: () => tabRef.current,
+      go: t => setTab(t),
+      page: () => el.querySelector<HTMLElement>('.view.on'),
+    });
+  }, [Boolean(data)]);
   const goTab = (t: 'scoring' | 'live' | 'schedule') => {
     if (t === tab) {
       bodyRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
