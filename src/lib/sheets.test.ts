@@ -81,17 +81,6 @@ describe('sheetView', () => {
     expect(sheetView({ ...base, status: [S('TB')], mePlayerId: 'kyle', meIsCommissioner: true, now: new Date('2026-10-08T02:01:00Z') }).canReveal).toBe(true);
     expect(sheetView({ ...base, status: [S('TB'), S('TA')], mePlayerId: 'griffin', meIsCommissioner: false }).canReveal).toBe(false);
   });
-  it('after the reveal a captain holds his own envelope until he opens it', () => {
-    const round = R(1, 'four-ball', '2026-10-08', '2026-10-08T01:30:00Z');
-    const v = sheetView({ ...base, round, status: [S('TB'), S('TA')], sheets: [sheet('TB')], mePlayerId: 'kyle', meIsCommissioner: true });
-    expect(v.stage).toBe('envelope');
-    expect(v.mine?.team_id).toBe('TB');
-    expect(v.theirs).toBeNull();
-    const other = sheetView({ ...base, round, status: [S('TB'), S('TA', true)], sheets: [sheet('TB')], mePlayerId: 'kyle', meIsCommissioner: true });
-    expect(other.stage).toBe('envelope');   // Griffin reading his doesn't open mine
-    const v2 = sheetView({ ...base, round, status: [S('TB', true), S('TA')], sheets: [sheet('TB')], mePlayerId: 'kyle', meIsCommissioner: true });
-    expect(v2.stage).toBe('opened');
-  });
   it('lists status Celts first with captains', () => {
     const v = sheetView({ ...base, mePlayerId: 'phil', meIsCommissioner: false });
     expect(v.status.map(s => s.team.name)).toEqual(['Celts', 'Vikes']);

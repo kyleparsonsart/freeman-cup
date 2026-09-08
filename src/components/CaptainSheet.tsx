@@ -10,7 +10,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { EventData } from '../hooks/useEventData';
-import type { DbCaptainSheet, DbPlayer, DbRound, DbTeam } from '../lib/types';
+import type { DbPlayer, DbRound, DbTeam } from '../lib/types';
 import type { Session } from '../lib/scoring';
 import { sheetView, usedPairs, pairingOptions, clockLocal, type SheetView } from '../lib/sheets';
 
@@ -67,10 +67,6 @@ export default function CaptainSheet({ data, round, session, reload, secondary =
       {view.stage === 'sealed' && view.mine && (
         <Sealed view={view} session={session} names={names} />
       )}
-      {(view.stage === 'envelope' || view.stage === 'opened') && view.mine && view.myTeam && (
-        <Envelope view={view} session={session} names={names} busy={busy}
-          onOpen={() => run(supabase.rpc('open_envelope', { r: round.id }))} />
-      )}
       {view.stage === 'waiting' && <Waiting view={view} session={session} />}
     </div>
   );
@@ -84,7 +80,7 @@ function StatusRows({ view }: { view: SheetView }) {
           <span className="who"><i className={`dot${s.sealed ? ' ok' : ''}`} />{s.team.name} · {first(s.captain || undefined) || 'captain'}</span>
           <span className={`st${s.sealed ? ' ok' : ''}`}>
             {!s.sealed ? 'Not sealed' : s.sealed.auto ? `Defaulted at ${clockLocal(view.due)}` : `Sealed ${clockLocal(s.sealed.sealed_at)}`}
-            {s.sealed?.opened_at && view.revealed ? ' · read out' : ''}
+
           </span>
         </div>
       ))}
@@ -97,16 +93,16 @@ function RevealCard({ view, busy, onReveal }: { view: SheetView; busy: boolean; 
   return (
     <div className="shcard commish">
       <div className="mmk">{view.bothSealed ? 'Both sheets are in' : 'Past the deadline'}</div>
-      <div className="mmt">Ready to reveal</div>
+      <div className="mmt">Ready to send</div>
       <div className="mml">
         {view.bothSealed
-          ? 'Nothing has been read yet. Reveal hands each captain an envelope with his own sheet to read to the table.'
-          : 'A sheet is missing. Reveal fills it with the remaining pairing in roster order and hands out the envelopes.'}
+          ? 'Nobody has seen a lineup yet. Send builds the matches and drops a sealed letter on every phone: partner, opponents, tee time.'
+          : 'A sheet is missing. Send fills it with the remaining pairing in roster order and posts the round.'}
       </div>
       {!sure
-        ? <button className="abtn" onClick={() => setSure(true)}>Reveal names</button>
+        ? <button className="abtn" onClick={() => setSure(true)}>Send pairings</button>
         : <div className="shconfirm">
-            <button className="abtn" disabled={busy} onClick={onReveal}>{busy ? 'Revealing…' : 'Yes, hand out the envelopes'}</button>
+            <button className="abtn" disabled={busy} onClick={onReveal}>{busy ? 'Sending…' : 'Yes, send the letters'}</button>
             <button className="aghost" onClick={() => setSure(false)}>Not yet</button>
           </div>}
       <div className="hint" style={{ padding: '10px 0 0', textAlign: 'center' }}>Commissioner only · can’t be undone</div>
@@ -119,7 +115,7 @@ function Locked({ view, session }: { view: SheetView; session: Session }) {
     <div className="mymatch">
       <div className="mmk">{session.rd} · {session.fmt}</div>
       <div className="mmt">Sheet opens when the round before posts</div>
-      <div className="mml">The rotation check needs the earlier pairings on the record. Due {clockLocal(view.due)} course time, the app fills it in from there.</div>
+      <div className="mml">The rotation check needs the earlier pairings on the record. Due {clockLocal(view.due)} course time; the app fills it in from there.</div>
     </div>
   );
 }
@@ -130,7 +126,7 @@ function Waiting({ view, session }: { view: SheetView; session: Session }) {
       <div className="mmk">{session.rd} · {session.fmt}</div>
       <div className="mmt">Pairings post tonight</div>
       <div className="mml">
-        The captains are sealing their sheets. Both open at dinner, <b>{clockLocal(view.due)}</b> at the latest, and your match lands here.
+        The captains are sealing their sheets. When both are in, a letter with your partner and your match lands on this phone, <b>{clockLocal(view.due)}</b> at the latest.
       </div>
       <StatusRows view={view} />
       <div className="mmst"><i className="ldot" /><span>{session.course} · {session.holes} holes · tees {session.tees.join(' and ')}</span></div>
@@ -143,8 +139,8 @@ function Sealed({ view, session, names }: { view: SheetView; session: Session; n
   return (
     <div className="mymatch">
       <div className="mmk locked"><LockIcon /> Sealed {clockLocal(mine.sealed_at)}</div>
-      <div className="mmt">{view.status.find(s => s.team.id !== view.myTeam?.id)?.sealed ? 'Waiting on the reveal' : `Waiting on ${first(view.status.find(s => s.team.id !== view.myTeam?.id)?.captain || undefined)}`}</div>
-      <div className="mml">Your sheet is in and can’t change. Envelopes go out when the commissioner reveals, or at <b>{clockLocal(view.due)}</b>; you read yours to the table.</div>
+      <div className="mmt">{view.status.find(s => s.team.id !== view.myTeam?.id)?.sealed ? 'Waiting on the send' : `Waiting on ${first(view.status.find(s => s.team.id !== view.myTeam?.id)?.captain || undefined)}`}</div>
+      <div className="mml">Your sheet is in and can’t change. The letters go out when the commissioner sends, or at <b>{clockLocal(view.due)}</b>.</div>
       <div className="shsub">Your slots</div>
       {mine.slots.map((slot, i) => (
         <div key={i} className="shslot"><span className="tt">{teeFor(session, view.round, i)}<small>SLOT {i + 1}</small></span><span className={`pair ${view.myTeam?.side}`}>{names(slot)}</span></div>
@@ -251,7 +247,7 @@ function SheetEditor({ data, round, session, team, view, busy, onSeal }: {
 
       <StatusRows view={view} />
       <div className="shfoot">
-        <div className="hint">Sealed sheets can’t be changed. Envelopes go out when the commissioner reveals, or at {clockLocal(view.due)}.</div>
+        <div className="hint">Sealed sheets can’t be changed. The letters go out when the commissioner sends, or at {clockLocal(view.due)}.</div>
         {!sure
           ? <button className="abtn" disabled={!slots.length} onClick={() => setSure(true)}>Seal the sheet</button>
           : <div className="shconfirm">
@@ -260,73 +256,5 @@ function SheetEditor({ data, round, session, team, view, busy, onSeal }: {
             </div>}
       </div>
     </div>
-  );
-}
-
-/**
- * The envelope: the captain's own sheet, sealed until he opens it at the
- * table and reads his lineup out. Opening is a full-screen moment; once
- * opened the lineup stays in the hero. The second captain's opening builds
- * the matches.
- */
-function Envelope({ view, session, names, busy, onOpen }: {
-  view: SheetView; session: Session; names: (ids: string[]) => React.ReactNode; busy: boolean; onOpen: () => Promise<boolean>;
-}) {
-  const mine = view.mine as DbCaptainSheet;
-  const team = view.myTeam as DbTeam;
-  const opened = view.stage === 'opened';
-  const [show, setShow] = useState(!opened);     // the moment stays up until dismissed
-  const [torn, setTorn] = useState(opened);
-  const open = async () => { setTorn(true); await onOpen(); };
-  const myCaptainName = first(view.status.find(s => s.team.id === team.id)?.captain || undefined);
-  const otherName = first(view.status.find(s => s.team.id !== team.id)?.captain || undefined);
-  const otherOpened = !!view.status.find(s => s.team.id !== team.id)?.sealed?.opened_at;
-
-  return (
-    <>
-      <div className="mymatch">
-        <div className="mmk locked"><LockIcon /> {opened ? 'Read out' : 'An envelope for you'}</div>
-        <div className="mmt">{opened ? `The ${team.name}’ sheet` : 'Envelopes are out'}</div>
-        <div className="mml">
-          {opened
-            ? (otherOpened ? 'Both sheets are read. Matches are posting.' : `The matches post when ${otherName} reads his.`)
-            : 'Yours holds your lineup. Open it when the table calls your name and read it out.'}
-        </div>
-        {opened && mine.slots.map((slot, i) => (
-          <div key={i} className="shslot"><span className="tt">{teeFor(session, view.round, i)}<small>SLOT {i + 1}</small></span><span className={`pair ${team.side}`}>{names(slot)}</span></div>
-        ))}
-        {!opened && <button className="abtn" onClick={() => setShow(true)}>Open the envelope</button>}
-        <StatusRows view={view} />
-      </div>
-
-      {show && (
-        <div className="moment envmo" role="dialog" aria-modal="true" aria-label="Your envelope">
-          <div className="mo">
-            <div className="kick">{session.rd} · {session.day}</div>
-            <h1>{torn ? `The ${team.name}’ sheet` : `An envelope for ${myCaptainName}`}</h1>
-            <div className={`env ${team.side}${torn ? ' open' : ''}`}>
-              <div className="flap" />
-              {!torn && <div className="wax"><span /></div>}
-              {torn && (
-                <div className="card">
-                  <div className="badge"><span>FC</span></div>
-                  <div className="k2">{session.fmt} · {session.course}</div>
-                  {mine.slots.map((slot, i) => (
-                    <div key={i} className={`line ${team.side}`}><small>{teeFor(session, view.round, i)}</small>{names(slot)}</div>
-                  ))}
-                </div>
-              )}
-              <div className="to"><small>THE FREEMAN CUP · 2026</small>{torn ? team.name : myCaptainName}</div>
-            </div>
-            {!torn
-              ? <button className="abtn" disabled={busy} onClick={open}>Open it</button>
-              : <div className="next">
-                  <div className="sub">Read it to the table. {otherOpened ? 'Both sheets are read; the matches are posting.' : `The matches post once ${otherName} reads his.`}</div>
-                  <button className="aghost" onClick={() => setShow(false)}>Done</button>
-                </div>}
-          </div>
-        </div>
-      )}
-    </>
   );
 }

@@ -75,9 +75,7 @@ export function pairingOptions(players: DbPlayer[], used: Map<string, string>): 
 export type SheetStage =
   | 'locked'    // a captain, but an earlier round hasn't posted yet
   | 'open'      // a captain who hasn't sealed yet
-  | 'sealed'    // sealed, waiting on the other side or the reveal
-  | 'envelope'  // revealed, this captain hasn't opened his own
-  | 'opened'    // this captain has read his out; the other hasn't yet
+  | 'sealed'    // sealed, waiting on the other side or the send
   | 'waiting';  // not a captain: pairings post tonight
 
 export interface SheetView {
@@ -97,7 +95,7 @@ export interface SheetView {
   bothSealed: boolean;
   /** every earlier round has its matches (the rotation check needs them) */
   earlierPosted: boolean;
-  /** the commissioner may hand out the envelopes */
+  /** the commissioner may send the pairings */
   canReveal: boolean;
 }
 
@@ -128,9 +126,7 @@ export function sheetView(input: {
   let stage: SheetStage = 'waiting';
   if (iAmCaptain) {
     if (!mineStatus) stage = earlierPosted ? 'open' : 'locked';
-    else if (!revealed) stage = 'sealed';
-    else if (!mineStatus.opened_at) stage = 'envelope';     // I open MY envelope and read it out
-    else stage = 'opened';
+    else stage = 'sealed';
   }
   return {
     round, due, pastDue, revealed, myTeam, theirTeam, iAmCaptain, stage, mine, theirs,

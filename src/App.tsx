@@ -14,6 +14,8 @@ import ScheduleScreen from './components/ScheduleScreen';
 import SignInScreen from './components/SignInScreen';
 import SettingsSheet from './components/SettingsSheet';
 import Rulebook from './components/Rulebook';
+import LetterMoment from './components/Letter';
+import { pendingLetter, markLetterSeen } from './lib/letters';
 
 function tap() {
   if (navigator.vibrate) navigator.vibrate(10);
@@ -133,6 +135,19 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
     if (moKey) markSeen(moKey);
     setMoKey(null);
   };
+
+  // The letters: when a round's pairings are sent, every player opens
+  // his once. Derived from data so it works on whatever tab is up.
+  const letter = useMemo(() => (data ? pendingLetter(data) : null), [data]);
+  const [letterOpen, setLetterOpen] = useState(false);
+  const letterShown = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (letter && !moKey && !letterShown.current.has(letter.key)) {
+      letterShown.current.add(letter.key);
+      setLetterOpen(true);
+    }
+  }, [letter, moKey]);
+  const closeLetter = () => { if (letter) markLetterSeen(letter.key); setLetterOpen(false); };
 
   // A tab always opens at its top — scroll position never leaks across.
   // Switching lands instantly (the content changes anyway); tapping the
@@ -260,6 +275,10 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
           onSeeLive={() => { setTab('live'); closeMoment(); }}
           onEnterScores={() => { closeMoment(); setSettingsOpen(true); }}
         />
+      )}
+
+      {data && letter && letterOpen && (
+        <LetterMoment data={data} letter={letter} onClose={closeLetter} onSeeMatch={() => { closeLetter(); setTab('scoring'); }} />
       )}
 
       <Rulebook open={rulesOpen} onClose={() => setRulesOpen(false)} />

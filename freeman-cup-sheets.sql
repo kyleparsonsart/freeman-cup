@@ -1,13 +1,12 @@
 -- The captain's sheet (Sep 7 2026).
 --
 -- The night before a round each captain seals his lineup in the app.
--- When both are in, the commissioner taps Reveal and each captain gets
--- an envelope holding his OWN sheet, to read aloud to the table.
--- When both envelopes are opened the matches for the round are built,
--- slot to slot, and the round is public. A 9:00 pm deadline (the night
--- before, Sand Valley time) fills in a missing sheet with the default
--- lineup, reveals, opens, and builds, so one slow captain never holds
--- up a round.
+-- When both are in, the commissioner taps Send pairings: the matches are
+-- built slot to slot and every player gets a letter on his phone with
+-- his partner, his opponents and his tee time, to open at the table.
+-- A 9:00 pm deadline (the night before, Sand Valley time) fills in a
+-- missing sheet with the default lineup and sends, so one slow captain
+-- never holds up a round.
 --
 -- Matches are no longer seeded. "Clear all scores" in Settings (reset_event)
 -- now clears the seeded pairings too, so run it once before the trip and
@@ -244,8 +243,9 @@ begin
   insert into captain_sheet (round_id, team_id, slots, sealed_by) values (r, t, slots, me());
 end $$ language plpgsql security definer;
 
--- The commissioner hands out the envelopes. Needs both sheets, unless
--- the deadline has passed, in which case the missing one is defaulted.
+-- Send pairings: the commissioner posts the round. Needs both sheets,
+-- unless the deadline has passed, in which case the missing one is
+-- defaulted. Builds the matches; the app turns that into the letters.
 create or replace function reveal_sheets(r uuid) returns void as $$
 declare
   t record;
@@ -261,8 +261,11 @@ begin
     end loop;
   end if;
   update round set revealed_at = coalesce(revealed_at, now()) where id = r;
+  update captain_sheet set opened_at = coalesce(opened_at, now()) where round_id = r;
+  perform build_round_matches(r);
 end $$ language plpgsql security definer;
 
+-- Kept for older builds; sending already posts the round.
 -- A captain opens his envelope, which holds his own sheet, and reads
 -- it to the table. The second opening builds the matches.
 create or replace function open_envelope(r uuid) returns void as $$

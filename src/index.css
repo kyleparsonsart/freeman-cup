@@ -1362,3 +1362,6 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .shadmin .n{font-family:var(--display);font-size:16px;color:var(--bone);width:56px;flex:none;font-synthesis:none}
 .shadmin .s{font-size:12.5px;color:var(--moss-dim);flex:1;min-width:0;line-height:1.35}
 .shadmin button{font-size:12px;color:var(--brass);text-decoration:underline;text-underline-offset:3px;flex:none;white-space:nowrap;padding:4px 0}
+.env .card .k2.vs{margin-top:8px;font-family:var(--display);text-transform:none;letter-spacing:0;font-size:12px;font-style:italic;color:#7a8079}
+.env .card{min-height:0;padding-bottom:14px}
+.envmo .next .abtn{max-width:280px}
