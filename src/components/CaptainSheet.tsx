@@ -28,10 +28,16 @@ export default function CaptainSheet({ data, round, session, reload, secondary =
   const [busy, setBusy] = useState(false);
 
   const run = async (call: PromiseLike<{ error: { message: string } | null }>) => {
+    if (data.offline) { setErr('Needs a signal. Sealing and opening go straight to the clubhouse; try again when you have one.'); return false; }
     setBusy(true); setErr(null);
     const { error } = await call;
     setBusy(false);
-    if (error) { setErr(error.message); return false; }
+    if (error) {
+      setErr(/fetch|network|load failed|timeout/i.test(error.message)
+        ? 'Needs a signal. Nothing was sealed; try again when you have one.'
+        : error.message);
+      return false;
+    }
     reload();
     return true;
   };
@@ -47,6 +53,7 @@ export default function CaptainSheet({ data, round, session, reload, secondary =
   return (
     <div className={`hero brief capsheet${secondary ? ' secondary' : ''}`} id={secondary ? undefined : 'heroSlot'}>
       {err && <div className="holine err">{err}</div>}
+      {data.offline && !err && view.stage !== 'waiting' && <div className="holine">Offline. Sealing and opening need a signal; everything here is read-only until it’s back.</div>}
       {view.stage === 'locked' && <Locked view={view} session={session} />}
       {view.canReveal && (
         <RevealCard view={view} busy={busy} onReveal={() => run(supabase.rpc('reveal_sheets', { r: round.id }))} />

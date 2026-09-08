@@ -7,6 +7,7 @@ import type { Acting } from '../lib/view';
 import type { EventData } from '../hooks/useEventData';
 import { IconFlagCheckered } from './icons';
 import type { DbPlayer } from '../lib/types';
+import { clockLocal } from '../lib/sheets';
 
 interface Props {
   data: EventData;
@@ -296,6 +297,40 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
 
             </>}
             {stab === 'setup' && <>
+            {/* ---- Captain's sheets ---- */}
+            {(() => {
+              const pending = data.rounds.filter(r => r.state !== 'final' && !data.matches.some(m => m.round_id === r.id));
+              if (!pending.length) return null;
+              return (
+                <>
+                  <div className="grp">
+                    <h3>Captain’s sheets</h3>
+                    <div className="hint">
+                      Rounds whose pairings haven’t posted yet. Unseal puts a sheet
+                      back in the captain’s hands (and pulls the envelopes back if
+                      they were out). Reveal lives on the Scoring tab.
+                    </div>
+                  </div>
+                  {pending.map(r => (
+                    <div key={r.id} className="fld">
+                      <label>{r.label} · {data.scoringSessions.find(s => s.id === r.id)?.course}
+                        <span className="sub2">{r.revealed_at ? 'Envelopes out' : 'Not revealed'}</span>
+                      </label>
+                      {data.teams.map(t => {
+                        const st = data.sheetStatus.find(x => x.round_id === r.id && x.team_id === t.id);
+                        return (
+                          <div key={t.id} className="seatrow">
+                            <span className="sn2">{t.name}</span>
+                            <span className="se">{!st ? 'Not sealed' : st.auto ? 'Defaulted' : `Sealed ${clockLocal(st.sealed_at)}`}{st?.opened_at ? ' · opened' : ''}</span>
+                            {st && <button className="unbind" onClick={() => run(supabase.rpc('unseal_sheet', { r: r.id, t: t.id }))}>Unseal</button>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </>
+              );
+            })()}
             {/* ---- Scorers ---- */}
             <div className="grp">
               <h3>Scorers</h3>
@@ -510,11 +545,7 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
             <div className="grp">
               <h3>Danger</h3>
               <div className="hint">
-                Clears every score, reopens every card, puts all four rounds back
-                to Not started. The history table keeps the record.
-                {underway
-                  ? ' The Cup is under way, so you will be asked to confirm.'
-                  : ' Do this once, before Thursday.'}
+                Clears every score, every pairing and captain’s sheet, reopens every card, puts all four rounds back to Not started. The history table keeps the record. Do this once before Thursday, and the captains’ sheets take over from there.
               </div>
             </div>
             <div className="danger">

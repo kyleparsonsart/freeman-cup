@@ -9,8 +9,11 @@
 -- lineup, reveals, opens, and builds, so one slow captain never holds
 -- up a round.
 --
--- Matches are no longer seeded. Run the last block once to clear the
--- seeded pairings; reset_event now clears sheets and matches too.
+-- Matches are no longer seeded. "Clear all scores" in Settings (reset_event)
+-- now clears the seeded pairings too, so run it once before the trip and
+-- the sheets take over from there. Until you do, the seeded pairings stand
+-- and the app behaves exactly as before: the sheet only appears for a
+-- round that has no matches.
 --
 -- Run in the Supabase SQL editor after the other freeman-cup-*.sql files.
 
@@ -278,6 +281,19 @@ begin
   end if;
 end $$ language plpgsql security definer;
 
+-- The safety valve: the commissioner unseals a sheet (a fat-fingered
+-- seal, a captain who changed his mind before the reveal). Only while
+-- the round has no matches. If the envelopes were already out, they go
+-- back in: the reveal is undone and both sheets are marked unopened.
+create or replace function unseal_sheet(r uuid, t uuid) returns void as $$
+begin
+  if not is_commissioner() then raise exception 'commissioner only'; end if;
+  if exists (select 1 from match where round_id = r) then raise exception 'pairings are already posted'; end if;
+  delete from captain_sheet where round_id = r and team_id = t;
+  update round set revealed_at = null where id = r;
+  update captain_sheet set opened_at = null, opened_by = null where round_id = r;
+end $$ language plpgsql security definer;
+
 -- Anyone may nudge the deadline path (the app does on open after 9 pm).
 create or replace function sheet_tick(r uuid) returns void as $$
 begin
@@ -290,7 +306,7 @@ revoke all on function sheet_settle(uuid) from public, anon, authenticated;
 revoke all on function default_slots(uuid, uuid) from public, anon, authenticated;
 revoke all on function validate_slots(uuid, uuid, jsonb) from public, anon, authenticated;
 revoke all on function used_pairs(uuid, uuid) from public, anon, authenticated;
-grant execute on function seal_sheet(uuid, jsonb), reveal_sheets(uuid), open_envelope(uuid),
+grant execute on function seal_sheet(uuid, jsonb), reveal_sheets(uuid), open_envelope(uuid), unseal_sheet(uuid, uuid),
   sheet_tick(uuid), sheet_status(), sheet_due(uuid), my_captain_team() to authenticated;
 
 -- Realtime: sheets and new matches reach every phone. Sheet rows are
@@ -327,7 +343,5 @@ begin
   update tee_group set submitted_at = null, submitted_by = null where true;
 end $$ language plpgsql security definer;
 
--- ---- Run once, by hand, to drop the seeded pairings so the sheets take over.
--- delete from match_hole where true;
--- delete from feed_event where true;
--- delete from match where true;
+-- (To drop only the pairings without touching anything else:
+--  delete from match where true;   -- scores go with them, cascade)
