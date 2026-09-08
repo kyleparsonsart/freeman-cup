@@ -76,8 +76,8 @@ export type SheetStage =
   | 'locked'    // a captain, but an earlier round hasn't posted yet
   | 'open'      // a captain who hasn't sealed yet
   | 'sealed'    // sealed, waiting on the other side or the reveal
-  | 'envelope'  // revealed, this captain hasn't opened
-  | 'opened'    // this captain opened, the other hasn't
+  | 'envelope'  // revealed, this captain hasn't opened his own
+  | 'opened'    // this captain has read his out; the other hasn't yet
   | 'waiting';  // not a captain: pairings post tonight
 
 export interface SheetView {
@@ -91,7 +91,7 @@ export interface SheetView {
   stage: SheetStage;
   /** my own sealed sheet, if readable */
   mine: DbCaptainSheet | null;
-  /** the other side's sheet, readable once revealed (the envelope's contents) */
+  /** the other side's sheet, readable only once the matches exist */
   theirs: DbCaptainSheet | null;
   status: { team: DbTeam; captain: DbPlayer | null; sealed: DbSheetStatus | null }[];
   bothSealed: boolean;
@@ -123,14 +123,13 @@ export function sheetView(input: {
   const mine = myTeam ? sh.find(s => s.team_id === myTeam.id) || null : null;
   const theirs = theirTeam ? sh.find(s => s.team_id === theirTeam.id) || null : null;
   const mineStatus = myTeam ? st.find(s => s.team_id === myTeam.id) || null : null;
-  const theirStatus = theirTeam ? st.find(s => s.team_id === theirTeam.id) || null : null;
   const bothSealed = st.length >= 2;
   const order = [...teams].sort((a, b) => (a.side === 'b' ? -1 : 1) - (b.side === 'b' ? -1 : 1)); // Celts first, like the strip
   let stage: SheetStage = 'waiting';
   if (iAmCaptain) {
     if (!mineStatus) stage = earlierPosted ? 'open' : 'locked';
     else if (!revealed) stage = 'sealed';
-    else if (!theirStatus?.opened_at) stage = 'envelope';   // I open THEIR sheet
+    else if (!mineStatus.opened_at) stage = 'envelope';     // I open MY envelope and read it out
     else stage = 'opened';
   }
   return {

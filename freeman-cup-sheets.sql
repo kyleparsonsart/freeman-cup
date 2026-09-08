@@ -2,7 +2,7 @@
 --
 -- The night before a round each captain seals his lineup in the app.
 -- When both are in, the commissioner taps Reveal and each captain gets
--- an envelope holding the OTHER side's sheet, to read aloud at dinner.
+-- an envelope holding his OWN sheet, to read aloud to the table.
 -- When both envelopes are opened the matches for the round are built,
 -- slot to slot, and the round is public. A 9:00 pm deadline (the night
 -- before, Sand Valley time) fills in a missing sheet with the default
@@ -34,10 +34,10 @@ alter table round add column if not exists revealed_at timestamptz;
 
 alter table captain_sheet enable row level security;
 
--- Who may read a sheet: its own captain always; both captains once the
--- round is revealed; everyone once the matches exist. Metadata for the
--- "who has sealed" card comes from sheet_status() below, which carries
--- no lineups.
+-- Who may read a sheet: its own captain always; everyone once the
+-- matches exist. Nobody reads the other side's lineup before it's read
+-- aloud. Metadata for the "who has sealed" card comes from
+-- sheet_status() below, which carries no lineups.
 create or replace function my_captain_team() returns uuid as $$
   select team_id from player where auth_uid = auth.uid() and is_captain limit 1;
 $$ language sql stable security definer;
@@ -45,8 +45,6 @@ $$ language sql stable security definer;
 drop policy if exists sheet_read on captain_sheet;
 create policy sheet_read on captain_sheet for select to authenticated using (
   team_id = my_captain_team()
-  or (my_captain_team() is not null
-      and (select revealed_at from round where id = round_id) is not null)
   or exists (select 1 from match where match.round_id = captain_sheet.round_id)
 );
 -- no insert/update/delete policy: writes go through the functions below.
@@ -265,8 +263,8 @@ begin
   update round set revealed_at = coalesce(revealed_at, now()) where id = r;
 end $$ language plpgsql security definer;
 
--- A captain opens his envelope, which holds the other side's sheet.
--- The second opening builds the matches.
+-- A captain opens his envelope, which holds his own sheet, and reads
+-- it to the table. The second opening builds the matches.
 create or replace function open_envelope(r uuid) returns void as $$
 declare
   t uuid;
@@ -275,7 +273,7 @@ begin
   if t is null then raise exception 'captains only'; end if;
   if (select revealed_at from round where id = r) is null then raise exception 'not revealed yet'; end if;
   update captain_sheet set opened_at = coalesce(opened_at, now()), opened_by = coalesce(opened_by, me())
-   where round_id = r and team_id <> t;
+   where round_id = r and team_id = t;
   if (select count(*) from captain_sheet where round_id = r and opened_at is not null) = 2 then
     perform build_round_matches(r);
   end if;
@@ -296,8 +294,7 @@ end $$ language plpgsql security definer;
 
 -- Rehearsal tools, commissioner only: stand in for the other captain.
 -- seal_for seals a team's sheet with the default lineup; open_for opens
--- the envelope that captain would open (the OTHER side's sheet). Both
--- go through the same checks as the real thing.
+-- that team's envelope. Both go through the same checks as the real thing.
 create or replace function commish_seal_for(r uuid, t uuid) returns void as $$
 begin
   if not is_commissioner() then raise exception 'commissioner only'; end if;
@@ -312,7 +309,7 @@ begin
   if not is_commissioner() then raise exception 'commissioner only'; end if;
   if (select revealed_at from round where id = r) is null then raise exception 'not revealed yet'; end if;
   update captain_sheet set opened_at = coalesce(opened_at, now()), opened_by = coalesce(opened_by, me())
-   where round_id = r and team_id <> t;
+   where round_id = r and team_id = t;
   if (select count(*) from captain_sheet where round_id = r and opened_at is not null) = 2 then
     perform build_round_matches(r);
   end if;
