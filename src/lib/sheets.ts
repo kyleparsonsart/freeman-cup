@@ -42,22 +42,23 @@ export function sheetDue(round: Pick<DbRound, 'id' | 'play_date' | 'seq' | 'even
 
 const key = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
 
-/** Pairs this team has already used in earlier team rounds (from the matches). */
-export function usedPairs(team: DbTeam, round: DbRound, rounds: DbRound[], matches: DbMatch[]): Set<string> {
-  const out = new Set<string>();
-  const earlier = new Set(rounds.filter(r => r.seq < round.seq && r.format !== 'singles').map(r => r.id));
+/** Pairs this team has already used in earlier team rounds, keyed pair → the round's label. */
+export function usedPairs(team: DbTeam, round: DbRound, rounds: DbRound[], matches: DbMatch[]): Map<string, string> {
+  const out = new Map<string, string>();
+  const earlier = new Map(rounds.filter(r => r.seq < round.seq && r.format !== 'singles').map(r => [r.id, r.label]));
   for (const m of matches) {
-    if (!earlier.has(m.round_id)) continue;
+    const label = earlier.get(m.round_id);
+    if (!label) continue;
     const side = team.side === 'a' ? m.side_a : m.side_b;
-    if (side.length === 2) out.add(key(side[0], side[1]));
+    if (side.length === 2) out.set(key(side[0], side[1]), label);
   }
   return out;
 }
 
-export interface PairingOption { pairs: [string[], string[]]; used: boolean }
+export interface PairingOption { pairs: [string[], string[]]; used: boolean; usedIn?: string }
 
-/** The three ways to split four into pairs, first player anchored; used ones flagged. */
-export function pairingOptions(players: DbPlayer[], used: Set<string>): PairingOption[] {
+/** The three ways to split four into pairs, first player anchored; used ones flagged with the round. */
+export function pairingOptions(players: DbPlayer[], used: Map<string, string>): PairingOption[] {
   const ps = [...players].sort((a, b) => a.name.localeCompare(b.name)).map(p => p.id);
   if (ps.length !== 4) return [];
   const combos: [string[], string[]][] = [
@@ -65,7 +66,10 @@ export function pairingOptions(players: DbPlayer[], used: Set<string>): PairingO
     [[ps[0], ps[2]], [ps[1], ps[3]]],
     [[ps[0], ps[3]], [ps[1], ps[2]]],
   ];
-  return combos.map(pairs => ({ pairs, used: pairs.some(p => used.has(key(p[0], p[1]))) }));
+  return combos.map(pairs => {
+    const usedIn = pairs.map(p => used.get(key(p[0], p[1]))).find(Boolean);
+    return { pairs, used: !!usedIn, usedIn };
+  });
 }
 
 export type SheetStage =

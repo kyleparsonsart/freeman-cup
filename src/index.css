@@ -1338,3 +1338,6 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .envmo .abtn{max-width:280px}
 .hero.capsheet.secondary{flex:none;margin-top:14px;border-top:1px solid var(--line)}
 .hero.capsheet.secondary .mymatch{border-top:1px solid var(--brass)}
+.pair .hi{font-family:var(--num);font-size:12px;font-weight:600;color:var(--moss-dim);margin-left:4px;letter-spacing:0;vertical-align:1px}
+.env .card .line .hi{font-family:var(--num);font-size:11px;color:#5a6a61;margin-left:3px}
+.env .card .line i{font-style:normal;color:#5a6a61;margin:0 4px}

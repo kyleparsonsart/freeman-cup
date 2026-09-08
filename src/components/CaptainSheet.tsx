@@ -7,7 +7,7 @@
  * matches (server side, freeman-cup-sheets.sql) and every phone flips
  * to the match brief. Past 9:00 pm the deadline path does all of it.
  */
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { EventData } from '../hooks/useEventData';
 import type { DbCaptainSheet, DbPlayer, DbRound, DbTeam } from '../lib/types';
@@ -17,6 +17,9 @@ import { sheetView, usedPairs, pairingOptions, clockLocal, type SheetView } from
 interface Props { data: EventData; round: DbRound; session: Session; reload: () => void; secondary?: boolean }
 
 const first = (p: DbPlayer | undefined) => (p?.name || '').split(' ')[0];
+const hcp = (p: DbPlayer | undefined) => (p ? Math.round(Number(p.handicap_index)) : '');
+/** "Kyle 15" as name plus a small index, for the sheet where the captain is weighing lineups */
+const Named = ({ p }: { p: DbPlayer | undefined }) => <>{first(p)}<small className="hi">{hcp(p)}</small></>;
 
 export default function CaptainSheet({ data, round, session, reload, secondary = false }: Props) {
   const view = useMemo(() => sheetView({
@@ -47,8 +50,7 @@ export default function CaptainSheet({ data, round, session, reload, secondary =
     if (view.pastDue && view.earlierPosted && !data.offline) supabase.rpc('sheet_tick', { r: round.id }).then(({ error }) => { if (!error) reload(); });
   }, [view.pastDue, round.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const by = (id: string) => first(data.playerById[id]);
-  const names = (ids: string[]) => ids.map(by).join(' & ');
+  const names = (ids: string[]) => ids.map((id, i) => <span key={id}>{i > 0 && <i>&amp;</i>}<Named p={data.playerById[id]} /></span>);
 
   return (
     <div className={`hero brief capsheet${secondary ? ' secondary' : ''}`} id={secondary ? undefined : 'heroSlot'}>
@@ -136,7 +138,7 @@ function Waiting({ view, session }: { view: SheetView; session: Session }) {
   );
 }
 
-function Sealed({ view, session, names }: { view: SheetView; session: Session; names: (ids: string[]) => string }) {
+function Sealed({ view, session, names }: { view: SheetView; session: Session; names: (ids: string[]) => React.ReactNode }) {
   const mine = view.mine!;
   return (
     <div className="mymatch">
@@ -201,14 +203,14 @@ function SheetEditor({ data, round, session, team, view, busy, onSeal }: {
 
       {!singles && (
         <>
-          <div className="shsub">Your pairing<small>Each pair plays together once across the three team rounds.</small></div>
+          <div className="shsub">Your pairing<small>Four players pair up three ways, and there are three team rounds, so each pairing plays once: pick from three tonight, two tomorrow, and Friday afternoon is whatever’s left. Saturday is singles; you’ll order your four instead.</small></div>
           {options.map((o, i) => (
             <button key={i} className={`shopt${i === pick ? ' sel' : ''}${o.used ? ' dim' : ''}`} disabled={o.used} onClick={() => setPick(i)} role="radio" aria-checked={i === pick}>
               <span className="rad" />
               <span className="pp">
-                <span className={`pair ${team.side}`}>{by(o.pairs[0][0])} <i>&amp;</i> {by(o.pairs[0][1])}</span>
-                <span className={`pair ${team.side}`}>{by(o.pairs[1][0])} <i>&amp;</i> {by(o.pairs[1][1])}</span>
-                {o.used && <span className="used">Already played together</span>}
+                <span className={`pair ${team.side}`}><Named p={data.playerById[o.pairs[0][0]]} /> <i>&amp;</i> <Named p={data.playerById[o.pairs[0][1]]} /></span>
+                <span className={`pair ${team.side}`}><Named p={data.playerById[o.pairs[1][0]]} /> <i>&amp;</i> <Named p={data.playerById[o.pairs[1][1]]} /></span>
+                {o.used && <span className="used">Played together in {o.usedIn}</span>}
               </span>
             </button>
           ))}
@@ -216,7 +218,7 @@ function SheetEditor({ data, round, session, team, view, busy, onSeal }: {
           {slots.map((slot, i) => (
             <button key={i} className="shslot tap" onClick={() => setLead(l => (l === 0 ? 1 : 0))}>
               <span className="tt">{teeFor(session, round, i)}<small>SLOT {i + 1}</small></span>
-              <span className={`pair ${team.side}`}>{slot.map(by).join(' & ')}</span>
+              <span className={`pair ${team.side}`}><Named p={data.playerById[slot[0]]} /> <i>&amp;</i> <Named p={data.playerById[slot[1]]} /></span>
               <span className="swap" aria-hidden="true">⇅</span>
             </button>
           ))}
@@ -261,7 +263,7 @@ function SheetEditor({ data, round, session, team, view, busy, onSeal }: {
  * he can read them aloud, and the other captain's opening builds the matches.
  */
 function Envelope({ view, session, names, busy, onOpen }: {
-  view: SheetView; session: Session; names: (ids: string[]) => string; busy: boolean; onOpen: () => Promise<boolean>;
+  view: SheetView; session: Session; names: (ids: string[]) => React.ReactNode; busy: boolean; onOpen: () => Promise<boolean>;
 }) {
   const theirs = view.theirs as DbCaptainSheet;
   const them = view.theirTeam as DbTeam;

@@ -35,7 +35,7 @@ describe('sheetDue', () => {
 describe('pairing options', () => {
   it('lists the three splits, alphabetical anchor', () => {
     const celts = players.filter(p => p.team_id === 'TB');
-    const opts = pairingOptions(celts, new Set());
+    const opts = pairingOptions(celts, new Map());
     expect(opts.map(o => o.pairs)).toEqual([
       [['jt', 'justin'], ['kyle', 'phil']],
       [['jt', 'kyle'], ['justin', 'phil']],
@@ -47,6 +47,7 @@ describe('pairing options', () => {
     const used = usedPairs(teams[1], rounds[1], rounds, [M('R1', ['griffin', 'matt'], ['kyle', 'jt'])]);
     const opts = pairingOptions(players.filter(p => p.team_id === 'TB'), used);
     expect(opts.map(o => o.used)).toEqual([false, true, false]);
+    expect(opts[1].usedIn).toBe('Round 1');
   });
   it('ignores singles and later rounds when collecting used pairs', () => {
     const used = usedPairs(teams[0], rounds[1], rounds, [
