@@ -1401,11 +1401,7 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .hdtext.from-left{animation:hdFromLeft .38s cubic-bezier(.2,.7,.2,1)}
 @keyframes hdFromRight{from{transform:translateX(22px);opacity:0}to{transform:none;opacity:1}}
 @keyframes hdFromLeft{from{transform:translateX(-22px);opacity:0}to{transform:none;opacity:1}}
-.view.from-right{animation:pgFromRight .3s cubic-bezier(.2,.7,.2,1)}
-.view.from-left{animation:pgFromLeft .3s cubic-bezier(.2,.7,.2,1)}
-@keyframes pgFromRight{from{transform:translateX(10px);opacity:0}to{transform:none;opacity:1}}
-@keyframes pgFromLeft{from{transform:translateX(-10px);opacity:0}to{transform:none;opacity:1}}
-@media (prefers-reduced-motion:reduce){.tabbar{transition:none}.hdtext,.view{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.tabbar{transition:none}.hdtext{animation:none!important}}
 
 /* ---------- Sep 8: share cards. A 9:16 poster fills the screen so a
    screenshot works; Share renders the same DOM to a story-sized PNG ---------- */

@@ -192,7 +192,10 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
     bodyRef.current?.scrollTo(0, 0);
   }, [tab]);
   // Tabs sit Live, Scoring, Schedule left to right. The brass bar slides to
-  // the new tab and the title and page arrive from the side you came from.
+  // the new tab and the title arrives from the side you came from. The page
+  // itself does not animate: a transform on the view left iOS Safari with a
+  // stale composited layer, and score cells inside the hole scrollers kept
+  // showing the previous hole's numbers.
   const [slide, setSlide] = useState<string>('');
   const goTab = (t: 'scoring' | 'live' | 'schedule') => {
     if (t === tab) {
@@ -289,17 +292,17 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
           </div>
         )}
         {data && tab === 'scoring' && (
-          <section id="v-scoring" className={`view on ${slide}`}>
+          <section id="v-scoring" className="view on">
             <ScoringScreen data={data} reload={reload} onOpenLetter={id => setAgainRound(id)} />
           </section>
         )}
         {data && tab === 'live' && (
-          <section id="v-live" className={`view on ${slide}`}>
+          <section id="v-live" className="view on">
             <LiveScreen data={data} moments={moments} onMoment={setMoKey} />
           </section>
         )}
         {data && tab === 'schedule' && (
-          <section id="v-schedule" className={`view on ${slide}`}>
+          <section id="v-schedule" className="view on">
             <ScheduleScreen data={data} moments={moments} onMoment={setMoKey} />
           </section>
         )}
