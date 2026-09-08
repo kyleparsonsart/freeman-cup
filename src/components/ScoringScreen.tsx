@@ -38,6 +38,8 @@ function curHole(m: Match, holes: number, pinned: Record<string, number>): numbe
 interface Props {
   data: EventData;
   reload: () => void;
+  /** re-open the pairings letter for a round (the pre-round brief offers it) */
+  onOpenLetter?: (roundId: string) => void;
 }
 
 /** The round the Scoring tab shows: the one set live, else the earliest not finished. */
@@ -51,7 +53,7 @@ export function currentRound(data: EventData) {
   }) || scoringSessions[scoringSessions.length - 1];
 }
 
-export default function ScoringScreen({ data, reload }: Props) {
+export default function ScoringScreen({ data, reload, onOpenLetter }: Props) {
   const { scoringSessions, scoringMatches, meKey } = data;
 
   // Always refresh the scoring context
@@ -119,6 +121,7 @@ export default function ScoringScreen({ data, reload }: Props) {
           selectMatch={setHeroId}
           reload={reload}
           tabbed={tabbed}
+          onOpenLetter={onOpenLetter}
         />
       </div>
       {nextSheet && <CaptainSheet data={data} round={nextSheet.r} session={nextSheet.s} reload={reload} secondary />}
@@ -187,6 +190,7 @@ interface HeroCardProps {
   selectMatch: (id: string) => void;
   reload: () => void;
   tabbed: boolean;
+  onOpenLetter?: (roundId: string) => void;
 }
 
 /**
@@ -222,7 +226,7 @@ function useTapGuard() {
   return { onPointerDown, isTap };
 }
 
-function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, reload, tabbed }: HeroCardProps) {
+function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, reload, tabbed, onOpenLetter }: HeroCardProps) {
   const r = calc(m);
   const tap = useTapGuard();
 
@@ -490,6 +494,14 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
           onPeek={iAmScorer || data.meIsCommissioner ? () => setPeek(true) : undefined}
           onTake={!scorerKey && inGroup ? () => switchScorer(data.meKey) : undefined}
         />
+        {onOpenLetter && (
+          <button className="letterbtn" onClick={() => onOpenLetter(s.id)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" />
+            </svg>
+            Open your letter again
+          </button>
+        )}
       </div>
     );
   }

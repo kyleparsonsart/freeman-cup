@@ -15,7 +15,7 @@ import SignInScreen from './components/SignInScreen';
 import SettingsSheet from './components/SettingsSheet';
 import Rulebook from './components/Rulebook';
 import LetterMoment from './components/Letter';
-import { pendingLetter, markLetterSeen } from './lib/letters';
+import { pendingLetter, markLetterSeen, letterFor } from './lib/letters';
 
 function tap() {
   if (navigator.vibrate) navigator.vibrate(10);
@@ -148,6 +148,12 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
     }
   }, [letter, moKey]);
   const closeLetter = () => { if (letter) markLetterSeen(letter.key); setLetterOpen(false); };
+  // a letter re-opened on purpose from the pre-round brief
+  const [againRound, setAgainRound] = useState<string | null>(null);
+  const again = useMemo(() => {
+    const r = data && againRound ? data.rounds.find(x => x.id === againRound) : null;
+    return r && data ? letterFor(data, r) : null;
+  }, [data, againRound]);
 
   // A tab always opens at its top — scroll position never leaks across.
   // Switching lands instantly (the content changes anyway); tapping the
@@ -243,7 +249,7 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
         )}
         {data && tab === 'scoring' && (
           <section id="v-scoring" className="view on">
-            <ScoringScreen data={data} reload={reload} />
+            <ScoringScreen data={data} reload={reload} onOpenLetter={id => setAgainRound(id)} />
           </section>
         )}
         {data && tab === 'live' && (
@@ -279,6 +285,9 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
 
       {data && letter && letterOpen && (
         <LetterMoment data={data} letter={letter} onClose={closeLetter} onSeeMatch={() => { closeLetter(); setTab('scoring'); }} />
+      )}
+      {data && again && !letterOpen && (
+        <LetterMoment data={data} letter={again} onClose={() => setAgainRound(null)} onSeeMatch={() => { setAgainRound(null); setTab('scoring'); }} />
       )}
 
       <Rulebook open={rulesOpen} onClose={() => setRulesOpen(false)} />
