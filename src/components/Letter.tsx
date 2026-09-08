@@ -2,6 +2,7 @@
  * The letter: a sealed envelope with the player's name on it, opened at
  * the table after the commissioner sends the pairings. Inside: partner,
  * opponents, tee time, strokes. One per round, once per device.
+ * The envelope is drawn as SVG so the flap and body share their corners.
  */
 import { useState } from 'react';
 import { CFG, P } from '../lib/scoring';
@@ -20,6 +21,7 @@ export default function LetterMoment({ data, letter, onClose, onSeeMatch }: {
   const team = CFG.teams[side];
   const them = CFG.teams[side === 'a' ? 'b' : 'a'];
   const { session: s, match: m } = letter;
+  const singles = !letter.partner;
   const shots = letter.strokes.map(x => `${x.key === me ? 'You get' : `${fn(x.key)} gets`} ${x.n}`).join(', ');
   const myHoles = strokeHoles(m, me, s.holes);
   // player keys are lowercased first names (see useEventData.playerKey)
@@ -30,23 +32,40 @@ export default function LetterMoment({ data, letter, onClose, onSeeMatch }: {
     <div className="moment envmo" role="dialog" aria-modal="true" aria-label="Your pairings letter">
       <div className="mo">
         <div className="kick">{s.rd} · {s.day} · {s.course}</div>
-        <h1>{torn ? (letter.partner ? 'Your partner' : 'Your match') : `A letter for ${myName}`}</h1>
-        <div className={`env ${side}${torn ? ' open' : ''}`}>
-          <div className="flap" />
-          {!torn && <div className="wax"><span /></div>}
+        <h1>{singles ? 'Your matchup awaits' : 'Your pairing is locked in'}</h1>
+
+        <button
+          className={`env ${side}${torn ? ' open' : ''}`}
+          onClick={() => { if (!torn) setTorn(true); }}
+          aria-label={torn ? 'Your letter' : 'Tap to open your letter'}
+          disabled={torn}
+        >
+          {/* back of the envelope */}
+          <svg className="envback" viewBox="0 0 280 190" aria-hidden="true">
+            <rect x="0" y="0" width="280" height="190" rx="6" fill="#e9e1cc" />
+            <path d="M0 6 L140 118 L280 6 L280 184 Q280 190 274 190 H6 Q0 190 0 184 Z" fill="#dfd6bf" />
+            <path d="M0 184 Q0 190 6 190 H274 Q280 190 280 184 L140 90 Z" fill="#e6ddc7" />
+          </svg>
+          {/* the flap, hinged along the top edge */}
+          <svg className="envflap" viewBox="0 0 280 118" aria-hidden="true">
+            <path d="M0 6 Q0 0 6 0 H274 Q280 0 280 6 L140 118 Z" fill={torn ? '#d8ceb6' : '#f1eadb'} />
+          </svg>
+          {!torn && <span className="wax"><i /></span>}
           {torn && (
             <div className="card">
-              <div className="badge"><span>FC</span></div>
+              <i className="badge" />
+              <div className="k1">THE FREEMAN CUP · 2026</div>
               <div className="k2">{s.fmt} · off at {letter.tee}</div>
               <div className={`line ${side}`}>{named(me)}{letter.partner && <><i>&amp;</i>{named(letter.partner)}</>}</div>
               <div className="k2 vs">against</div>
               <div className={`line ${side === 'a' ? 'b' : 'a'}`}>{letter.opponents.map((k, i) => <span key={k}>{i > 0 && <i>&amp;</i>}{named(k)}</span>)}</div>
             </div>
           )}
-          <div className="to"><small>THE FREEMAN CUP · 2026</small>{torn ? team.name : myName}</div>
-        </div>
+          <span className="to">{torn ? team.name : myName}</span>
+        </button>
+
         {!torn
-          ? <button className="abtn" onClick={() => setTorn(true)}>Open it</button>
+          ? <div className="tap">Tap to open</div>
           : <div className="next">
               <div className="sub">
                 {shots ? `Off the low man: ${shots}.` : 'Straight up, no shots either way.'}

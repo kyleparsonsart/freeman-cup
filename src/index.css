@@ -1329,31 +1329,42 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .shcard .mml{margin:6px 0 14px}
 .hero.capsheet .mymatch .abtn{margin-top:14px}
 .hero.capsheet .mymatch .shfoot .abtn{margin-top:0}
-/* the envelope moment */
-.envmo .mo{align-items:center;text-align:center}
-.envmo h1{font-size:30px}
-.env{position:relative;width:280px;height:190px;margin:26px auto 24px;background:#e9e1cc;border-radius:6px;box-shadow:0 24px 60px rgba(0,0,0,.6),inset 0 0 0 1px #cfc4a6;flex:none}
-.env::before{content:"";position:absolute;inset:0;border-radius:6px;opacity:.7;
-  background:linear-gradient(to bottom right,transparent 49.5%,#d9cfb3 50%) left/50% 100% no-repeat,linear-gradient(to bottom left,transparent 49.5%,#d9cfb3 50%) right/50% 100% no-repeat}
-.env .flap{position:absolute;left:0;right:0;top:0;height:0;border-left:140px solid transparent;border-right:140px solid transparent;border-top:104px solid #f1eadb;filter:drop-shadow(0 3px 4px rgba(0,0,0,.2));transform-origin:top;transition:transform .5s cubic-bezier(.22,.8,.3,1)}
-.env.open .flap{transform:rotateX(180deg);border-top-color:#ddd4bf}
-.env .wax{position:absolute;left:50%;top:86px;width:46px;height:46px;transform:translateX(-50%);border-radius:50%;display:grid;place-items:center;box-shadow:0 3px 8px rgba(0,0,0,.4)}
-.env.a .wax{background:radial-gradient(circle at 40% 35%,#e0604c,#9c2c1e 70%);box-shadow:0 3px 8px rgba(0,0,0,.4),inset 0 0 0 3px #b8422f}
-.env.b .wax{background:radial-gradient(circle at 40% 35%,#6fa2d8,#2b5d8d 70%);box-shadow:0 3px 8px rgba(0,0,0,.4),inset 0 0 0 3px #3d73a8}
-.env .wax span{width:22px;height:22px;border:1.5px solid rgba(240,235,220,.6);border-radius:6px;transform:rotate(45deg)}
-.env .to{position:absolute;left:0;right:0;bottom:26px;font-family:var(--display);color:#1c2721;font-size:18px;font-weight:600;font-synthesis:none}
-.env .to small{display:block;font-family:var(--num);font-size:11px;letter-spacing:.14em;color:#5a6a61;margin-bottom:4px}
-.env .card{position:absolute;left:18px;right:18px;top:-70px;min-height:150px;background:#f7f3e8;border-radius:4px;box-shadow:0 10px 30px rgba(0,0,0,.5);padding:16px 14px;color:#1c2721;animation:cardOut .55s cubic-bezier(.22,.8,.3,1) both}
+/* the envelope moment: badge lattice behind, an SVG envelope you tap */
+.envmo{background:var(--ink)}
+.envmo::before{content:'';position:absolute;inset:0;background:var(--ink-15);pointer-events:none;
+  -webkit-mask:url(/brand/badge-tile.svg) center/140px 140px repeat;mask:url(/brand/badge-tile.svg) center/140px 140px repeat}
+.envmo .mo{position:relative;align-items:center;text-align:center}
+.envmo h1{font-size:26px;line-height:1.1}
+.env{position:relative;width:280px;height:190px;margin:26px auto 14px;flex:none;padding:0;cursor:pointer;
+  filter:drop-shadow(0 24px 40px rgba(0,0,0,.55));-webkit-tap-highlight-color:transparent}
+.env:disabled{cursor:default}
+.env .envback{position:absolute;inset:0;width:100%;height:100%}
+.env .envflap{position:absolute;left:0;top:0;width:280px;height:118px;transform-origin:50% 0;transition:transform .55s cubic-bezier(.22,.8,.3,1);z-index:2}
+.env.open .envflap{transform:rotateX(180deg);z-index:0}
+.env .wax{position:absolute;left:50%;top:92px;width:52px;height:52px;transform:translate(-50%,-50%);border-radius:50%;z-index:3;display:grid;place-items:center;
+  box-shadow:0 3px 8px rgba(0,0,0,.45),inset 0 1px 2px rgba(255,255,255,.35)}
+.env.a .wax{background:radial-gradient(circle at 38% 32%,#e0604c,#9c2c1e 72%)}
+.env.b .wax{background:radial-gradient(circle at 38% 32%,#6fa2d8,#2b5d8d 72%)}
+.env .wax i{display:block;width:30px;height:30px;background:rgba(240,235,220,.82);
+  -webkit-mask:url(/brand/logo-badge.svg) center/contain no-repeat;mask:url(/brand/logo-badge.svg) center/contain no-repeat}
+.env .to{position:absolute;left:0;right:0;bottom:22px;font-family:var(--display);color:#1c2721;font-size:19px;font-weight:600;font-synthesis:none;z-index:1}
+.env .card{position:absolute;left:18px;right:18px;top:-58px;background:#f7f3e8;border-radius:4px;box-shadow:0 10px 30px rgba(0,0,0,.5);
+  padding:16px 14px 14px;color:#1c2721;z-index:1;animation:cardOut .55s cubic-bezier(.22,.8,.3,1) both}
 @keyframes cardOut{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:none}}
-.env .card .badge{width:32px;height:32px;margin:0 auto 8px;border:1.5px solid #9c7318;border-radius:9px;transform:rotate(45deg);display:grid;place-items:center}
-.env .card .badge span{transform:rotate(-45deg);font-family:var(--display);color:#9c7318;font-size:11px;font-weight:600}
-.env .card .k2{font-family:var(--num);font-size:11px;letter-spacing:.14em;color:#5a6a61;text-transform:uppercase}
-.env .card .line{font-family:var(--display);font-size:17px;white-space:nowrap;font-weight:600;font-synthesis:none;margin-top:6px;line-height:1.15;display:flex;align-items:baseline;gap:8px;justify-content:center}
-.env .card .line small{font-family:var(--num);font-size:12px;color:#5a6a61;font-weight:600}
+.env .card .badge{display:block;width:34px;height:34px;margin:0 auto 6px;background:#9c7318;
+  -webkit-mask:url(/brand/logo-badge.svg) center/contain no-repeat;mask:url(/brand/logo-badge.svg) center/contain no-repeat}
+.env .card .k1{font-family:var(--num);font-size:11px;letter-spacing:.16em;color:#9c7318;font-weight:600}
+.env .card .k2{font-family:var(--num);font-size:11px;letter-spacing:.14em;color:#5a6a61;text-transform:uppercase;margin-top:6px}
+.env .card .k2.vs{margin-top:8px;font-family:var(--display);text-transform:none;letter-spacing:0;font-size:12px;font-style:italic;color:#7a8079}
+.env .card .line{font-family:var(--display);font-size:20px;font-weight:600;font-synthesis:none;margin-top:6px;line-height:1.15;display:flex;align-items:baseline;gap:6px;justify-content:center;white-space:nowrap}
+.env .card .line .hi{font-family:var(--num);font-size:11px;color:#5a6a61;margin-left:3px}
+.env .card .line i{font-style:normal;color:#5a6a61;margin:0 4px}
 .env .card .line.a{color:#b03a20}.env .card .line.b{color:#2c6c9e}
-.env.open{margin-top:96px}
+.env.open{margin-top:112px}
+.envmo .tap{color:var(--moss-dim);font-size:13px;letter-spacing:.04em;margin-top:4px;animation:tapPulse 2.2s ease-in-out infinite}
+@keyframes tapPulse{0%,100%{opacity:.55}50%{opacity:1}}
 .envmo .next{width:100%;align-items:center;display:flex;flex-direction:column;gap:12px;margin-top:8px}
-.envmo .abtn{max-width:280px}
+.envmo .next .abtn,.envmo .abtn{max-width:280px}
 .hero.capsheet.secondary{flex:none;margin-top:14px;border-top:1px solid var(--line)}
 .hero.capsheet.secondary .mymatch{border-top:1px solid var(--brass)}
 .env .card .line .hi{font-family:var(--num);font-size:11px;color:#5a6a61;margin-left:3px}
@@ -1363,7 +1374,6 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .shadmin .s{font-size:12.5px;color:var(--moss-dim);flex:1;min-width:0;line-height:1.35}
 .shadmin button{font-size:12px;color:var(--brass);text-decoration:underline;text-underline-offset:3px;flex:none;white-space:nowrap;padding:4px 0}
 .env .card .k2.vs{margin-top:8px;font-family:var(--display);text-transform:none;letter-spacing:0;font-size:12px;font-style:italic;color:#7a8079}
-.env .card{min-height:0;padding-bottom:14px}
 .envmo .next .abtn{max-width:280px}
 
 .takepen{color:var(--brass);font-weight:600;text-decoration:underline;text-underline-offset:3px;padding:0 2px}
