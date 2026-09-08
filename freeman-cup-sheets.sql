@@ -342,6 +342,28 @@ begin
   end if;
 end $$ language plpgsql security definer;
 
+-- Reset one round back to the captain's sheets: its scores, feed lines,
+-- matches and sheets go, the card-in flags clear, the round is Not
+-- started. Later rounds' sheets were checked against this round's
+-- pairings, so they reset too.
+create or replace function reset_round(r uuid) returns void as $$
+declare
+  x record;
+begin
+  if not is_commissioner() then raise exception 'commissioner only'; end if;
+  for x in select id from round
+            where event_id = (select event_id from round where id = r)
+              and seq >= (select seq from round where id = r)
+            order by seq desc loop
+    delete from match_hole where match_id in (select id from match where round_id = x.id);
+    delete from feed_event where round_id = x.id;
+    delete from match where round_id = x.id;
+    delete from captain_sheet where round_id = x.id;
+    update tee_group set submitted_at = null, submitted_by = null where round_id = x.id;
+    update round set state = 'upcoming', revealed_at = null where id = x.id;
+  end loop;
+end $$ language plpgsql security definer;
+
 -- Anyone may nudge the deadline path (the app does on open after 9 pm).
 create or replace function sheet_tick(r uuid) returns void as $$
 begin
@@ -355,7 +377,7 @@ revoke all on function default_slots(uuid, uuid) from public, anon, authenticate
 revoke all on function validate_slots(uuid, uuid, jsonb) from public, anon, authenticated;
 revoke all on function used_pairs(uuid, uuid) from public, anon, authenticated;
 grant execute on function seal_sheet(uuid, jsonb), reveal_sheets(uuid), open_envelope(uuid), unseal_sheet(uuid, uuid),
-  commish_seal_for(uuid, uuid), commish_open_for(uuid, uuid),
+  commish_seal_for(uuid, uuid), commish_open_for(uuid, uuid), reset_round(uuid),
   sheet_tick(uuid), sheet_status(), sheet_due(uuid), my_captain_team() to authenticated;
 
 -- Realtime: sheets and new matches reach every phone. Sheet rows are

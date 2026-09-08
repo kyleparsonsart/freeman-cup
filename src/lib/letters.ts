@@ -9,7 +9,7 @@ import { calc, getsStroke, strokeMap, type Match, type Session } from './scoring
 import type { DbRound } from './types';
 
 export interface Letter {
-  key: string;            // 'letter:<round id>'
+  key: string;            // 'letter:<round id>:<sent at>' (a re-sent round is a new letter)
   round: DbRound;
   session: Session;
   match: Match;
@@ -42,7 +42,7 @@ export function letterFor(data: EventData, round: DbRound): Letter | null {
   const sm = strokeMap(match);
   const strokes = Object.entries(sm).filter(([, n]) => n > 0).map(([key, n]) => ({ key, n }));
   const tee = (session.tees[match.g] || '').replace(/\s*(AM|PM)/i, x => x.trim().toLowerCase());
-  return { key: `letter:${round.id}`, round, session, match, mine, partner, opponents: theirSide, tee, strokes };
+  return { key: `letter:${round.id}:${round.revealed_at || ''}`, round, session, match, mine, partner, opponents: theirSide, tee, strokes };
 }
 
 /** The letter to open now: the latest sent round nobody has scored yet, not seen on this device. */
@@ -53,8 +53,7 @@ export function pendingLetter(data: EventData): Letter | null {
   for (const r of sent) {
     const ms = data.scoringMatches.filter(m => m.s === r.id);
     if (ms.some(m => calc(m).played > 0)) continue;       // the round is under way, the moment has passed
-    const key = `letter:${r.id}`;
-    if (letterSeen(key)) continue;
+    if (letterSeen(`letter:${r.id}:${r.revealed_at || ''}`)) continue;
     return letterFor(data, r);
   }
   return null;

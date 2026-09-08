@@ -43,6 +43,7 @@ type Outcome = PromiseLike<{ error: { message: string } | null }>;
 export default function SettingsSheet({ data, acting = 'player', onActing, moments = null, open, onClose, reload, signOut }: Props) {
   const [err, setErr] = useState<string | null>(null);
   const [cleared, setCleared] = useState(false);
+  const [resetArm, setResetArm] = useState<string | null>(null);
   const [theme, setThemeState] = useState<Theme>(getTheme());
   const flipTheme = () => {
     const next: Theme = theme === 'light' ? 'dark' : 'light';
@@ -300,9 +301,34 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
             {/* ---- Captain's sheets ---- */}
             {(() => {
               const pending = data.rounds.filter(r => r.state !== 'final' && !data.matches.some(m => m.round_id === r.id));
-              if (!pending.length) return null;
+              const posted = data.rounds.filter(r => data.matches.some(m => m.round_id === r.id));
               return (
                 <>
+                  {posted.length > 0 && (
+                    <>
+                      <div className="grp">
+                        <h3>Posted rounds</h3>
+                        <div className="hint">
+                          Reset takes a round back to the captain’s sheets: its
+                          pairings, scores and feed lines go, and so do any later
+                          rounds’, since their sheets were checked against it.
+                        </div>
+                      </div>
+                      {posted.map(r => (
+                        <div key={r.id} className="shadmin">
+                          <span className="n">{r.label}</span>
+                          <span className="s">{data.scoringSessions.find(s => s.id === r.id)?.course} · {data.matches.filter(m => m.round_id === r.id).length} matches</span>
+                          {resetArm === r.id
+                            ? <>
+                                <button onClick={() => { setResetArm(null); run(supabase.rpc('reset_round', { r: r.id })); }}>Yes, reset</button>
+                                <button onClick={() => setResetArm(null)}>Keep</button>
+                              </>
+                            : <button onClick={() => setResetArm(r.id)}>Reset to sheets</button>}
+                        </div>
+                      ))}
+                    </>
+                  )}
+                  {pending.length > 0 && <>
                   <div className="grp">
                     <h3>Captain’s sheets</h3>
                     <div className="hint">
@@ -331,6 +357,7 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
                       })}
                     </div>
                   ))}
+                  </>}
                 </>
               );
             })()}
