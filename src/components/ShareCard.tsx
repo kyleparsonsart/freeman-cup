@@ -241,7 +241,8 @@ function ShootoutBody({ c }: { c: ShootoutCard }) {
 type Pts = { pts: number; solo: number; team: number; halves: number };
 
 function PlayerBody({ c, year, week, pts }: { c: PlayerCard; year: number; week: WeekCard | null; pts: Pts | null }) {
-  const played = c.played > 0 && week;
+  // the week view opens as soon as a hole is scored, not only once a match is final
+  const played = (c.played > 0 || pts !== null) && week;
   return (
     <>
       <Top l1="The field" l2={String(year)} />
