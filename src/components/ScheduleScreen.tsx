@@ -3,7 +3,7 @@ import { calc, roundState, half, P, CFG, type Match, type Session } from '../lib
 import Scorecard from './Scorecard';
 import { mvpBoard, roundRaces, relLabel } from '../lib/standings';
 import type { MomentsState } from '../lib/moments';
-import { IconMedal } from './icons';
+import { IconMedal, IconCrown } from './icons';
 import type { EventData } from '../hooks/useEventData';
 
 const fn = (n?: string | null) => (n || '').split(' ')[0];
@@ -108,7 +108,7 @@ function TheRaces({ sessions, matches, onOpen, onRule }: { sessions: Session[]; 
           {board.map((r, i) => (
             <button key={r.key} className={`mvprow${r.eligible ? '' : ' off'}`} onClick={() => onOpen?.(`player:${r.key}`)} disabled={!onOpen}>
               <span className="rk">{r.eligible ? i + 1 : '–'}</span>
-              <span className={`nm4 ${r.side}`}>{r.name}</span>
+              <span className={`nm4 ${r.side}`}>{r.name}{r.eligible && i === 0 && <IconCrown />}</span>
               <span className="rd2">{r.eligible ? `${relLabel(r.rel)} net · ${r.solo} solo` : 'card short'}</span>
               <span className="net">{r.pts}</span>
             </button>
