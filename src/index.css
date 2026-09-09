@@ -1608,3 +1608,9 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .envmo .shots .row .k{color:var(--moss-dim);flex:none}
 .envmo .shots .row .v{font-family:var(--num);font-weight:600;font-size:15px;color:var(--bone);text-align:right}
 .potrrow{justify-content:space-between}
+/* Sep 9: Live becomes Cup; the feed peeks five lines; race and field live here now */
+.showmore{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px 18px;border-top:1px solid var(--line);
+  font-family:var(--num);font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--moss)}
+.showmore .chev{font-size:11px;color:var(--moss-dim)}
+.showmore:active{background:var(--ink-2)}
+.sh.field{padding-top:22px}

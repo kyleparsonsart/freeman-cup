@@ -6,16 +6,20 @@ import { IconBinoculars } from './icons';
 import type { MomentsState } from '../lib/moments';
 import type { EventData } from '../hooks/useEventData';
 import { liveCard } from '../lib/cards';
+import { TheRaces, TheField, Squiggle } from './CupSections';
 
 /** `**bold**` runs in feed text become <b>. */
 function rich(text: string): ReactNode[] {
   return text.split('**').map((part, i) => (i % 2 ? <b key={i}>{part}</b> : part));
 }
 
-export default function LiveScreen({ data, moments = null, onMoment, strip = true }: {
+const FEED_PEEK = 5;
+
+export default function LiveScreen({ data, moments = null, onMoment, onRule, strip = true }: {
   data: EventData;
   moments?: MomentsState | null;
   onMoment?: (key: string) => void;
+  onRule?: (article: number) => void;
   strip?: boolean;
 }) {
   const days = useMemo(() => {
@@ -84,6 +88,11 @@ export default function LiveScreen({ data, moments = null, onMoment, strip = tru
 
   // most recent day open by default; -1 closes them all
   const [openDay, setOpenDay] = useState(0);
+  // the feed shows its latest five lines until asked for the rest
+  const [all, setAll] = useState(false);
+  const total = days.reduce((n, g) => n + g.items.length, 0);
+  const peek = !all && total > FEED_PEEK;
+  const shown = peek ? [{ ...days[0], items: days[0].items.slice(0, FEED_PEEK) }] : days;
   const liveDay = liveCard(data)?.s.day ?? null;
 
   const won = moments?.won ?? null;
@@ -125,9 +134,9 @@ export default function LiveScreen({ data, moments = null, onMoment, strip = tru
             lands here the moment it happens.
           </div>
         </div>
-      ) : days.map((g, i) => {
+      ) : shown.map((g, i) => {
         const [dow, ...rest] = g.day.split(' ');
-        const open = i === openDay;
+        const open = peek || i === openDay;
         // the day's summary card: the recap once it's in the book, the state
         // of the Cup while it's on the course
         const sumKey = moments?.days.find(x => x.day === g.day)?.key
@@ -141,10 +150,12 @@ export default function LiveScreen({ data, moments = null, onMoment, strip = tru
               </button>
               <span className="r">
                 {sumKey && onMoment && <button className="rchip sum" onClick={() => onMoment(sumKey)}>Summary</button>}
-                <button className="tog" onClick={() => setOpenDay(open ? -1 : i)} aria-label={open ? 'Collapse' : 'Expand'}>
-                  {open ? '' : `${g.items.length} updates`}
-                  <span className="chev">▾</span>
-                </button>
+                {!peek && (
+                  <button className="tog" onClick={() => setOpenDay(open ? -1 : i)} aria-label={open ? 'Collapse' : 'Expand'}>
+                    {open ? '' : `${g.items.length} updates`}
+                    <span className="chev">▾</span>
+                  </button>
+                )}
               </span>
             </div>
             {open && g.items.map((e, ix) => {
@@ -162,6 +173,16 @@ export default function LiveScreen({ data, moments = null, onMoment, strip = tru
           </div>
         );
       })}
+      {days.length > 0 && total > FEED_PEEK && (
+        <button className="showmore" onClick={() => { setAll(v => !v); if (all) setOpenDay(0); }}>
+          {all ? 'Show less' : `Show all ${total} updates`}<span className="chev">{all ? '▴' : '▾'}</span>
+        </button>
+      )}
+
+      <Squiggle />
+      <TheRaces sessions={data.scoringSessions} matches={data.scoringMatches} onOpen={onMoment} onRule={onRule} />
+      <Squiggle />
+      <TheField onOpen={onMoment} />
     </>
   );
 }

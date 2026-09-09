@@ -293,12 +293,12 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
         )}
         {data && tab === 'live' && (
           <section id="v-live" className="view on">
-            <LiveScreen data={data} moments={moments} onMoment={setMoKey} />
+            <LiveScreen data={data} moments={moments} onMoment={setMoKey} onRule={openRules} />
           </section>
         )}
         {data && tab === 'schedule' && (
           <section id="v-schedule" className="view on">
-            <ScheduleScreen data={data} moments={moments} onMoment={setMoKey} onRule={openRules} />
+            <ScheduleScreen data={data} moments={moments} onMoment={setMoKey} />
           </section>
         )}
       </div>
@@ -306,9 +306,9 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
       <nav className="tabs" role="tablist">
         <span className="tabbar" style={{ transform: `translateX(${TAB_ORDER.indexOf(tab) * 100}%)` }} aria-hidden="true" />
         <button className="tab" role="tab" aria-selected={tab === 'live'} onClick={() => goTab('live')}>
-          Live{anyLive && <span className="pulse" />}
+          Cup{anyLive && <span className="pulse" />}
         </button>
-        <button className="tab" role="tab" aria-selected={tab === 'scoring'} onClick={() => goTab('scoring')}>Scoring</button>
+        <button className="tab" role="tab" aria-selected={tab === 'scoring'} onClick={() => goTab('scoring')}>Scoreboard</button>
         <button className="tab" role="tab" aria-selected={tab === 'schedule'} onClick={() => goTab('schedule')}>Schedule</button>
       </nav>
 
