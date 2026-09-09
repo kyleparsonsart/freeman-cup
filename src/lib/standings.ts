@@ -2,10 +2,10 @@
  * The races: the MVP board and Player of the Round, derived from the
  * tables like the feed and the moments are.
  *
- * Hole points (decided Sep 8): 3 for a hole your ball won on its own,
- * 2 for a hole your side won together (both partners held the best net
- * ball, or any aggregate win), 1 to all four players for a halved hole,
- * 0 for a loss or a pick-up. Singles wins are always 3. Bye holes count
+ * Hole points (decided Sep 8, halves dropped Sep 9): 3 for a hole your
+ * ball won on its own, 2 for a hole your side won together (both partners
+ * held the best net ball, or any aggregate win), nothing for a halved
+ * hole, a loss or a pick-up. Singles wins are always 3. Bye holes count
  * as if the match were live, so a 5 & 4 winner banks the same 18 holes
  * as a match that went the distance. Net against par breaks ties, and
  * stays on the board as the Medalist line. The full-card rule is shown
@@ -45,7 +45,7 @@ export const relLabel = (rel: number): string =>
 
 interface Acc { pts: number; solo: number; team: number; halves: number; rel: number; holes: number; rounds: Set<string> }
 
-export const POINTS = { solo: 3, team: 2, half: 1 } as const;
+export const POINTS = { solo: 3, team: 2, half: 0 } as const;
 
 /**
  * Hole points for one hole of one match, by player key. Empty when the
@@ -59,7 +59,7 @@ export function holePoints(m: Match, s: Session, i: number): Record<string, numb
   const r = derive(m, i).r;
   if (!r) return out;
   const all = [...m.a, ...m.b];
-  if (r === 'H') { all.forEach(k => { out[k] = POINTS.half; }); return out; }
+  if (r === 'H') { all.forEach(k => { out[k] = POINTS.half; }); return out; }   // 0: a halve is not a win
   const w: 'a' | 'b' = r === 'A' ? 'a' : 'b';
   all.forEach(k => { out[k] = 0; });
   if (s.fmt === 'Aggregate') { m[w].forEach(k => { out[k] = POINTS.team; }); return out; }
@@ -100,7 +100,7 @@ function accumulate(sessions: Session[], matches: Match[], only?: string): Recor
         e.pts += p;
         if (p === POINTS.solo) e.solo++;
         else if (p === POINTS.team) e.team++;
-        else if (p === POINTS.half) e.halves++;
+        else if (p === 0 && derive(m, i).r === 'H') e.halves++;
       });
     });
   });

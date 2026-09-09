@@ -276,7 +276,7 @@ function WeekTiles({ c, pts }: { c: WeekCard; pts: Pts | null }) {
     <>
       <div className="ptiles left">
         {pts !== null
-          ? <div className="tile"><div className="pnum tbrass">{pts.pts}</div><div className="k dim">MVP points</div><div className="k dim split">{pts.solo} solo · {pts.team} team · {pts.halves} halved</div></div>
+          ? <div className="tile"><div className="pnum tbrass">{pts.pts}</div><div className="k dim">MVP points</div><div className="k dim split">{pts.solo} alone · {pts.team} together</div></div>
           : <div className="tile"><div className="pnum">{c.holesWon}</div><div className="k dim">Holes won</div></div>}
         <div className="tile"><div className="pnum">{c.birdies + c.eagles}</div><div className="k dim">{c.eagles ? 'Birdies & eagles' : 'Birdies'}</div></div>
         {close

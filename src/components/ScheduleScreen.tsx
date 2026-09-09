@@ -93,14 +93,14 @@ function TheRaces({ sessions, matches, onOpen, onRule }: { sessions: Session[]; 
           <IconMedal />
           <b>The board opens Thursday</b>
           First cards start the race. Hole points: 3 for a hole your ball
-          won alone, 2 for one your side won together, 1 for a halve.
+          won alone, 2 for one your side won together. A halve earns nothing.
           {onRule && <><br /><button className="howpts inline" onClick={() => onRule(11)}>How points work ›</button></>}
         </div>
       ) : (<>
       <div className="racehint">
         MVP of the Freeman Cup: most hole points. 3 for a hole your ball won
-        alone, 2 for one your side won together, 1 to everyone for a halve.
-        Byes count. Net against par breaks ties and is the Medalist line.
+        alone, 2 for one your side won together, nothing for a halve. Byes
+        count. Net against par breaks ties and is the Medalist line.
         Full cards only — finish your byes or fall off the board.
       </div>
       <div className="mvpboard">

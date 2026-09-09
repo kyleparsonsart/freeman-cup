@@ -210,13 +210,14 @@ export const RULEBOOK: Article[] = [
     ],
   },
   {
-    num: 11, title: 'MVP and Player of the Round', gloss: 'Hole points: 3 alone · 2 together · 1 halved',
+    num: 11, title: 'MVP and Player of the Round', gloss: 'Hole points: 3 alone · 2 together · nothing for a halve',
     clauses: [
       { id: '11.1', title: 'Hole points', keys: ['mvp', 'points', 'player of the round', 'marker', 'solo', 'board', 'races'],
-        short: 'Every hole you play earns points: 3 if your ball won it alone, 2 if your side won it together, 1 to all four players for a halve, 0 for a loss or a pick-up.',
+        short: 'Every hole you win earns points: 3 if your ball won it alone, 2 if your side won it together. A halve, a loss or a pick-up earns nothing.',
         long: [
           'Your ball won it alone when you held your side’s best net score and your partner did not match it. If both partners held the best net ball, the side won it together and each takes 2. At aggregate the sum wins, so every win there is a team win. At singles there is nobody to share with, so every hole won is 3.',
           'Bye holes count. Once a match is decided the scorer keeps entering scores and those holes earn points exactly as if the match were live, so a 5 & 4 winner banks the same 18 holes as a match that goes the distance.',
+          'The Commons is twelve holes, so Friday morning offers fewer points than the other rounds. That is the course, not a rule.',
         ] },
       { id: '11.2', title: 'Who wins', keys: ['mvp', 'medalist', 'tie', 'net'],
         short: 'Player of the Round is the most hole points in that round. MVP of the Freeman Cup is the most across all four. Net against par breaks a tie, and stands on its own as the Medalist line.',

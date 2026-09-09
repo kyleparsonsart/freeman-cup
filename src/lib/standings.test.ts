@@ -40,23 +40,23 @@ const sg = mk('sg1', 'sg', ['griffin'], ['kyle'], [
 beforeAll(() => setContext(P, S, [fb, ag, sg]));
 
 describe('hole points', () => {
-  it('scores solo, team, halved and pick-ups at four-ball', () => {
+  it('scores solo, team, halved (nothing) and pick-ups at four-ball', () => {
     expect(holePoints(fb, S[0], 0)).toEqual({ griffin: 3, matt: 0, kyle: 0, justin: 0 });
     expect(holePoints(fb, S[0], 1)).toEqual({ griffin: 2, matt: 2, kyle: 0, justin: 0 });
-    expect(holePoints(fb, S[0], 2)).toEqual({ griffin: 1, matt: 1, kyle: 1, justin: 1 });
+    expect(holePoints(fb, S[0], 2)).toEqual({ griffin: 0, matt: 0, kyle: 0, justin: 0 });
     expect(holePoints(fb, S[0], 3)).toEqual({ griffin: 0, matt: 3, kyle: 0, justin: 0 });
-    expect(holePoints(fb, S[0], 4)).toEqual({ griffin: 1, matt: 1, kyle: 1, justin: 1 });
+    expect(holePoints(fb, S[0], 4)).toEqual({ griffin: 0, matt: 0, kyle: 0, justin: 0 });
   });
   it('is empty until the hole is fully scored', () => {
     expect(holePoints(fb, S[0], 5)).toEqual({});
   });
   it('aggregate wins are team wins', () => {
     expect(holePoints(ag, S[1], 0)).toEqual({ griffin: 2, matt: 2, kyle: 0, justin: 0 });
-    expect(holePoints(ag, S[1], 1)).toEqual({ griffin: 1, matt: 1, kyle: 1, justin: 1 });
+    expect(holePoints(ag, S[1], 1)).toEqual({ griffin: 0, matt: 0, kyle: 0, justin: 0 });
   });
   it('singles wins are always solo', () => {
     expect(holePoints(sg, S[2], 0)).toEqual({ griffin: POINTS.solo, kyle: 0 });
-    expect(holePoints(sg, S[2], 1)).toEqual({ griffin: 1, kyle: 1 });
+    expect(holePoints(sg, S[2], 1)).toEqual({ griffin: 0, kyle: 0 });
   });
 });
 
@@ -64,13 +64,13 @@ describe('the board', () => {
   it('ranks by points, net breaking ties', () => {
     const board = mvpBoard(S, [fb, ag, sg]);
     const g = board.find(r => r.key === 'griffin')!;
-    // four-ball 3+2+1+0+1 = 7, aggregate 2+1 = 3, singles 3+1 = 4
-    expect(g.pts).toBe(14);
+    // four-ball 3+2+0+0+0 = 5, aggregate 2+0 = 2, singles 3+0 = 3; halves score nothing but are counted
+    expect(g.pts).toBe(10);
     expect(g.solo).toBe(2);
     expect(g.team).toBe(2);
     expect(g.halves).toBe(4);
     const m = board.find(r => r.key === 'matt')!;
-    expect(m.pts).toBe(0 + 2 + 1 + 3 + 1 + 2 + 1);
+    expect(m.pts).toBe(0 + 2 + 0 + 3 + 0 + 2 + 0);
     expect(board[0].key).toBe('griffin');
   });
   it('player of the round wants a full card, then most points', () => {

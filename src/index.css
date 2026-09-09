@@ -1535,3 +1535,10 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .howpts.inline{display:inline;margin:8px 0 0}
 .ptiles .tile .k.split{margin-top:3px;letter-spacing:.08em;text-transform:none;font-size:10px}
 .pc .pmvp{margin-top:12px;font-size:9.5px;letter-spacing:.14em}
+
+/* ---------- Sep 9: MVP stars on a won cell; the Live dot stays centred ---------- */
+.tg{position:relative}
+.tg .stars{position:absolute;top:6px;right:7px;display:flex;gap:2px;color:var(--brass);line-height:0;pointer-events:none}
+.tg .stars svg{width:9px;height:9px;display:block;filter:drop-shadow(0 0 2px rgba(216,169,63,.35))}
+.tab{position:relative}
+.tab .pulse{position:absolute;margin-left:8px;top:50%;transform:translateY(-50%);vertical-align:0}

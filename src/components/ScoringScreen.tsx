@@ -12,6 +12,13 @@ import { IconGolf } from './icons';
 import type { EventData } from '../hooks/useEventData';
 import CaptainSheet from './CaptainSheet';
 import { sheetDue } from '../lib/sheets';
+import { holePoints, POINTS } from '../lib/standings';
+
+const StarGlyph = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M12 2.5l2.9 6.2 6.8.8-5 4.7 1.3 6.8L12 17.7 6 21l1.3-6.8-5-4.7 6.8-.8z" />
+  </svg>
+);
 
 /** Display rule: first names only, everywhere. */
 const fn = (name?: string | null) => (name || '').split(' ')[0];
@@ -610,8 +617,10 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
         );
       })()}
 
-      {/* Player rows with notation cells */}
+      {/* Player rows with notation cells; a won hole wears its MVP stars */}
       {keys.map(k => {
+        const hp = holePoints(m, s, i)[k] || 0;
+        const stars = hp === POINTS.solo ? 2 : hp === POINTS.team ? 1 : 0;
         const side = s.fmt === 'Foursomes' ? k : P[k]?.t || 'a';
         const pnm = s.fmt === 'Foursomes' ? CFG.teams[k].name : (fn(P[k]?.n) || k);
         const hcp = s.fmt === 'Foursomes' ? null : P[k]?.h;
@@ -684,6 +693,11 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
                       handleScoreSet(k, val);
                     }}
                   >
+                    {on && stars > 0 && (
+                      <span className="stars" aria-label={stars === 2 ? 'Won the hole alone, 3 points' : 'Won the hole together, 2 points'}>
+                        {Array.from({ length: stars }).map((_, n) => <StarGlyph key={n} />)}
+                      </span>
+                    )}
                     <span className={`mk ${t.sh}`}>{val}</span>
                     <span className="cap">{t.cap}</span>
                     {ripple(`tg:${k}:${val}`)}
