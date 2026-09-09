@@ -209,6 +209,20 @@ export const RULEBOOK: Article[] = [
         long: ['Nothing in this book is meant to be a loophole. If it reads like one, it isn’t.'] },
     ],
   },
+  {
+    num: 11, title: 'MVP and Player of the Round', gloss: 'Hole points: 3 alone · 2 together · 1 halved',
+    clauses: [
+      { id: '11.1', title: 'Hole points', keys: ['mvp', 'points', 'player of the round', 'marker', 'solo', 'board', 'races'],
+        short: 'Every hole you play earns points: 3 if your ball won it alone, 2 if your side won it together, 1 to all four players for a halve, 0 for a loss or a pick-up.',
+        long: [
+          'Your ball won it alone when you held your side’s best net score and your partner did not match it. If both partners held the best net ball, the side won it together and each takes 2. At aggregate the sum wins, so every win there is a team win. At singles there is nobody to share with, so every hole won is 3.',
+          'Bye holes count. Once a match is decided the scorer keeps entering scores and those holes earn points exactly as if the match were live, so a 5 & 4 winner banks the same 18 holes as a match that goes the distance.',
+        ] },
+      { id: '11.2', title: 'Who wins', keys: ['mvp', 'medalist', 'tie', 'net'],
+        short: 'Player of the Round is the most hole points in that round. MVP of the Freeman Cup is the most across all four. Net against par breaks a tie, and stands on its own as the Medalist line.',
+        long: ['Full cards only. Skip your byes and you fall off the board; the missing holes are shown, not hidden.'] },
+    ],
+  },
 ];
 
 /* ---------- search ---------- */
@@ -295,4 +309,5 @@ export const QUICK: { label: string; q: string }[] = [
   { label: 'Mulligan', q: 'mulligan' },
   { label: 'Tie', q: 'tie' },
   { label: 'Who enters scores', q: 'scorer' },
+  { label: 'MVP', q: 'mvp' },
 ];

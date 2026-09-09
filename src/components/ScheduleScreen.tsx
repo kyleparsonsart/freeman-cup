@@ -86,17 +86,19 @@ function TheRaces({ sessions, matches }: { sessions: Session[]; matches: Match[]
   const races = roundRaces(sessions, matches);
   return (
     <>
-      <div className="sh"><h2>The races</h2><span className="meta">Net against par</span></div>
+      <div className="sh"><h2>The races</h2><span className="meta">Hole points</span></div>
       {board.length === 0 ? (
         <div className="empty">
           <IconMedal />
           <b>The board opens Thursday</b>
-          First full cards start the race — lowest net against par takes
-          the marker, and the MVP.
+          First cards start the race. Hole points: 3 for a hole your ball
+          won alone, 2 for one your side won together, 1 for a halve.
         </div>
       ) : (<>
       <div className="racehint">
-        MVP of the Freeman Cup: lowest net across the own-ball rounds.
+        MVP of the Freeman Cup: most hole points. 3 for a hole your ball won
+        alone, 2 for one your side won together, 1 to everyone for a halve.
+        Byes count. Net against par breaks ties and is the Medalist line.
         Full cards only — finish your byes or fall off the board.
       </div>
       {(
@@ -105,8 +107,8 @@ function TheRaces({ sessions, matches }: { sessions: Session[]; matches: Match[]
             <div key={r.key} className={`mvprow${r.eligible ? '' : ' off'}`}>
               <span className="rk">{r.eligible ? i + 1 : '–'}</span>
               <span className={`nm4 ${r.side}`}>{r.name}</span>
-              <span className="rd2">{r.eligible ? `${r.rounds} round${r.rounds === 1 ? '' : 's'}` : 'card short'}</span>
-              <span className="net">{relLabel(r.rel)}</span>
+              <span className="rd2">{r.eligible ? `${relLabel(r.rel)} net · ${r.solo} solo` : 'card short'}</span>
+              <span className="net">{r.pts}</span>
             </div>
           ))}
         </div>
@@ -118,7 +120,7 @@ function TheRaces({ sessions, matches }: { sessions: Session[]; matches: Match[]
           <span className="r3">{r.rd} · {r.course}</span>
           <span className="w3">
             {r.winner
-              ? <><b className={r.winner.side}>{r.winner.name}</b> · {relLabel(r.winner.rel)} net</>
+              ? <><b className={r.winner.side}>{r.winner.name}</b> · {r.winner.pts} pts · {relLabel(r.winner.rel)} net</>
               : r.state === 'live' ? 'In play'
               : r.state === 'upcoming' ? 'To come'
               : 'No full cards'}

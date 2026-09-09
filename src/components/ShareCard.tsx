@@ -7,6 +7,7 @@ import {
   names, first, dowOf, teeOf, ordinal, recordLabel, other,
 } from '../lib/cards';
 import { TIEBREAK } from '../lib/moments';
+import { mvpBoard } from '../lib/standings';
 
 export type Card = MatchCard | DayCard | FinaleCard | ShootoutCard | PlayerCard | WeekCard | LiveCard | SpikeCard;
 
@@ -81,7 +82,10 @@ function Body({ card, onOpen, year, data }: { card: Card; onOpen: (key: string) 
     case 'day': return <DayBody c={card} />;
     case 'won': return <FinaleBody c={card} year={year} />;
     case 'shootout': return <ShootoutBody c={card} />;
-    case 'player': return <PlayerBody c={card} year={year} week={weekCard(data, card.pkey)} />;
+    case 'player': {
+      const row = mvpBoard(data.scoringSessions, data.scoringMatches).find(r => r.key === card.pkey) || null;
+      return <PlayerBody c={card} year={year} week={weekCard(data, card.pkey)} pts={row ? row.pts : null} />;
+    }
     case 'live': return <LiveBody c={card} />;
     case 'spike': return <SpikeBody c={card} />;
   }
@@ -218,7 +222,7 @@ function ShootoutBody({ c }: { c: ShootoutCard }) {
 }
 
 /* 5 · player card: who they are before the trip, what they did once it starts */
-function PlayerBody({ c, year, week }: { c: PlayerCard; year: number; week: WeekCard | null }) {
+function PlayerBody({ c, year, week, pts }: { c: PlayerCard; year: number; week: WeekCard | null; pts: number | null }) {
   const played = c.played > 0 && week;
   return (
     <>
@@ -233,7 +237,7 @@ function PlayerBody({ c, year, week }: { c: PlayerCard; year: number; week: Week
             <div className="k">Record</div>
             <div className="pnum huge">{week.record.w}<span className="dim">-</span>{week.record.l}<span className="dim">-</span>{week.record.h}</div>
           </div>
-          <WeekTiles c={week} />
+          <WeekTiles c={week} pts={pts} />
         </>
       ) : (
         <div className="ptiles left">
@@ -247,12 +251,14 @@ function PlayerBody({ c, year, week }: { c: PlayerCard; year: number; week: Week
 }
 
 /* 6 · the week's numbers, shared by the player card */
-function WeekTiles({ c }: { c: WeekCard }) {
+function WeekTiles({ c, pts }: { c: WeekCard; pts: number | null }) {
   const close = c.closeouts[c.closeouts.length - 1];
   return (
     <>
       <div className="ptiles left">
-        <div className="tile"><div className="pnum">{c.holesWon}</div><div className="k dim">Holes won</div></div>
+        {pts !== null
+          ? <div className="tile"><div className="pnum tbrass">{pts}</div><div className="k dim">MVP points</div></div>
+          : <div className="tile"><div className="pnum">{c.holesWon}</div><div className="k dim">Holes won</div></div>}
         <div className="tile"><div className="pnum">{c.birdies + c.eagles}</div><div className="k dim">{c.eagles ? 'Birdies & eagles' : 'Birdies'}</div></div>
         {close
           ? <div className="tile"><div className="pnum">{ordinal(close.hole)}</div><div className="k dim">Closed out {close.opp}</div></div>

@@ -225,15 +225,13 @@ export function deriveMoments(input: MomentsInput): MomentsState {
 
 /**
  * MVP of the Freeman Cup: the top of the standings board (see
- * lib/standings.ts — net against par, own-ball rounds, full cards only).
+ * lib/standings.ts — hole points, net against par as the tiebreak, full cards only).
  */
 function mvpOf(sessions: Session[], matches: Match[]): { name: string; line: string } | null {
   const top = mvp(sessions, matches);
   if (!top) return null;
   const rel = top.rel === 0 ? 'even net' : `${relLabel(top.rel)} net`;
-  const n = top.rounds;
-  const span = n === 1 ? 'the round' : n === 2 ? 'two rounds' : n === 3 ? 'three rounds' : `${n} rounds`;
-  return { name: top.name, line: `${rel} across ${span}` };
+  return { name: top.name, line: `${top.pts} hole points, ${top.solo} won alone, ${rel}` };
 }
 
 /* ---- once per device ---- */
