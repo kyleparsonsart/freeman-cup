@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { calc, roundState, half, P, CFG, type Match, type Session } from '../lib/scoring';
 import Scorecard from './Scorecard';
 import { mvpBoard, roundRaces, relLabel } from '../lib/standings';
@@ -72,9 +72,7 @@ export default function ScheduleScreen({ data, moments = null, onMoment, onRule 
       })}
 
       <TheField onOpen={onMoment} />
-      <div className="squig" aria-hidden="true">
-        <svg viewBox="0 0 120 12" preserveAspectRatio="none"><path d="M0 6 Q7.5 0 15 6 T30 6 T45 6 T60 6 T75 6 T90 6 T105 6 T120 6" /></svg>
-      </div>
+      <Squiggle />
       <TheRaces sessions={sessions} matches={matches} onOpen={onMoment} onRule={onRule} />
     </>
   );
@@ -118,9 +116,7 @@ function TheRaces({ sessions, matches, onOpen, onRule }: { sessions: Session[]; 
       </div>
       </>)}
 
-      <div className="squig" aria-hidden="true">
-        <svg viewBox="0 0 120 12" preserveAspectRatio="none"><path d="M0 6 Q7.5 0 15 6 T30 6 T45 6 T60 6 T75 6 T90 6 T105 6 T120 6" /></svg>
-      </div>
+      <Squiggle />
       <div className="sh"><h2>Player of the round</h2></div>
       {races.map(r => (
         <div key={r.roundId} className={`potr${r.state === 'final' ? '' : ' up'}`}>
@@ -135,6 +131,40 @@ function TheRaces({ sessions, matches, onOpen, onRule }: { sessions: Session[]; 
         </div>
       ))}
     </>
+  );
+}
+
+
+/**
+ * The section divider: a sine wave that slides sideways as the page
+ * scrolls, so it squiggles under your thumb. The path is three
+ * wavelengths wider than its window and only ever moves within one
+ * wavelength, so nothing runs out. Still under reduced motion.
+ */
+function Squiggle() {
+  const ref = useRef<SVGPathElement>(null);
+  useEffect(() => {
+    const path = ref.current;
+    const body = path?.closest('.body');
+    if (!path || !body) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let raf = 0;
+    const draw = () => {
+      raf = 0;
+      const x = (body.scrollTop * 0.35) % 15;   // one wavelength is 15 units
+      path.setAttribute('transform', `translate(${-15 - x} 0)`);
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(draw); };
+    draw();
+    body.addEventListener('scroll', onScroll, { passive: true });
+    return () => { body.removeEventListener('scroll', onScroll); if (raf) cancelAnimationFrame(raf); };
+  }, []);
+  // 0..165: window shows 120, the path can slide up to 15 left of that
+  const d = 'M0 6 ' + Array.from({ length: 11 }, (_, k) => `Q${k * 15 + 7.5} ${k % 2 ? 12 : 0} ${(k + 1) * 15} 6`).join(' ');
+  return (
+    <div className="squig" aria-hidden="true">
+      <svg viewBox="0 0 120 12" preserveAspectRatio="none"><path ref={ref} d={d} transform="translate(-15 0)" /></svg>
+    </div>
   );
 }
 
