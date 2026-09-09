@@ -81,7 +81,7 @@ export function TheField({ onOpen }: { onOpen?: (key: string) => void }) {
   return (
     <>
       <div className="sh field"><h2>The field</h2><span className="meta">Tap a name for the card</span></div>
-      <div className="field">{col('a')}{col('b')}</div>
+      <div className="field">{col('b')}{col('a')}</div>
     </>
   );
 }

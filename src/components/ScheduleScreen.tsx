@@ -34,7 +34,7 @@ export default function ScheduleScreen({ data, moments = null, onMoment }: {
           </button>
           {won.viaShootout && won.shootout && (
             <button className="shrow" onClick={() => onMoment('shootout')}>
-              <span>Captains Shootout · {moments!.captains.a} {won.shootout.ta}, {moments!.captains.b} {won.shootout.tb}</span>
+              <span>Captains Shootout · {moments!.captains.b} {won.shootout.tb}, {moments!.captains.a} {won.shootout.ta}</span>
               <span className="go">Open ›</span>
             </button>
           )}
@@ -94,7 +94,7 @@ function RoundCard({ s, ms, isOpen, toggle, onCard, race }: RoundCardProps) {
   const pill = st === 'live' ? <span className="spill live"><i className="pulse" />Live</span> : null;
 
   const scoreline = st === 'final'
-    ? <div className="rscore"><span className="a">{half(a)}</span><span className="d">–</span><span className="b">{half(b)}</span></div>
+    ? <div className="rscore"><span className="b">{half(b)}</span><span className="d">–</span><span className="a">{half(a)}</span></div>
     : st === 'live'
     ? <div className="rscore live">{done} of {ms.length} in</div>
     : <div className="rscore up">{ms.length || (s.fmt === 'Singles' ? 4 : 2)} points</div>;
@@ -112,7 +112,7 @@ function RoundCard({ s, ms, isOpen, toggle, onCard, race }: RoundCardProps) {
             <div className="sumchips">
               {ms.filter(m => calc(m).done).map(m => {
                 const inGroup = ms.filter(x => x.g === m.g).length;
-                const label = inGroup > 1 ? `${names(m.a)} v ${names(m.b)}` : `Group ${String.fromCharCode(65 + m.g)} Summary`;
+                const label = inGroup > 1 ? `${names(m.b)} v ${names(m.a)}` : `Group ${String.fromCharCode(65 + m.g)} Summary`;
                 return <button key={m.id} className="rchip sum" onClick={() => onCard(`match:${m.id}`)}>{label}</button>;
               })}
             </div>
@@ -125,7 +125,7 @@ function RoundCard({ s, ms, isOpen, toggle, onCard, race }: RoundCardProps) {
         // pairings not posted: keep the card's shape, names TBD
         (s.fmt === 'Singles' ? s.tees.flatMap(t => [t, t]) : s.tees).map((t, i) => (
           <div key={i} className="mrow2 tbd">
-            <span className="p"><span className="a">TBD</span><span className="v">V</span><span className="b">TBD</span></span>
+            <span className="p"><span className="b">TBD</span><span className="v">V</span><span className="a">TBD</span></span>
             <span className="s n">{t}</span>
           </div>
         ))
@@ -146,9 +146,9 @@ function RoundCard({ s, ms, isOpen, toggle, onCard, race }: RoundCardProps) {
                 onClick={() => { if (r.played) toggle(m, st); }}
               >
                 <span className="p">
-                  <span className="a">{names(m.a)}</span>
-                  <span className="v">V</span>
                   <span className="b">{names(m.b)}</span>
+                  <span className="v">V</span>
+                  <span className="a">{names(m.a)}</span>
                 </span>
                 <span className={`s ${cls}`}>{stat}</span>
                 {r.played > 0 && <span className="cchev">▾</span>}

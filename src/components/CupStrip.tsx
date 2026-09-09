@@ -37,17 +37,17 @@ export default function CupStrip({ decided = null, onOpenFinale }: {
       onKeyDown={open ? e => { if (e.key === 'Enter' || e.key === ' ') open(); } : undefined}
     >
       <div className="striptop">
-        <div className="sside a">
-          <span className="pt">{half(a)}</span>
-          <span className="nm">{CFG.teams.a.name}</span>
+        <div className="sside b">
+          <span className="pt">{half(b)}</span>
+          <span className="nm">{CFG.teams.b.name}</span>
         </div>
         <div className="jugwrap">
           <TrophySvg />
           <span className="juglbl">{decided ? decided.label : CFG.trophy}</span>
         </div>
-        <div className="sside r b">
-          <span className="nm">{CFG.teams.b.name}</span>
-          <span className="pt">{half(b)}</span>
+        <div className="sside r a">
+          <span className="nm">{CFG.teams.a.name}</span>
+          <span className="pt">{half(a)}</span>
         </div>
       </div>
       <div className="tug">
@@ -55,7 +55,7 @@ export default function CupStrip({ decided = null, onOpenFinale }: {
         <div className="f fb" style={{ width: `${pbw}%` }} />
         {/* the crawling stripes span the whole bar and are clipped to the undecided middle, so the
             pattern stays anchored to the bar while the edges move instead of dragging with them */}
-        {!decided && <div className="live" style={{ clipPath: `inset(0 ${pbw}% 0 ${paw}%)` }} />}
+        {!decided && <div className="live" style={{ clipPath: `inset(0 ${paw}% 0 ${pbw}%)` }} />}
         <div className="tick" style={{ left: `${cp}%` }} />
         <div className="tick" style={{ right: `${cp}%` }} />
       </div>

@@ -37,15 +37,15 @@ function Duel({ ms, commissioner, onClose, onEnterScores }: {
     <div className="moment" role="dialog" aria-modal="true" aria-label={TIEBREAK.name}>
       <div className="mo duel">
         <div className="kick">All {tie.a + tie.b} points played</div>
-        <h1>{half(tie.a)}–{half(tie.b)}. {TIEBREAK.name}.</h1>
+        <h1>{half(tie.b)}–{half(tie.a)}. {TIEBREAK.name}.</h1>
         <div className="sub">
           {CFG.trophy} goes to the {TIEBREAK.where}. Three holes, stroke play,
           putt until it drops. Lowest total takes the jug.
         </div>
         <div className="caps">
-          <div className="cap2"><div className="nm2">{ms.captains.a}</div><div className="tm a">{CFG.teams.a.name}</div></div>
-          <span className="vs">V</span>
           <div className="cap2"><div className="nm2">{ms.captains.b}</div><div className="tm b">{CFG.teams.b.name}</div></div>
+          <span className="vs">V</span>
+          <div className="cap2"><div className="nm2">{ms.captains.a}</div><div className="tm a">{CFG.teams.a.name}</div></div>
         </div>
         <div className="rule" style={{ margin: '14px 0 2px' }} />
         {TIEBREAK.stations.map((x, n) => (

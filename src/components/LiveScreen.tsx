@@ -48,7 +48,7 @@ export default function LiveScreen({ data, moments = null, onMoment, onRule, str
       top.items.unshift({
         key: 'mt', day: top.day, at: at(top), side: 'cup', big: true,
         tag: 'All square',
-        hl: `${half(moments.tie.a)}–${half(moments.tie.b)} after ${moments.tie.a + moments.tie.b} points`,
+        hl: `${half(moments.tie.b)}–${half(moments.tie.a)} after ${moments.tie.a + moments.tie.b} points`,
         text: `${moments.captains.a} and ${moments.captains.b} to the practice green. Tap for the shootout.`,
       });
     }
@@ -216,9 +216,9 @@ function FeedRow({ e, delay = 0, spike = false, onOpen }: { e: FeedItem; delay?:
         {spike && onOpen && <span className="gochip">Open the card ›</span>}
         {e.score && (
           <div className="score">
-            <span className="a">{half(e.score.a)}</span>
-            <span className="d">–</span>
             <span className="b">{half(e.score.b)}</span>
+            <span className="d">–</span>
+            <span className="a">{half(e.score.a)}</span>
             <span className="d" style={{ fontFamily: 'var(--body)', fontSize: 13, fontWeight: 400 }}>The Lassie</span>
           </div>
         )}

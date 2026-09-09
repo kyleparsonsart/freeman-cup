@@ -106,7 +106,7 @@ function MatchBody({ c, onOpen }: { c: MatchCard; onOpen: (k: string) => void })
       {m[k].map((p, i) => <span key={p}>{i > 0 && <span className="amp"> &amp; </span>}<Name k={p} side={k} onOpen={onOpen} /></span>)}
     </div>
   );
-  const top = win || 'a', bottom = other(top);
+  const top = win || 'b', bottom = other(top);
   return (
     <>
       <Top l1={`${dowOf(s.day)} · ${s.fmt}`} l2={s.course} />
@@ -159,12 +159,12 @@ function DayBody({ c }: { c: DayCard }) {
         <div className="k">{days}</div>
         <h2 className="oneline">
           {lead ? <>{CFG.teams[lead].name} lead, </> : <>All square, </>}
-          <span className="ta">{half(c.cum.a)}</span> to <span className="tb">{half(c.cum.b)}</span>
+          <span className="tb">{half(c.cum.b)}</span> to <span className="ta">{half(c.cum.a)}</span>
         </h2>
       </div>
       <div className="pstrip">
-        <div className="pbar"><i className="ta" style={{ width: `${(c.cum.a / total) * 100}%` }} /><i className="tb" style={{ width: `${(c.cum.b / total) * 100}%` }} /></div>
-        <div className="ptick"><span className="ta">{CFG.teams.a.name.toUpperCase()} {half(c.cum.a)}</span><span>{half(c.clinch)} TO WIN</span><span className="tb">{CFG.teams.b.name.toUpperCase()} {half(c.cum.b)}</span></div>
+        <div className="pbar"><i className="tb" style={{ width: `${(c.cum.b / total) * 100}%` }} /><i className="ta" style={{ width: `${(c.cum.a / total) * 100}%` }} /></div>
+        <div className="ptick"><span className="tb">{CFG.teams.b.name.toUpperCase()} {half(c.cum.b)}</span><span>{half(c.clinch)} TO WIN</span><span className="ta">{CFG.teams.a.name.toUpperCase()} {half(c.cum.a)}</span></div>
       </div>
       <div className="phr" />
       {c.groups.map(g => (
@@ -196,8 +196,8 @@ function DayBody({ c }: { c: DayCard }) {
 }
 
 /**
- * The lead line: the running lead hole by hole, red above the line when
- * side a is up, blue below when side b is. Level holes sit on the line.
+ * The lead line: the running lead hole by hole, blue above the line when
+ * the Celts are up, red below when the Vikes are. Level holes sit on the line.
  */
 function LeadLine({ m, holes }: { m: Match; holes: number }) {
   const ser = leadSeries(m);
@@ -205,7 +205,7 @@ function LeadLine({ m, holes }: { m: Match; holes: number }) {
   const W = 300, H = 36, pad = 4;
   const amp = Math.max(2, ...ser.map(Math.abs));
   const x = (i: number) => pad + (i / holes) * (W - pad * 2);
-  const y = (v: number) => H / 2 - (v / amp) * (H / 2 - pad);
+  const y = (v: number) => H / 2 + (v / amp) * (H / 2 - pad);
   const pts = [[x(0), y(0)], ...ser.map((v, i) => [x(i + 1), y(v)])];
   // one path per side so each carries its colour: clip the shared line to its half
   const d = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
@@ -217,8 +217,8 @@ function LeadLine({ m, holes }: { m: Match; holes: number }) {
       <clipPath id={`ca-${m.id}`}><rect x="0" y="0" width={W} height={H / 2 - 1.2} /></clipPath>
       <clipPath id={`cb-${m.id}`}><rect x="0" y={H / 2 + 1.2} width={W} height={H / 2} /></clipPath>
       <path className="th" d={d} />
-      <path className="ta" d={d} clipPath={`url(#ca-${m.id})`} />
-      <path className="tb" d={d} clipPath={`url(#cb-${m.id})`} />
+      <path className="tb" d={d} clipPath={`url(#ca-${m.id})`} />
+      <path className="ta" d={d} clipPath={`url(#cb-${m.id})`} />
       <circle className={end > 0 ? 'ta' : end < 0 ? 'tb' : 'th'} cx={last[0]} cy={last[1]} r="3" />
     </svg>
   );
@@ -263,11 +263,11 @@ function ShootoutBody({ c }: { c: ShootoutCard }) {
         <h2>{c.captains[w]} wins<br />the Shootout</h2>
       </div>
       <div className="phr" />
-      <div className="pres g head"><span className="k dim">Station</span><span className={`k ${tc('a')}`}>{c.captains.a}</span><span className={`k ${tc('b')}`}>{c.captains.b}</span></div>
+      <div className="pres g head"><span className="k dim">Station</span><span className={`k ${tc('b')}`}>{c.captains.b}</span><span className={`k ${tc('a')}`}>{c.captains.a}</span></div>
       {TIEBREAK.stations.map((st, i) => (
-        <div key={st.n} className="pres g"><span>{st.n} · {st.d} ft</span><span className="sc">{c.a[i]}</span><span className="sc">{c.b[i]}</span></div>
+        <div key={st.n} className="pres g"><span>{st.n} · {st.d} ft</span><span className="sc">{c.b[i]}</span><span className="sc">{c.a[i]}</span></div>
       ))}
-      <div className="pres g total"><b>Total</b><span className={`pnum ${tc('a')}`}>{c.ta}</span><span className={`pnum ${tc('b')}`}>{c.tb}</span></div>
+      <div className="pres g total"><b>Total</b><span className={`pnum ${tc('b')}`}>{c.tb}</span><span className={`pnum ${tc('a')}`}>{c.ta}</span></div>
     </>
   );
 }
@@ -340,17 +340,17 @@ function LiveBody({ c }: { c: LiveCard }) {
       <div className="pblock tight">
         <div className="k">On the course</div>
         <div className="pnum score sm">
-          <span className="ta">{half(c.pts.a)}</span><span className="dim to">to</span><span className="tb">{half(c.pts.b)}</span>
+          <span className="tb">{half(c.pts.b)}</span><span className="dim to">to</span><span className="ta">{half(c.pts.a)}</span>
         </div>
         <div className="k dim" style={{ marginTop: 4 }}>
-          Projected <span className="ta">{half(c.proj.a)}</span> to <span className="tb">{half(c.proj.b)}</span>
+          Projected <span className="tb">{half(c.proj.b)}</span> to <span className="ta">{half(c.proj.a)}</span>
         </div>
       </div>
       <div className="phr" />
       {c.rows.map(({ m, r, lead, thru }) => (
         <div key={m.id} className="plive">
           <div className="m">
-            <span className="ta">{names(m.a)}</span> <span className="dim">v</span> <span className="tb">{names(m.b)}</span>
+            <span className="tb">{names(m.b)}</span> <span className="dim">v</span> <span className="ta">{names(m.a)}</span>
             <small>{r.done ? 'Final' : thru ? `Thru ${thru}` : `Tee ${teeOf(c.s, m.g)}`}</small>
           </div>
           <div className={`st ${lead ? tc(lead) : ''}`}>

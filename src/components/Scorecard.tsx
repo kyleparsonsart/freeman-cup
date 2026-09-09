@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { calc, getsStroke, ses, P, CFG, type Match } from '../lib/scoring';
+import { calc, getsStroke, ses, P, CFG, type Match, SIDES, lineup } from '../lib/scoring';
 import { bestName } from '../lib/feed';
 
 /**
@@ -13,7 +13,7 @@ export default function Scorecard({ match: m }: { match: Match }) {
   const N = s.holes;
   const r = calc(m);
   const H = [...Array(N).keys()];
-  const keys = s.fmt === 'Foursomes' ? ['a', 'b'] : [...m.a, ...m.b];
+  const keys = s.fmt === 'Foursomes' ? [...SIDES] : lineup(m);
   const nm = (k: string) => s.fmt === 'Foursomes' ? CFG.teams[k].name : (P[k]?.n.split(' ')[0] || k);
   const half1 = H.slice(0, Math.min(9, N));
   const half2 = H.slice(9);

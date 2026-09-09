@@ -3,12 +3,7 @@ import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
 import { enqueueHoleWrite, getQueuedWrites, onQueueChange, dismissBlocked, type QueuedHoleWrite } from '../lib/writeQueue';
 import { groupMatches, openHoles, holesShort, byeProgress } from '../lib/card';
-import {
-  calc, derive, settle, holeComplete, getsStroke, strokeMap,
-  holeKeys, missingIn, initials, setContext,
-  CFG, P,
-  type Match,
-} from '../lib/scoring';
+import { calc, derive, settle, holeComplete, getsStroke, strokeMap, holeKeys, missingIn, initials, setContext, CFG, P, type Match, SIDES, lineup } from '../lib/scoring';
 import { IconGolf } from './icons';
 import type { EventData } from '../hooks/useEventData';
 import CaptainSheet from './CaptainSheet';
@@ -307,7 +302,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
   const i = Math.min(curHole(m, s.holes, pinned), s.holes - 1);
   const h = m.hs[i];
   const bye = r.done && i >= r.byeStart;
-  const keys = s.fmt === 'Foursomes' ? ['a', 'b'] : [...m.a, ...m.b];
+  const keys = s.fmt === 'Foursomes' ? [...SIDES] : lineup(m);
   const dv = derive(m, i);
 
   useLayoutEffect(() => {
@@ -747,7 +742,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
           gms.forEach(gm => gm.hs.forEach((_h, hi) => {
             Object.entries(holePoints(gm, s, hi)).forEach(([pk, pv]) => { tot[pk] = (tot[pk] || 0) + pv; });
           }));
-          const order = gms.flatMap(gm => [...gm.a, ...gm.b]);
+          const order = gms.flatMap(lineup);
           return order.map(pk => (
             <span key={pk} className="mp"><b className={P[pk]?.t || 'a'}>{fn(P[pk]?.n) || pk}</b> {tot[pk] || 0}</span>
           ));
@@ -872,7 +867,7 @@ function StrokeLegend({ match: m, holeIdx: i, session: s }: { match: Match; hole
 function groupPlayers(sessionId: string, g: number, matches: Match[]): string[] {
   const set: string[] = [];
   matches.filter(m => m.s === sessionId && m.g === g).forEach(m => {
-    [...m.a, ...m.b].forEach(p => { if (!set.includes(p)) set.push(p); });
+    lineup(m).forEach(p => { if (!set.includes(p)) set.push(p); });
   });
   return set;
 }
@@ -982,7 +977,7 @@ function CardDrawer({ gms, session: s, pending, blockedCount, onClose }: {
         const nm2 = (ks: string[]) => ks.map(k => fn(P[k]?.n) || k).join(' / ');
         return (
           <div key={gm.id} className="cirow">
-            <span className="p">{nm2(gm.a)}<span className="vv">V</span>{nm2(gm.b)}</span>
+            <span className="p">{nm2(gm.b)}<span className="vv">V</span>{nm2(gm.a)}</span>
             <span className={`s ${cls}`}>{res}</span>
           </div>
         );
@@ -1028,7 +1023,7 @@ function MatchBrief({ m, session: s, data, scorerKey, onPeek, onTake }: {
   const tee = (s.tees[m.g] || '').replace(/\s*(AM|PM)/i, x => x.trim().toLowerCase());
   const nm = (ks: string[]) => ks.map(k => fn(P[k]?.n) || k).join(' / ');
 
-  const keys = s.fmt === 'Foursomes' ? ['a', 'b'] : [...m.a, ...m.b];
+  const keys = s.fmt === 'Foursomes' ? [...SIDES] : lineup(m);
   const sm = strokeMap(m);
   const label = (k: string) =>
     k === data.meKey ? 'You' : k === 'a' || k === 'b' ? `The ${CFG.teams[k].name}` : (fn(P[k]?.n) || k);
@@ -1045,9 +1040,9 @@ function MatchBrief({ m, session: s, data, scorerKey, onPeek, onTake }: {
     <div className="mymatch">
       <div className="mmk">{mine ? 'Your match' : `Group ${letter}`} · off at {tee || 'TBD'}</div>
       <div className="mmvs">
-        <span className="a">{nm(m.a)}</span>
-        <span className="vv">V</span>
         <span className="b">{nm(m.b)}</span>
+        <span className="vv">V</span>
+        <span className="a">{nm(m.a)}</span>
       </div>
       <div className="mml">{s.fmt} · {s.holes} holes · {s.course}</div>
       <div className="mmst">

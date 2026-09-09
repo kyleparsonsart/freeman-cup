@@ -97,6 +97,11 @@ export let CFG = {
 };
 export let MATCHES: Match[] = [];
 
+/** Display order everywhere the two sides sit together: Celts first, Vikes second (Sep 9). */
+export const SIDES = ['b', 'a'] as const;
+/** The players of a match in display order. */
+export const lineup = (m: Match): string[] => [...m.b, ...m.a];
+
 export function setContext(
   players: Record<string, Player>,
   sessions: Session[],
