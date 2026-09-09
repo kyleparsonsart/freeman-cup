@@ -486,6 +486,136 @@ export function potrCard(d: CardData, sid: string): PotrCard | null {
   return { kind: 'potr', key: `potr:${sid}`, s, winner: r.winner, second: r.second };
 }
 
+/* ------------------------------------------------------ the match story */
+
+/** Running lead after each played hole: +n is side a up, -n side b up. */
+export function leadSeries(m: Match): number[] {
+  const out: number[] = [];
+  let d = 0;
+  for (const h of m.hs) {
+    if (!h.r) break;
+    d += h.r === 'A' ? 1 : h.r === 'B' ? -1 : 0;
+    out.push(d);
+  }
+  return out;
+}
+
+/**
+ * One sentence on how the match went, from the shape of the lead line:
+ * wire to wire, a comeback, a seesaw, or a halve that nearly wasn't.
+ */
+export function matchStory(m: Match, s: Session, r: CalcResult): string {
+  // the story stops where the match did; bye holes are the King's Race's business
+  const ser = leadSeries(m).slice(0, r.played || undefined);
+  const n = ser.length;
+  if (n === 0) return '';
+  const A = names(m.a), B = names(m.b);
+  const side = (v: number): Side | null => (v > 0 ? 'a' : v < 0 ? 'b' : null);
+  const w = r.w === 'a' || r.w === 'b' ? r.w : null;
+  const front = Math.ceil(s.holes / 2);
+  const nm = (x: Side) => (x === 'a' ? A : B);
+  const sgn = (x: Side) => (x === 'a' ? 1 : -1);
+  const wins = (x: Side, from: number) => m.hs.slice(from, n).filter(h => h.r === (x === 'a' ? 'A' : 'B')).length;
+  const tail = Math.min(5, n);
+  const holeWord = (k: number) => `${k} hole${k === 1 ? '' : 's'}`;
+  // largest lead each side held, and where
+  const peak = (x: Side) => {
+    let best = 0, at = 0;
+    ser.forEach((v, i) => { if (v * sgn(x) > best) { best = v * sgn(x); at = i + 1; } });
+    return { best, at };
+  };
+  // lead changes: transitions between the two signs, ignoring level holes
+  let changes = 0, last: Side | null = null;
+  ser.forEach(v => { const x = side(v); if (x && last && x !== last) changes++; if (x) last = x; });
+
+  // a stable pick from a few phrasings, so the same match always tells the same story
+  const pick = <T,>(xs: T[]) => xs[[...m.id].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7) % xs.length];
+  const th = (k: number) => ordinal(k);
+
+  if (!w) {
+    // halved
+    const pa = peak('a'), pb = peak('b');
+    const big = pa.best >= pb.best ? { x: 'a' as Side, ...pa } : { x: 'b' as Side, ...pb };
+    if (big.best >= 2) {
+      const left = s.holes - big.at;
+      return pick([
+        `${nm(big.x)} had this one by the throat, ${big.best} up with ${left} to play. ${nm(other(big.x))} pried it loose hole by hole and walked off with a half that felt like a win.`,
+        `${big.best} up with ${left} left, ${nm(big.x)} were already spending the point. ${nm(other(big.x))} took it back one hole at a time and the match ended where it began: all square.`,
+      ]);
+    }
+    return changes >= 2
+      ? pick([
+        `The lead changed hands ${changes} times and neither side could land the knockout. Half a point each and an argument that runs all night.`,
+        `Back and forth ${changes} times over, punch for punch, and nobody could put the other away. All square, and rightly so.`,
+      ])
+      : pick([
+        `Never more than a hole in it, start to finish. ${n} holes of trench warfare and a half each to show for it.`,
+        `Nose to nose for ${n} holes and not a sliver of daylight. They split the point and walked off the 18th still glaring.`,
+      ]);
+  }
+
+  const L = other(w);
+  const lp = peak(L);
+  const firstLead = ser.findIndex(v => side(v) === w) + 1;
+  const endHole = r.done && r.w !== 'h' && r.played < s.holes ? r.played : 0;
+  const closer = endHole ? pick([
+    ` The handshake came on the ${th(endHole)}.`,
+    ` It was over on the ${th(endHole)}, and everyone knew it three holes earlier.`,
+    ` ${nm(w)} shut the door on the ${th(endHole)}.`,
+  ]) : '';
+
+  if (lp.best === 0) {
+    // never trailed
+    const wp = peak(w);
+    if (firstLead <= 2 && wp.best >= 3) {
+      return pick([
+        `${nm(w)} took the ${th(firstLead)} and never let go. ${wp.best} up through ${wp.at}, this was a procession, not a match.${closer}`,
+        `Front-running from the ${th(firstLead)}, ${nm(w)} stretched it to ${wp.best} up by the ${th(wp.at)} and ${nm(L)} never got within shouting distance.${closer}`,
+        `${nm(L)} never led a hole. ${nm(w)} went ahead on the ${th(firstLead)}, were ${wp.best} up through ${wp.at}, and turned the closing stretch into a victory lap.${closer}`,
+      ]);
+    }
+    if (firstLead <= 2) {
+      return pick([
+        `${nm(w)} went ahead on the ${th(firstLead)} and spent the rest of the day guarding a slim lead like it was the Lassie itself.${closer}`,
+        `Ahead from the ${th(firstLead)}, never by much, never in doubt. ${nm(w)} played keep-away for ${n} holes.${closer}`,
+      ]);
+    }
+    return pick([
+      `Level through ${firstLead - 1}, and then ${nm(w)} found another gear on the ${th(firstLead)}. ${nm(L)} never got it back.${closer}`,
+      `Nothing in it for ${firstLead - 1} holes. Then ${nm(w)} struck on the ${th(firstLead)} and ${nm(L)} spent the rest of the round chasing.${closer}`,
+    ]);
+  }
+  if (lp.best >= 2) {
+    // a comeback: count the holes after the other side's high-water mark
+    const from = lp.at, k = n - from;
+    const late = wins(w, from), lost = wins(L, from);
+    const clean = lost === 0 ? ' without dropping one' : '';
+    if (lp.at <= front) {
+      return pick([
+        `${nm(L)} came out swinging, ${lp.best} up through ${lp.at}, and the match looked over. It wasn't. ${nm(w)} won ${late} of the last ${holeWord(k)}${clean} and stole it.${closer}`,
+        `Despite a blistering start from ${nm(L)}, ${lp.best} up through ${lp.at}, ${nm(w)} came roaring back, winning ${late} of the last ${holeWord(k)}${clean}.${closer}`,
+        `${lp.best} down through ${lp.at}, ${nm(w)} were being written off. Then the comeback: ${late} holes won of the last ${k}${clean}, and ${nm(L)} could only watch it slip.${closer}`,
+      ]);
+    }
+    return pick([
+      `${nm(w)} were ${lp.best} down with ${s.holes - lp.at} to play and had no business winning this. ${late} of the last ${holeWord(k)}${clean} later, they did.${closer}`,
+      `Down ${lp.best} through ${lp.at}, ${nm(w)} pulled off the great escape, winning ${late} of the last ${holeWord(k)}${clean} while ${nm(L)} watched a sure point evaporate.${closer}`,
+    ]);
+  }
+  if (changes >= 3) {
+    return pick([
+      `A brawl. The lead changed hands ${changes} times before ${nm(w)} landed the last punch, taking ${wins(w, n - tail)} of the final ${holeWord(tail)}.${closer}`,
+      `Nobody could hold this one. ${changes} lead changes, and it was ${nm(w)} who had it when the music stopped, winning ${wins(w, n - tail)} of the last ${holeWord(tail)}.${closer}`,
+    ]);
+  }
+  const took = (() => { for (let i = n - 1; i >= 0; i--) if (side(ser[i]) !== w) return i + 2; return firstLead; })();
+  return pick([
+    `${nm(L)} drew first blood, but it didn't last. ${nm(w)} took the lead for good on the ${th(took)} and never looked over their shoulder.${closer}`,
+    `${nm(L)} nosed ahead early and ${nm(w)} let them enjoy it for a while. The ${th(took)} settled who was really in charge.${closer}`,
+    `An early scare from ${nm(L)}, then ${nm(w)} took over on the ${th(took)} and the match went one direction from there.${closer}`,
+  ]);
+}
+
 /* ---------------------------------------------------------- once per phone */
 
 const SEEN = 'fc-cards-seen';

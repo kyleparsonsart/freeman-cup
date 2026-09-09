@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
-import { half, CFG } from '../lib/scoring';
+import { half, CFG, type Match } from '../lib/scoring';
 import {
   type CardData, type MatchCard, type DayCard, type FinaleCard, type ShootoutCard,
   type PlayerCard, type WeekCard, type LiveCard, type SpikeCard, type PotrCard, type Side,
   matchCard, dayCard, finaleCard, shootoutCard, playerCard, weekCard, liveCard, spikeCard, potrCard,
-  names, first, dowOf, teeOf, ordinal, recordLabel, other,
+  names, first, dowOf, teeOf, ordinal, recordLabel, other, leadSeries, matchStory,
 } from '../lib/cards';
 import { TIEBREAK } from '../lib/moments';
 import { mvpBoard, holePoints, relLabel } from '../lib/standings';
@@ -157,8 +157,8 @@ function DayBody({ c }: { c: DayCard }) {
       <Top l1={c.dow} l2={c.courses} />
       <div className="pblock tight">
         <div className="k">{days}</div>
-        <h2>
-          {lead ? <>{CFG.teams[lead].name} lead,<br /></> : <>All square,<br /></>}
+        <h2 className="oneline">
+          {lead ? <>{CFG.teams[lead].name} lead, </> : <>All square, </>}
           <span className="ta">{half(c.cum.a)}</span> to <span className="tb">{half(c.cum.b)}</span>
         </h2>
       </div>
@@ -174,20 +174,53 @@ function DayBody({ c }: { c: DayCard }) {
             const w = r.w === 'h' ? null : (r.w as Side | null);
             const l = w ? other(w) : 'b';
             const t = w || 'a';
+            const story = r.played ? matchStory(m, g.s, r) : '';
             return (
-              <div key={m.id} className="pres">
-                <div className="who">
-                  <span><i className={`psw ${tc(t)}`} />{names(m[t])}</span>
-                  <span className="dim"><i className={`psw ${tc(l)} faint`} />{names(m[l])}</span>
+              <div key={m.id} className="pres story">
+                <div className="top">
+                  <div className="who">
+                    <span><i className={`psw ${tc(t)}`} />{names(m[t])}</span>
+                    <span className="dim"><i className={`psw ${tc(l)} faint`} />{names(m[l])}</span>
+                  </div>
+                  <div className={`sc ${w ? tc(w) : 'th'}`}>{r.done ? r.label : r.played ? 'Live' : 'To play'}</div>
                 </div>
-                <div className={`sc ${w ? tc(w) : 'th'}`}>{r.done ? r.label : r.played ? 'Live' : 'To play'}</div>
+                {r.played > 0 && <LeadLine m={m} holes={g.s.holes} />}
+                {story && <div className="pstory">{story}</div>}
               </div>
             );
           })}
         </div>
       ))}
-      {c.next && <div className="pnext k dim">Tomorrow · {c.next.course}</div>}
     </>
+  );
+}
+
+/**
+ * The lead line: the running lead hole by hole, red above the line when
+ * side a is up, blue below when side b is. Level holes sit on the line.
+ */
+function LeadLine({ m, holes }: { m: Match; holes: number }) {
+  const ser = leadSeries(m);
+  if (!ser.length) return null;
+  const W = 300, H = 36, pad = 4;
+  const amp = Math.max(2, ...ser.map(Math.abs));
+  const x = (i: number) => pad + (i / holes) * (W - pad * 2);
+  const y = (v: number) => H / 2 - (v / amp) * (H / 2 - pad);
+  const pts = [[x(0), y(0)], ...ser.map((v, i) => [x(i + 1), y(v)])];
+  // one path per side so each carries its colour: clip the shared line to its half
+  const d = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
+  const last = pts[pts.length - 1];
+  const end = ser[ser.length - 1];
+  return (
+    <svg className="plead" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
+      <line className="zero" x1={pad} y1={H / 2} x2={W - pad} y2={H / 2} />
+      <clipPath id={`ca-${m.id}`}><rect x="0" y="0" width={W} height={H / 2 - 1.2} /></clipPath>
+      <clipPath id={`cb-${m.id}`}><rect x="0" y={H / 2 + 1.2} width={W} height={H / 2} /></clipPath>
+      <path className="th" d={d} />
+      <path className="ta" d={d} clipPath={`url(#ca-${m.id})`} />
+      <path className="tb" d={d} clipPath={`url(#cb-${m.id})`} />
+      <circle className={end > 0 ? 'ta' : end < 0 ? 'tb' : 'th'} cx={last[0]} cy={last[1]} r="3" />
+    </svg>
   );
 }
 

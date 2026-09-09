@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { setContext, type Match, type Session, type HoleData } from './scoring';
+import { setContext, calc, type Match, type Session, type HoleData } from './scoring';
 import {
   matchCard, dayCard, finaleCard, shootoutCard, playerCard, weekCard, liveCard, spikes,
-  recordOf, submittedFinals, type CardData,
+  recordOf, submittedFinals, leadSeries, matchStory, type CardData,
 } from './cards';
 
 const par18 = [4, 4, 5, 3, 4, 4, 5, 3, 4, 4, 5, 4, 3, 4, 5, 3, 4, 5];
@@ -67,6 +67,24 @@ describe('match card', () => {
   });
   it('lists finals whose card is in', () => {
     expect(submittedFinals(data).map(c => c.m.id)).toEqual(['m1']);
+  });
+});
+
+describe('the match story', () => {
+  it('reads the lead hole by hole and never trailed means never trailed', () => {
+    expect(leadSeries(m1).slice(0, 5)).toEqual([1, 1, 2, 2, 3]);
+    expect(leadSeries(m1)).toHaveLength(17);
+    const story = matchStory(m1, S[0], calc(m1));
+    expect(story).toContain('Griffin & Matt');
+    expect(story).toMatch(/16th/);
+  });
+  it('calls a comeback a comeback', () => {
+    const cb = match('cb', 'r1', 1, ['griffin'], ['kyle'], 'BBBBAAAAAAHHHHH...');
+    setContext(P, S, [m1, m2, m3, cb]);
+    const story = matchStory(cb, S[0], calc(cb));
+    expect(story).toMatch(/4 up through 4/);
+    expect(story).toMatch(/Griffin/);
+    setContext(P, S, [m1, m2, m3]);
   });
 });
 
