@@ -83,6 +83,8 @@ If anything in 2 to 5 needs explaining twice, keep the seeded pairings (don't cl
 
 ## Decisions made this sprint (in addition to the original list)
 
+- **Four-ball strokes at 90%** (Sep 9). `CFG.hcp.fourball` is 90; singles and aggregate stay at 100, foursomes 50, and 12-hole rounds still prorate. The allowance applies to the difference off the low man, USGA Appendix C style. Art. 3 rewritten to say so. **Announce this to the field before the first captain's sheet goes out**: it moves one stroke off every higher handicapper in the two four-ball rounds.
+
 - **No "Picked up".** Removed Sep 1. Every player holes out or the scorer enters what they would have made; the engine still tolerates an `X` in old rows.
 - **Cup strip lives on Live only**, flush to the top with the gear over it. Scoring's header is `Round 3 · Sand Valley`; Schedule's is `The Freeman Cup 2026`.
 - **The page scroller's indicator is hidden**; it drew behind sticky and side-scrolling children on iOS.

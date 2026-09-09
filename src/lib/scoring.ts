@@ -92,7 +92,7 @@ export let P: Record<string, Player> = {};
 export let SESSIONS: Session[] = [];
 export let CFG = {
   teams: { a: { name: 'Vikes', short: 'VIK' }, b: { name: 'Celts', short: 'CEL' } } as Record<string, TeamCfg>,
-  hcp: { on: true, fourball: 100, foursomes: 50, aggregate: 100, singles: 100, prorate: true } as HcpCfg,
+  hcp: { on: true, fourball: 90, foursomes: 50, aggregate: 100, singles: 100, prorate: true } as HcpCfg,
   trophy: 'The Lassie',
 };
 export let MATCHES: Match[] = [];

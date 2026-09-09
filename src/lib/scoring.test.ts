@@ -258,6 +258,14 @@ describe('strokeMap — stroke allocation follows SI, hardest first', () => {
     }
   });
 
+  it('four-ball gives 90% of the difference off the low man (USGA App. C)', () => {
+    // brian 6 is the low man; griffin 15 → 9 × .9 = 8.1 → 8; kyle 15 → 8; devin 7 → .9 → 1
+    const sess: Session = { ...fourBallSession, id: 'test_fb90' };
+    const m: Match = { id: 'mfb', s: 'test_fb90', g: 0, a: ['griffin', 'brian'], b: ['kyle', 'devin'], hs: Array.from({ length: 18 }, emptyHole) };
+    setContext(PLAYERS, [sess], [m]);
+    expect(strokeMap(m)).toEqual({ griffin: 8, brian: 0, kyle: 8, devin: 1 });
+  });
+
   it('foursomes uses combined handicap difference at 50%', () => {
     // a: griffin(15) + brian(6) = 21
     // b: kyle(15) + justin(7) = 22
