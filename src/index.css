@@ -1542,3 +1542,7 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .tg .stars svg{width:9px;height:9px;display:block;filter:drop-shadow(0 0 2px rgba(216,169,63,.35))}
 .tab{position:relative}
 .tab .pulse{position:absolute;margin-left:8px;top:50%;transform:translateY(-50%);vertical-align:0}
+/* the card-in drawer lives inside the scrolling body, so absolute bottom:0
+   only looks right at scrollTop 0; pin it and its scrim to the viewport */
+.drawer.cardin,.scrim.hi{position:fixed}
+.drawer.cardin{left:0;right:0;bottom:0}
