@@ -1622,3 +1622,12 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 @media(prefers-reduced-motion:reduce){.tug .live{animation:none;transition:none}}
 .rchip,.rchip.sum{display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 11px 0 12px;font-size:12px;border-radius:16px}
 .rchip::after{content:'›';font-size:15px;line-height:1;color:var(--moss-dim);margin-top:-1px}
+/* Sep 9: a match win tints the row with the team's gradient (as the Scoreboard tabs do) instead of a solid fill */
+.ev.win{border-left-color:transparent}
+.ev.win.a{border-left-color:var(--red);background:linear-gradient(90deg,rgba(200,64,47,.30),var(--ink-2) 62%)}
+.ev.win.b{border-left-color:var(--blue);background:linear-gradient(90deg,rgba(76,134,196,.30),var(--ink-2) 62%)}
+.ev.win .t{color:var(--moss-dim)}
+.ev.win .bd{color:var(--moss)}
+.ev.win .bd b,.ev.win .hl{color:var(--bone)}
+.ev.win .who.a{color:var(--red)} .ev.win .who.b{color:var(--blue)}
+.ev.win .sub2{color:var(--moss-dim)}
