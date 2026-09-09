@@ -7,7 +7,7 @@ import {
   names, first, dowOf, teeOf, ordinal, recordLabel, other,
 } from '../lib/cards';
 import { TIEBREAK } from '../lib/moments';
-import { mvpBoard } from '../lib/standings';
+import { mvpBoard, holePoints } from '../lib/standings';
 
 export type Card = MatchCard | DayCard | FinaleCard | ShootoutCard | PlayerCard | WeekCard | LiveCard | SpikeCard;
 
@@ -125,7 +125,23 @@ function MatchBody({ c, onOpen }: { c: MatchCard; onOpen: (k: string) => void })
           <span key={i} className={h === null ? 'x' : tc(h)}>{i + 1}</span>
         ))}
       </div>
+      <MatchPoints m={m} s={s} order={[...m[top], ...m[bottom]]} />
     </>
+  );
+}
+
+/** A footnote to the strip: what each player banked toward the MVP in this match. */
+function MatchPoints({ m, s, order }: { m: MatchCard['m']; s: MatchCard['s']; order: string[] }) {
+  if (s.fmt === 'Foursomes') return null;
+  const tot: Record<string, number> = {};
+  m.hs.forEach((_h, i) => {
+    Object.entries(holePoints(m, s, i)).forEach(([k, p]) => { tot[k] = (tot[k] || 0) + p; });
+  });
+  if (!Object.keys(tot).length) return null;
+  return (
+    <div className="k dim pmvp">
+      MVP points{order.map(k => <span key={k}> · {first(k)} {tot[k] || 0}</span>)}
+    </div>
   );
 }
 
