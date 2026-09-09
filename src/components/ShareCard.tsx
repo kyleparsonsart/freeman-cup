@@ -84,7 +84,7 @@ function Body({ card, onOpen, year, data }: { card: Card; onOpen: (key: string) 
     case 'shootout': return <ShootoutBody c={card} />;
     case 'player': {
       const row = mvpBoard(data.scoringSessions, data.scoringMatches).find(r => r.key === card.pkey) || null;
-      return <PlayerBody c={card} year={year} week={weekCard(data, card.pkey)} pts={row ? row.pts : null} />;
+      return <PlayerBody c={card} year={year} week={weekCard(data, card.pkey)} pts={row ? { pts: row.pts, solo: row.solo, team: row.team, halves: row.halves } : null} />;
     }
     case 'live': return <LiveBody c={card} />;
     case 'spike': return <SpikeBody c={card} />;
@@ -222,7 +222,9 @@ function ShootoutBody({ c }: { c: ShootoutCard }) {
 }
 
 /* 5 · player card: who they are before the trip, what they did once it starts */
-function PlayerBody({ c, year, week, pts }: { c: PlayerCard; year: number; week: WeekCard | null; pts: number | null }) {
+type Pts = { pts: number; solo: number; team: number; halves: number };
+
+function PlayerBody({ c, year, week, pts }: { c: PlayerCard; year: number; week: WeekCard | null; pts: Pts | null }) {
   const played = c.played > 0 && week;
   return (
     <>
@@ -251,13 +253,13 @@ function PlayerBody({ c, year, week, pts }: { c: PlayerCard; year: number; week:
 }
 
 /* 6 · the week's numbers, shared by the player card */
-function WeekTiles({ c, pts }: { c: WeekCard; pts: number | null }) {
+function WeekTiles({ c, pts }: { c: WeekCard; pts: Pts | null }) {
   const close = c.closeouts[c.closeouts.length - 1];
   return (
     <>
       <div className="ptiles left">
         {pts !== null
-          ? <div className="tile"><div className="pnum tbrass">{pts}</div><div className="k dim">MVP points</div></div>
+          ? <div className="tile"><div className="pnum tbrass">{pts.pts}</div><div className="k dim">MVP points</div><div className="k dim split">{pts.solo} solo · {pts.team} team · {pts.halves} halved</div></div>
           : <div className="tile"><div className="pnum">{c.holesWon}</div><div className="k dim">Holes won</div></div>}
         <div className="tile"><div className="pnum">{c.birdies + c.eagles}</div><div className="k dim">{c.eagles ? 'Birdies & eagles' : 'Birdies'}</div></div>
         {close

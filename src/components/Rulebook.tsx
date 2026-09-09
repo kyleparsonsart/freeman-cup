@@ -8,9 +8,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { RULEBOOK, RULEBOOK_META, QUICK, searchRules, highlight, type Article, type Clause } from '../lib/rulebook';
 
-interface Props { open: boolean; onClose: () => void }
+interface Props { open: boolean; onClose: () => void; /** article to land on when opened from elsewhere in the app */ jump?: number | null }
 
-export default function Rulebook({ open, onClose }: Props) {
+export default function Rulebook({ open, onClose, jump = null }: Props) {
   const [q, setQ] = useState('');
   const [art, setArt] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -20,6 +20,7 @@ export default function Rulebook({ open, onClose }: Props) {
   // last query so coming back mid-argument picks up where you were.
   useEffect(() => {
     if (!open) return;
+    if (jump !== null) { setArt(jump); setQ(''); bodyRef.current?.scrollTo(0, 0); return; }
     bodyRef.current?.scrollTo(0, 0);
     if (!q && art === null) setTimeout(() => inputRef.current?.focus(), 320);
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps

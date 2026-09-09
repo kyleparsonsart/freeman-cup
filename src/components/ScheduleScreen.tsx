@@ -9,10 +9,11 @@ import type { EventData } from '../hooks/useEventData';
 const fn = (n?: string | null) => (n || '').split(' ')[0];
 const names = (keys: string[]) => keys.map(k => fn(P[k]?.n) || k).join(' / ');
 
-export default function ScheduleScreen({ data, moments = null, onMoment }: {
+export default function ScheduleScreen({ data, moments = null, onMoment, onRule }: {
   data: EventData;
   moments?: MomentsState | null;
   onMoment?: (key: string) => void;
+  onRule?: (article: number) => void;
 }) {
   const { scoringSessions: sessions, scoringMatches: matches } = data;
   // which scorecards are open; cards in the live round open by default
@@ -70,7 +71,7 @@ export default function ScheduleScreen({ data, moments = null, onMoment }: {
       })}
 
       <TheField onOpen={onMoment} />
-      <TheRaces sessions={sessions} matches={matches} />
+      <TheRaces sessions={sessions} matches={matches} onOpen={onMoment} onRule={onRule} />
     </>
   );
 }
@@ -81,7 +82,7 @@ export default function ScheduleScreen({ data, moments = null, onMoment }: {
  * card stays on the board, struck through, so the missing byes have a
  * face.
  */
-function TheRaces({ sessions, matches }: { sessions: Session[]; matches: Match[] }) {
+function TheRaces({ sessions, matches, onOpen, onRule }: { sessions: Session[]; matches: Match[]; onOpen?: (key: string) => void; onRule?: (article: number) => void }) {
   const board = mvpBoard(sessions, matches);
   const races = roundRaces(sessions, matches);
   return (
@@ -93,6 +94,7 @@ function TheRaces({ sessions, matches }: { sessions: Session[]; matches: Match[]
           <b>The board opens Thursday</b>
           First cards start the race. Hole points: 3 for a hole your ball
           won alone, 2 for one your side won together, 1 for a halve.
+          {onRule && <><br /><button className="howpts inline" onClick={() => onRule(11)}>How points work ›</button></>}
         </div>
       ) : (<>
       <div className="racehint">
@@ -101,18 +103,18 @@ function TheRaces({ sessions, matches }: { sessions: Session[]; matches: Match[]
         Byes count. Net against par breaks ties and is the Medalist line.
         Full cards only — finish your byes or fall off the board.
       </div>
-      {(
-        <div className="mvpboard">
+      <div className="mvpboard">
           {board.map((r, i) => (
-            <div key={r.key} className={`mvprow${r.eligible ? '' : ' off'}`}>
+            <button key={r.key} className={`mvprow${r.eligible ? '' : ' off'}`} onClick={() => onOpen?.(`player:${r.key}`)} disabled={!onOpen}>
               <span className="rk">{r.eligible ? i + 1 : '–'}</span>
               <span className={`nm4 ${r.side}`}>{r.name}</span>
               <span className="rd2">{r.eligible ? `${relLabel(r.rel)} net · ${r.solo} solo` : 'card short'}</span>
               <span className="net">{r.pts}</span>
-            </div>
+            </button>
           ))}
-        </div>
-      )}</>)}
+      </div>
+      {onRule && <button className="howpts" onClick={() => onRule(11)}>How points work ›</button>}
+      </>)}
 
       <div className="sh"><h2>Player of the round</h2><span className="meta">The ball marker</span></div>
       {races.map(r => (

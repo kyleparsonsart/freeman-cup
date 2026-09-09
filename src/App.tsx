@@ -111,6 +111,8 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
     : rawData;
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
+  const [rulesJump, setRulesJump] = useState<number | null>(null);
+  const openRules = (art: number | null = null) => { setRulesJump(art); setRulesOpen(true); };
   const [tab, setTab] = useState<'scoring' | 'live' | 'schedule'>('scoring');
   // pulse when a round is actually mid-play, not only when set live
   const anyLive = !!data && data.scoringSessions.some(s => roundState(s) === 'live');
@@ -240,7 +242,7 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
           </svg>
         </button>
       )}
-      <button className="cog book" aria-label="The rulebook" onClick={() => setRulesOpen(true)}>
+      <button className="cog book" aria-label="The rulebook" onClick={() => openRules()}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
           <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11a2 2 0 0 1 2 2v14a1.5 1.5 0 0 0-1.5-1.5H4z"/>
           <path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13a2 2 0 0 0-2 2v14a1.5 1.5 0 0 1 1.5-1.5H20z"/>
@@ -303,7 +305,7 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
         )}
         {data && tab === 'schedule' && (
           <section id="v-schedule" className="view on">
-            <ScheduleScreen data={data} moments={moments} onMoment={setMoKey} />
+            <ScheduleScreen data={data} moments={moments} onMoment={setMoKey} onRule={openRules} />
           </section>
         )}
       </div>
@@ -345,7 +347,7 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
         <LetterMoment data={data} letter={again} onClose={() => setAgainRound(null)} onSeeMatch={() => { setAgainRound(null); setTab('scoring'); }} />
       )}
 
-      <Rulebook open={rulesOpen} onClose={() => setRulesOpen(false)} />
+      <Rulebook open={rulesOpen} jump={rulesJump} onClose={() => { setRulesOpen(false); setRulesJump(null); }} />
 
       {rawData && (
         <SettingsSheet
