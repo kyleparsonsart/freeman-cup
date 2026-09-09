@@ -1656,3 +1656,6 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .pc .gk + .pres.story{margin-top:2px}
 .pc .pres.story + .gk{margin-top:16px}
 .pacts .aghost{align-self:center;font-size:15px;padding:10px 18px;color:var(--moss)}
+/* Sep 9: recap rows are separated by air, not rules */
+.pres.story{border-bottom:none;padding:9px 0 11px}
+.pc .pres.story + .gk{margin-top:10px}
