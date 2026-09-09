@@ -1563,7 +1563,7 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .ftab.lead-a[aria-selected="true"]{background:linear-gradient(90deg,rgba(200,64,47,.36),var(--ink-2) 62%)}
 .ftab.lead-b[aria-selected="true"]{background:linear-gradient(270deg,rgba(76,134,196,.36),var(--ink-2) 62%)}
 .perf{display:block;width:100%;height:2px;background:var(--ink-2)}
-.perf line{stroke:var(--line);stroke-width:2;stroke-linecap:round;stroke-dasharray:2 6}
+.perf line{stroke:var(--line);stroke-width:2;stroke-linecap:round;stroke-dasharray:4 6}
 .squig{padding:22px 0 6px;display:flex;justify-content:center}
 .squig svg{width:96px;height:12px;overflow:visible}
 .squig path{fill:none;stroke:var(--moss-dim);stroke-width:1.6;stroke-linecap:round;opacity:.8}
@@ -1571,3 +1571,9 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .mvprow{padding:11px 18px}
 .sumchips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .mrow2 .cardbtn{display:none}
+/* chips in moss, not brass; perforation as a real SVG line; section squiggles */
+.rchip,.rchip.sum{color:var(--moss);border-color:var(--line)}
+.sh.field{padding-top:32px}
+.perf{height:2px;padding:0 18px;background:var(--ink-2)}
+.perf svg{display:block;width:100%;height:2px;overflow:visible}
+.squig{padding:26px 0 2px}

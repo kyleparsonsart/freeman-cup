@@ -57,7 +57,7 @@ export default function ScheduleScreen({ data, moments = null, onMoment, onRule 
               )}
             </div>
             {rs.map((x, xi) => (<div key={x.id}>
-              {xi > 0 && <svg className="perf" aria-hidden="true"><line x1="9" y1="1" x2="calc(100% - 9px)" y2="1" /></svg>}
+              {xi > 0 && <div className="perf" aria-hidden="true"><svg><line x1="1" y1="1" x2="100%" y2="1" /></svg></div>}
               <RoundCard
                 key={x.id}
                 s={x}
@@ -71,10 +71,10 @@ export default function ScheduleScreen({ data, moments = null, onMoment, onRule 
         );
       })}
 
+      <TheField onOpen={onMoment} />
       <div className="squig" aria-hidden="true">
         <svg viewBox="0 0 120 12" preserveAspectRatio="none"><path d="M0 6 Q7.5 0 15 6 T30 6 T45 6 T60 6 T75 6 T90 6 T105 6 T120 6" /></svg>
       </div>
-      <TheField onOpen={onMoment} />
       <TheRaces sessions={sessions} matches={matches} onOpen={onMoment} onRule={onRule} />
     </>
   );
@@ -91,14 +91,13 @@ function TheRaces({ sessions, matches, onOpen, onRule }: { sessions: Session[]; 
   const races = roundRaces(sessions, matches);
   return (
     <>
-      <div className="sh"><h2>The King’s Race</h2><span className="meta">Hole points</span></div>
+      <div className="sh"><h2>The King’s Race</h2>{onRule && <button className="rchip" onClick={() => onRule(11)}>How points work</button>}</div>
       {board.length === 0 ? (
         <div className="empty">
           <IconMedal />
           <b>The board opens Thursday</b>
           First cards start the race. Hole points: 3 for a hole your ball
           won alone, 2 for one your side won together. A halve earns nothing.
-          {onRule && <><br /><button className="howpts inline" onClick={() => onRule(11)}>How points work ›</button></>}
         </div>
       ) : (<>
       <div className="racehint">
@@ -117,10 +116,12 @@ function TheRaces({ sessions, matches, onOpen, onRule }: { sessions: Session[]; 
             </button>
           ))}
       </div>
-      {onRule && <button className="howpts" onClick={() => onRule(11)}>How points work ›</button>}
       </>)}
 
-      <div className="sh"><h2>Player of the round</h2><span className="meta">The ball marker</span></div>
+      <div className="squig" aria-hidden="true">
+        <svg viewBox="0 0 120 12" preserveAspectRatio="none"><path d="M0 6 Q7.5 0 15 6 T30 6 T45 6 T60 6 T75 6 T90 6 T105 6 T120 6" /></svg>
+      </div>
+      <div className="sh"><h2>Player of the round</h2></div>
       {races.map(r => (
         <div key={r.roundId} className={`potr${r.state === 'final' ? '' : ' up'}`}>
           <span className="r3">{r.rd} · {r.course}</span>
@@ -158,7 +159,7 @@ function TheField({ onOpen }: { onOpen?: (key: string) => void }) {
   );
   return (
     <>
-      <div className="sh"><h2>The field</h2><span className="meta">Tap a name for the card</span></div>
+      <div className="sh field"><h2>The field</h2><span className="meta">Tap a name for the card</span></div>
       <div className="field">{col('a')}{col('b')}</div>
     </>
   );
