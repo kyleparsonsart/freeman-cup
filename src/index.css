@@ -947,7 +947,7 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .byeprog{color:var(--brass);font-weight:600;white-space:nowrap}
 
 /* the one-thumb advance, and Submit on the last hole */
-.advbtn{margin:12px 14px 4px;width:calc(100% - 28px);padding:13px;border:1px solid var(--brass);color:var(--brass);
+.advbtn{margin:12px 14px 22px;width:calc(100% - 28px);padding:13px;border:1px solid var(--brass);color:var(--brass);
   font-family:var(--num);font-size:18px;font-weight:600;display:flex;justify-content:center;gap:8px;align-items:center}
 .advbtn .albl{display:inline-block;animation:holeFromRight .42s cubic-bezier(.22,.8,.3,1)}
 .advbtn .achev{font-size:20px;line-height:1}
