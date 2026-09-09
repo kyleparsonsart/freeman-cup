@@ -76,7 +76,7 @@ describe('the match story', () => {
     expect(leadSeries(m1)).toHaveLength(17);
     const story = matchStory(m1, S[0], calc(m1));
     expect(story).toContain('Griffin & Matt');
-    expect(story).toMatch(/16th/);
+    expect(story).toMatch(/up (through|by)/);
   });
   it('calls a comeback a comeback', () => {
     const cb = match('cb', 'r1', 1, ['griffin'], ['kyle'], 'BBBBAAAAAAHHHHH...');

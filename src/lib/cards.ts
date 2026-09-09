@@ -560,7 +560,7 @@ export function matchStory(m: Match, s: Session, r: CalcResult): string {
   const endHole = r.done && r.w !== 'h' && r.played < s.holes ? r.played : 0;
   const closer = endHole ? pick([
     ` The handshake came on the ${th(endHole)}.`,
-    ` It was over on the ${th(endHole)}, and everyone knew it three holes earlier.`,
+    ` It was over on the ${th(endHole)}.`,
     ` ${nm(w)} shut the door on the ${th(endHole)}.`,
   ]) : '';
 
@@ -568,10 +568,11 @@ export function matchStory(m: Match, s: Session, r: CalcResult): string {
     // never trailed
     const wp = peak(w);
     if (firstLead <= 2 && wp.best >= 3) {
+      // the big lead already tells the ending; no closer here
       return pick([
-        `${nm(w)} took the ${th(firstLead)} and never let go. ${wp.best} up through ${wp.at}, this was a procession, not a match.${closer}`,
-        `Front-running from the ${th(firstLead)}, ${nm(w)} stretched it to ${wp.best} up by the ${th(wp.at)} and ${nm(L)} never got within shouting distance.${closer}`,
-        `${nm(L)} never led a hole. ${nm(w)} went ahead on the ${th(firstLead)}, were ${wp.best} up through ${wp.at}, and turned the closing stretch into a victory lap.${closer}`,
+        `${nm(w)} took the ${th(firstLead)} and never let go. ${wp.best} up through ${wp.at}, this was a procession, not a match.`,
+        `Front-running from the ${th(firstLead)}, ${nm(w)} stretched it to ${wp.best} up by the ${th(wp.at)} and ${nm(L)} never got within shouting distance.`,
+        `${nm(L)} never led a hole. ${nm(w)} went ahead on the ${th(firstLead)}, were ${wp.best} up through ${wp.at}, and turned the closing stretch into a victory lap.`,
       ]);
     }
     if (firstLead <= 2) {

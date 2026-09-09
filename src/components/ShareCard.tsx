@@ -52,7 +52,7 @@ export default function ShareCard({ card, year, venue, data, onClose, onOpen }: 
         <div className="pfoot"><span className="k">The Freeman Cup · {venue}</span><span className="yr">{year}</span></div>
       </div>
       <div className="pacts">
-        <button className="abtn" onClick={onClose}>Close</button>
+        <button className="aghost" onClick={onClose}>Close</button>
       </div>
     </div>
   );
@@ -159,7 +159,9 @@ function DayBody({ c }: { c: DayCard }) {
         <div className="k">{days}</div>
         <h2 className="oneline">
           {lead ? <>{CFG.teams[lead].name} lead, </> : <>All square, </>}
-          <span className="tb">{half(c.cum.b)}</span> to <span className="ta">{half(c.cum.a)}</span>
+          {lead === 'a'
+            ? <><span className="ta">{half(c.cum.a)}</span> to <span className="tb">{half(c.cum.b)}</span></>
+            : <><span className="tb">{half(c.cum.b)}</span> to <span className="ta">{half(c.cum.a)}</span></>}
         </h2>
       </div>
       <div className="pstrip">
@@ -184,7 +186,7 @@ function DayBody({ c }: { c: DayCard }) {
                   </div>
                   <div className={`sc ${w ? tc(w) : 'th'}`}>{r.done ? r.label : r.played ? 'Live' : 'To play'}</div>
                 </div>
-                {r.played > 0 && <LeadLine m={m} holes={g.s.holes} />}
+                {r.played > 0 && <LeadLine m={m} holes={g.s.holes} played={r.played} />}
                 {story && <div className="pstory">{story}</div>}
               </div>
             );
@@ -199,27 +201,27 @@ function DayBody({ c }: { c: DayCard }) {
  * The lead line: the running lead hole by hole, blue above the line when
  * the Celts are up, red below when the Vikes are. Level holes sit on the line.
  */
-function LeadLine({ m, holes }: { m: Match; holes: number }) {
-  const ser = leadSeries(m);
+function LeadLine({ m, holes, played }: { m: Match; holes: number; played: number }) {
+  // bye holes are the King's Race's business; the bars stop where the match did
+  const ser = leadSeries(m).slice(0, played || undefined);
   if (!ser.length) return null;
-  const W = 300, H = 36, pad = 4;
+  const W = 300, H = 36, mid = H / 2, gap = 1.6;
   const amp = Math.max(2, ...ser.map(Math.abs));
-  const x = (i: number) => pad + (i / holes) * (W - pad * 2);
-  const y = (v: number) => H / 2 + (v / amp) * (H / 2 - pad);
-  const pts = [[x(0), y(0)], ...ser.map((v, i) => [x(i + 1), y(v)])];
-  // one path per side so each carries its colour: clip the shared line to its half
-  const d = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
-  const last = pts[pts.length - 1];
-  const end = ser[ser.length - 1];
+  const bw = (W / holes) - gap;
+  const x = (i: number) => i * (W / holes) + gap / 2;
+  const hgt = (v: number) => (Math.abs(v) / amp) * (mid - 2);
   return (
-    <svg className="plead" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
-      <line className="zero" x1={pad} y1={H / 2} x2={W - pad} y2={H / 2} />
-      <clipPath id={`ca-${m.id}`}><rect x="0" y="0" width={W} height={H / 2 - 1.2} /></clipPath>
-      <clipPath id={`cb-${m.id}`}><rect x="0" y={H / 2 + 1.2} width={W} height={H / 2} /></clipPath>
-      <path className="th" d={d} />
-      <path className="tb" d={d} clipPath={`url(#ca-${m.id})`} />
-      <path className="ta" d={d} clipPath={`url(#cb-${m.id})`} />
-      <circle className={end > 0 ? 'ta' : end < 0 ? 'tb' : 'th'} cx={last[0]} cy={last[1]} r="3" />
+    <svg className="plead bars" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
+      <line className="zero" x1={0} y1={mid} x2={W} y2={mid} />
+      {Array.from({ length: holes }, (_, i) => {
+        const v = ser[i];
+        if (v === undefined) return <rect key={i} className="x" x={x(i)} y={mid - 1} width={bw} height={2} />;
+        if (v === 0) return <rect key={i} className="th" x={x(i)} y={mid - 1.5} width={bw} height={3} />;
+        // Celts (side b) rise above the line, Vikes (side a) drop below
+        return v < 0
+          ? <rect key={i} className="tb" x={x(i)} y={mid - hgt(v)} width={bw} height={hgt(v)} />
+          : <rect key={i} className="ta" x={x(i)} y={mid} width={bw} height={hgt(v)} />;
+      })}
     </svg>
   );
 }
