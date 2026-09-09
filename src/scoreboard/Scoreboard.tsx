@@ -9,7 +9,8 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import { calc, half, getsStroke, CFG, type Match, type Session } from '../lib/scoring';
 import { plannedPoints } from '../lib/moments';
-import { mvpBoard, relLabel } from '../lib/standings';
+import { mvpBoard, roundRaces, relLabel } from '../lib/standings';
+import { leadSeries, matchStory } from '../lib/cards';
 import { shape, teeClock, teeClockAmPm, type Shaped, type Snapshot } from './shape';
 import { matchMoments, clockCT } from './moments';
 import { fetchHours, windowFor, spanFor, hourLabel, type WxHour } from './weather';
@@ -177,6 +178,7 @@ export default function Scoreboard() {
         </div>
       </section>
 
+      <Race d={d} />
       <Players d={d} phase={phase} totals={totals} />
 
       <footer className="sfoot dayfade" ref={reveal}>
@@ -286,6 +288,8 @@ function HowBar({ open, clinch, total, trophy }: { open: boolean; clinch: number
         <p><b>It's match play.</b> Nobody counts total strokes. Each hole is its own contest. Win the hole and you're 1 up. A match ends when one side leads by more holes than remain, which is what 4 &amp; 3 means.</p>
         <p><b>Every match is one point.</b> Win it, your team gets 1. All square after the last hole is halved, half a point each. First team to {half(clinch)} of the {half(total)} takes the cup.</p>
         <p><b>{trophy}</b> is the trophy, a silver claret jug that lives with the winning side for a year and gets talked about for the other eleven months.</p>
+        <p><b>The King’s Race runs alongside.</b> Every hole a player wins earns points: 3 if his ball won it alone, 2 if his side won it together, nothing for a halve. Most points across the four rounds is the MVP, and each round crowns a Player of the Round. Net against par breaks ties.</p>
+        <p><b>Strokes</b> come off the low handicap in each match, hardest holes first: the full difference at singles and at the 12-hole aggregate (scaled to twelve), 90% of it at four-ball.</p>
       </div></div>
     </div>
   );
@@ -352,6 +356,7 @@ function MatchCard({ d, m, s, teeTime }: { d: Shaped; m: Match; s: Session; teeT
         <div className="mid">{mid}</div>
         <div className="side vik"><div className="tm">{CFG.teams.a.name}</div><div className="p">{names(d, m.a) || 'TBA'}</div></div>
       </div>
+      {started && <LeadBars m={m} s={s} />}
       {started && (
         <div className="act">
           <div className="ah"><span>Latest</span><span>{moments.length} moment{moments.length === 1 ? '' : 's'}</span></div>
@@ -469,12 +474,91 @@ function DayBlock({ d, r, open }: { d: Shaped; r: RoundView; open: boolean }) {
   );
 }
 
+/* ---------------- the lead, hole by hole ---------------- */
+
+/** One column per hole: blue up for a Celts lead, red down for a Vikes lead, a tick when level. */
+function LeadBars({ m, s }: { m: Match; s: Session }) {
+  const r = calc(m);
+  const ser = leadSeries(m).slice(0, r.played || undefined);
+  if (!ser.length) return null;
+  const W = 300, H = 36, mid = H / 2, gap = 1.6, holes = s.holes;
+  const amp = Math.max(2, ...ser.map(Math.abs));
+  const bw = (W / holes) - gap;
+  const x = (i: number) => i * (W / holes) + gap / 2;
+  const hgt = (v: number) => (Math.abs(v) / amp) * (mid - 2);
+  const story = r.done ? matchStory(m, s, r) : '';
+  return (
+    <div className="lead">
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
+        <line className="zero" x1={0} y1={mid} x2={W} y2={mid} />
+        {Array.from({ length: holes }, (_, i) => {
+          const v = ser[i];
+          if (v === undefined) return <rect key={i} className="x" x={x(i)} y={mid - 1} width={bw} height={2} />;
+          if (v === 0) return <rect key={i} className="lv" x={x(i)} y={mid - 1.5} width={bw} height={3} />;
+          return v < 0
+            ? <rect key={i} className="cel" x={x(i)} y={mid - hgt(v)} width={bw} height={hgt(v)} />
+            : <rect key={i} className="vik" x={x(i)} y={mid} width={bw} height={hgt(v)} />;
+        })}
+      </svg>
+      {story && <p className="story">{story}</p>}
+    </div>
+  );
+}
+
+/* ---------------- the King's Race ---------------- */
+
+function Race({ d }: { d: Shaped }) {
+  const board = mvpBoard(d.sessions, d.matches);
+  const races = roundRaces(d.sessions, d.matches);
+  const anyPotr = races.some(r => r.winner);
+  return (
+    <section className="sect dayfade" ref={reveal}>
+      <div className="wrap">
+        <h2>The King’s Race</h2>
+        <p className="sub">Most hole points across the week is the MVP: 3 for a hole your ball won alone, 2 for one your side won together, nothing for a halve. Bye holes count, net against par breaks ties, and only full cards stay on the board.</p>
+        {board.length === 0 ? (
+          <div className="emp">
+            <svg width="22" height="44"><use href="#claretjug" /></svg>
+            <div className="eh">The board opens Thursday</div>
+            <p>The first cards start the race.</p>
+          </div>
+        ) : (
+          <div className="mvp">
+            {board.map((r, i) => (
+              <div key={r.key} className={`r${r.eligible ? '' : ' off'}`}>
+                <span className="pos">{r.eligible ? i + 1 : '–'}</span>
+                <b className={cls(r.side)}>{r.name}{r.eligible && i === 0 && <svg className="crown" viewBox="0 0 256 256" aria-label="Leader"><path fill="currentColor" d="M230.9,73.6A15.85,15.85,0,0,0,212,77.39l-33.67,36.29-35.8-80.29a1,1,0,0,1,0-.1,16,16,0,0,0-29.06,0,1,1,0,0,1,0,.1l-35.8,80.29L44,77.39A16,16,0,0,0,16.25,90.81c0,.11,0,.21.07.32L39,195a16,16,0,0,0,15.72,13H201.29A16,16,0,0,0,217,195L239.68,91.13c0-.11,0-.21.07-.32A15.85,15.85,0,0,0,230.9,73.6ZM201.35,191.68l-.06.32H54.71l-.06-.32L32,88l.14.16,42,45.24a8,8,0,0,0,13.18-2.18L128,40l40.69,91.25a8,8,0,0,0,13.18,2.18l42-45.24L224,88Z" /></svg>}</b>
+                <span className="rd">{r.eligible ? `${relLabel(r.rel)} net · ${r.solo} solo` : 'card short'}</span>
+                <span className="pt">{r.pts}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        {anyPotr && (
+          <>
+            <h3 className="h3">Player of the round</h3>
+            <div className="mvp potr">
+              {races.map((r, i) => (
+                <div key={r.roundId} className={`r${r.winner ? '' : ' off'}`}>
+                  <span className="pos">R{i + 1}</span>
+                  <b>{r.winner
+                    ? <><span className={cls(r.winner.side)}>{r.winner.name}</span> · {r.winner.pts} pts · {relLabel(r.winner.rel)} net</>
+                    : r.state === 'live' ? 'In play' : r.state === 'upcoming' ? 'To come' : 'No full cards'}</b>
+                  <span className="rd">{r.course}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </section>
+  );
+}
+
 /* ---------------- players ---------------- */
 
 function Players({ d, phase, totals }: { d: Shaped; phase: 'pre' | 'live' | 'final'; totals: { a: number; b: number } }) {
   const pre = phase === 'pre';
-  const board = mvpBoard(d.sessions, d.matches);
-  const leaderRel = board.find(b => b.eligible)?.rel;
   const rec: Record<string, { w: number; l: number; h: number; pts: number }> = {};
   d.matches.forEach(m => {
     const r = calc(m);
@@ -488,15 +572,12 @@ function Players({ d, phase, totals }: { d: Shaped; phase: 'pre' | 'live' | 'fin
     .sort(([ka, pa], [kb, pb]) => Number(pb.cap || 0) - Number(pa.cap || 0) || (rec[kb]?.pts || 0) - (rec[ka]?.pts || 0) || pa.n.localeCompare(pb.n))
     .map(([k, p]) => {
       const e = rec[k] || { w: 0, l: 0, h: 0, pts: 0 };
-      const b = board.find(x => x.key === k);
-      const lead = !pre && b?.eligible && leaderRel !== undefined && b.rel === leaderRel && board.length > 0;
       return (
-        <li key={k} className={lead ? 'lead' : ''}>
+        <li key={k}>
           <span className="nm">{fn(d, k)}{p.cap && <i>Captain</i>}</span>
-          {pre ? <><span /><span /><span /></> : <>
+          {pre ? <><span /><span /></> : <>
             <span className="rec">{e.w}–{e.l}–{e.h}</span>
             <span className="pts">{half(e.pts)}</span>
-            <span className="net">{b ? relLabel(b.rel) : ''}</span>
           </>}
         </li>
       );
@@ -505,7 +586,7 @@ function Players({ d, phase, totals }: { d: Shaped; phase: 'pre' | 'live' | 'fin
     <section className="sect dayfade" ref={reveal}>
       <div className="wrap">
         <h2>{pre ? 'The teams' : 'The players'}</h2>
-        <p className="sub">{pre ? 'Four a side. Records and the MVP race appear once play starts.' : 'Record, points won, and net against par across the week. Brass marks the MVP race leader.'}</p>
+        <p className="sub">{pre ? 'Four a side. Records appear once play starts.' : 'Record and points won for the Cup across the week.'}</p>
         <div className="teams">
           <div className="team cel">
             <div className="th"><span>The {CFG.teams.b.name}</span><span className="tp">{pre ? '4 players' : `${half(totals.b)} pt${totals.b === 1 ? '' : 's'}`}</span></div>

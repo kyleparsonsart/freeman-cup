@@ -531,6 +531,9 @@ export function matchStory(m: Match, s: Session, r: CalcResult): string {
   // a stable pick from a few phrasings, so the same match always tells the same story
   const pick = <T,>(xs: T[]) => xs[[...m.id].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7) % xs.length];
   const th = (k: number) => ordinal(k);
+  // a pair is plural, a singles player is not
+  const be = (x: Side) => (m[x].length > 1 ? 'were' : 'was');
+  const they = (x: Side) => (m[x].length > 1 ? 'they' : 'he');
 
   if (!w) {
     // halved
@@ -540,7 +543,7 @@ export function matchStory(m: Match, s: Session, r: CalcResult): string {
       const left = s.holes - big.at;
       return pick([
         `${nm(big.x)} had this one by the throat, ${big.best} up with ${left} to play. ${nm(other(big.x))} pried it loose hole by hole and walked off with a half that felt like a win.`,
-        `${big.best} up with ${left} left, ${nm(big.x)} were already spending the point. ${nm(other(big.x))} took it back one hole at a time and the match ended where it began: all square.`,
+        `${big.best} up with ${left} left, ${nm(big.x)} ${be(big.x)} already spending the point. ${nm(other(big.x))} took it back one hole at a time and the match ended where it began: all square.`,
       ]);
     }
     return changes >= 2
@@ -572,7 +575,7 @@ export function matchStory(m: Match, s: Session, r: CalcResult): string {
       return pick([
         `${nm(w)} took the ${th(firstLead)} and never let go. ${wp.best} up through ${wp.at}, this was a procession, not a match.`,
         `Front-running from the ${th(firstLead)}, ${nm(w)} stretched it to ${wp.best} up by the ${th(wp.at)} and ${nm(L)} never got within shouting distance.`,
-        `${nm(L)} never led a hole. ${nm(w)} went ahead on the ${th(firstLead)}, were ${wp.best} up through ${wp.at}, and turned the closing stretch into a victory lap.`,
+        `${nm(L)} never led a hole. ${nm(w)} went ahead on the ${th(firstLead)}, ${be(w)} ${wp.best} up through ${wp.at}, and turned the closing stretch into a victory lap.`,
       ]);
     }
     if (firstLead <= 2) {
@@ -595,11 +598,11 @@ export function matchStory(m: Match, s: Session, r: CalcResult): string {
       return pick([
         `${nm(L)} came out swinging, ${lp.best} up through ${lp.at}, and the match looked over. It wasn't. ${nm(w)} won ${late} of the last ${holeWord(k)}${clean} and stole it.${closer}`,
         `Despite a blistering start from ${nm(L)}, ${lp.best} up through ${lp.at}, ${nm(w)} came roaring back, winning ${late} of the last ${holeWord(k)}${clean}.${closer}`,
-        `${lp.best} down through ${lp.at}, ${nm(w)} were being written off. Then the comeback: ${late} holes won of the last ${k}${clean}, and ${nm(L)} could only watch it slip.${closer}`,
+        `${lp.best} down through ${lp.at}, ${nm(w)} ${be(w)} being written off. Then the comeback: ${late} holes won of the last ${k}${clean}, and ${nm(L)} could only watch it slip.${closer}`,
       ]);
     }
     return pick([
-      `${nm(w)} were ${lp.best} down with ${s.holes - lp.at} to play and had no business winning this. ${late} of the last ${holeWord(k)}${clean} later, they did.${closer}`,
+      `${nm(w)} ${be(w)} ${lp.best} down with ${s.holes - lp.at} to play and had no business winning this. ${late} of the last ${holeWord(k)}${clean} later, ${they(w)} did.${closer}`,
       `Down ${lp.best} through ${lp.at}, ${nm(w)} pulled off the great escape, winning ${late} of the last ${holeWord(k)}${clean} while ${nm(L)} watched a sure point evaporate.${closer}`,
     ]);
   }
@@ -611,7 +614,7 @@ export function matchStory(m: Match, s: Session, r: CalcResult): string {
   }
   const took = (() => { for (let i = n - 1; i >= 0; i--) if (side(ser[i]) !== w) return i + 2; return firstLead; })();
   return pick([
-    `${nm(L)} drew first blood, but it didn't last. ${nm(w)} took the lead for good on the ${th(took)} and never looked over their shoulder.${closer}`,
+    `${nm(L)} drew first blood, but it didn't last. ${nm(w)} took the lead for good on the ${th(took)} and never looked back.${closer}`,
     `${nm(L)} nosed ahead early and ${nm(w)} let them enjoy it for a while. The ${th(took)} settled who was really in charge.${closer}`,
     `An early scare from ${nm(L)}, then ${nm(w)} took over on the ${th(took)} and the match went one direction from there.${closer}`,
   ]);
