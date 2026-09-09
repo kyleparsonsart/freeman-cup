@@ -22,7 +22,10 @@ export default function LetterMoment({ data, letter, onClose, onSeeMatch }: {
   const them = CFG.teams[side === 'a' ? 'b' : 'a'];
   const { session: s, match: m } = letter;
   const singles = !letter.partner;
-  const shots = letter.strokes.map(x => `${x.key === me ? 'You get' : `${fn(x.key)} gets`} ${x.n}`).join(', ');
+  // strokes off the low man, my side first; the low man shows a dash
+  const order = side === 'a' ? [...m.a, ...m.b] : [...m.b, ...m.a];
+  const shotsOf = (k: string) => letter.strokes.find(x => x.key === k)?.n ?? 0;
+  const anyShots = letter.strokes.some(x => x.n > 0);
   const myHoles = strokeHoles(m, me, s.holes);
   // player keys are lowercased first names (see useEventData.playerKey)
   const hi = (k: string) => Math.round(Number(data.players.find(p => p.name.split(' ')[0].toLowerCase() === k)?.handicap_index ?? NaN));
@@ -67,10 +70,24 @@ export default function LetterMoment({ data, letter, onClose, onSeeMatch }: {
         {!torn
           ? <div className="tap">Tap to open</div>
           : <div className="next">
-              <div className="sub">
-                {shots ? `Off the low man: ${shots}.` : 'Straight up, no shots either way.'}
-                {myHoles.length > 0 && ` Your dots: ${myHoles.join(', ')}.`}
-                {` ${them.name} in ${them.name === 'Vikes' ? 'red' : 'blue'}, first tee ${letter.tee}.`}
+              <div className="shots">
+                <div className="k">{anyShots ? 'Strokes off the low man' : 'Straight up, no strokes'}</div>
+                <div className="tiles">
+                  {order.map(k => {
+                    const n = shotsOf(k);
+                    const kside = m.a.includes(k) ? 'a' : 'b';
+                    return (
+                      <div key={k} className={`tile${k === me ? ' me' : ''}`}>
+                        <span className={`nm ${kside}`}>{k === me ? 'You' : fn(k)}</span>
+                        <span className="n">{n > 0 ? n : '–'}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                {myHoles.length > 0 && (
+                  <div className="row"><span className="k">Your dots</span><span className="v">{myHoles.join(' · ')}</span></div>
+                )}
+                <div className="row"><span className="k">First tee</span><span className="v">{letter.tee} · {them.name} in {them.name === 'Vikes' ? 'red' : 'blue'}</span></div>
               </div>
               <button className="abtn" onClick={onSeeMatch}>See the match</button>
               <button className="aghost" onClick={onClose}>Close</button>
