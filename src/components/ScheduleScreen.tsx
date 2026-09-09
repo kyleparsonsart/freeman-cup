@@ -56,7 +56,8 @@ export default function ScheduleScreen({ data, moments = null, onMoment, onRule 
                 <button className="rchip" onClick={() => onMoment(dm.key)}>Recap ›</button>
               )}
             </div>
-            {rs.map(x => (
+            {rs.map((x, xi) => (<div key={x.id}>
+              {xi > 0 && <svg className="perf" aria-hidden="true"><line x1="9" y1="1" x2="calc(100% - 9px)" y2="1" /></svg>}
               <RoundCard
                 key={x.id}
                 s={x}
@@ -65,11 +66,14 @@ export default function ScheduleScreen({ data, moments = null, onMoment, onRule 
                 toggle={(m, st) => setCards(c => ({ ...c, [m.id]: !isOpen(m, st) }))}
                 onCard={onMoment}
               />
-            ))}
+            </div>))}
           </div>
         );
       })}
 
+      <div className="squig" aria-hidden="true">
+        <svg viewBox="0 0 120 12" preserveAspectRatio="none"><path d="M0 6 Q7.5 0 15 6 T30 6 T45 6 T60 6 T75 6 T90 6 T105 6 T120 6" /></svg>
+      </div>
       <TheField onOpen={onMoment} />
       <TheRaces sessions={sessions} matches={matches} onOpen={onMoment} onRule={onRule} />
     </>
@@ -87,7 +91,7 @@ function TheRaces({ sessions, matches, onOpen, onRule }: { sessions: Session[]; 
   const races = roundRaces(sessions, matches);
   return (
     <>
-      <div className="sh"><h2>The races</h2><span className="meta">Hole points</span></div>
+      <div className="sh"><h2>The King’s Race</h2><span className="meta">Hole points</span></div>
       {board.length === 0 ? (
         <div className="empty">
           <IconMedal />
@@ -193,6 +197,15 @@ function RoundCard({ s, ms, isOpen, toggle, onCard }: RoundCardProps) {
           <div className="t3">
             Tees {s.tees.join(' and ')} · {s.scorer.map(k => fn(P[k]?.n) || 'nobody').join(' and ')} scoring
           </div>
+          {onCard && ms.some(m => calc(m).done) && (
+            <div className="sumchips">
+              {ms.filter(m => calc(m).done).map(m => {
+                const inGroup = ms.filter(x => x.g === m.g).length;
+                const label = inGroup > 1 ? `${names(m.a)} v ${names(m.b)}` : `Group ${String.fromCharCode(65 + m.g)} Summary`;
+                return <button key={m.id} className="rchip sum" onClick={() => onCard(`match:${m.id}`)}>{label}</button>;
+              })}
+            </div>
+          )}
         </div>
         <div className="rright">{pill}{scoreline}</div>
       </div>
@@ -229,9 +242,6 @@ function RoundCard({ s, ms, isOpen, toggle, onCard }: RoundCardProps) {
                 <span className={`s ${cls}`}>{stat}</span>
                 {r.played > 0 && <span className="cchev">▾</span>}
               </button>
-              {r.done && onCard && (
-                <button className="cardbtn" aria-label="Open the result card" onClick={() => onCard(`match:${m.id}`)}>Card ›</button>
-              )}
             </div>
             {open && <div className="inlinecard"><Scorecard match={m} /></div>}
           </div>

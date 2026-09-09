@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { enqueueHoleWrite, getQueuedWrites, onQueueChange, dismissBlocked, type QueuedHoleWrite } from '../lib/writeQueue';
 import { groupMatches, openHoles, holesShort, byeProgress } from '../lib/card';
 import {
-  calc, derive, settle, holeComplete, getsStroke, strokeMap, runningAt, headline,
+  calc, derive, settle, holeComplete, getsStroke, strokeMap,
   holeKeys, missingIn, initials, setContext,
   CFG, P,
   type Match,
@@ -156,11 +156,12 @@ function GroupTabs({ matches, heroId, onSelect, meKey }: GroupTabsProps) {
           : (rr.diff === 0 ? 'Even' : `${Math.abs(rr.diff)} up`);
         const selected = m.id === heroId;
         const colCls = rr.w === 'a' ? 'a' : rr.w === 'b' ? 'b' : '';
+        const lead = rr.played && (rr.w === 'a' || rr.w === 'b') ? ` lead-${rr.w}` : '';
 
         return (
           <button
             key={m.id}
-            className="ftab"
+            className={`ftab${lead}`}
             role="tab"
             aria-selected={selected}
             style={{ animationDelay: `${ix * 80}ms` }}
@@ -336,6 +337,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
 
   // Everything this scorer carries (two matches a group at singles)
   const gms = groupMatches(data.scoringMatches, m.s, m.g);
+  const lastSet = useRef<{ k: string; i: number; v: number | 'X'; t: number } | null>(null);
   const gaps = openHoles(gms, s.holes).filter(o => !(o.matchId === m.id && o.hole === i));
   const gBlocked = blocked.filter(w => gms.some(gm => gm.id === w.match_id));
   const short = holesShort(gms, s.holes);
@@ -434,9 +436,14 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
     // Pin to current hole so we don't auto-advance after scoring
     setPinned(prev => ({ ...prev, [m.id]: i }));
 
-    // Toggle: tapping same score clears it
+    // Toggle: tapping same score clears it. A second tap on the value that
+    // was set a moment ago is a bounce (or an impatient re-tap while the
+    // first is still drawing), not a request to clear it.
     const current = h.sc[k];
+    const last = lastSet.current;
+    if (current === value && last && last.k === k && last.i === i && last.v === value && Date.now() - last.t < 1200) return;
     const newVal = current === value ? undefined : value;
+    lastSet.current = newVal === undefined ? null : { k, i, v: value, t: Date.now() };
 
     // Build new scores object with player IDs (not keys)
     const newScores: Record<string, number | string> = {};
@@ -733,12 +740,18 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
       )}
 
       {/* Hole footer */}
-      <div className="hfoot">
-        <span>
-          {bye
-            ? `Match final · ${headline(m).txt}`
-            : (h.r ? `${runningAt(m, i)} after ${i + 1}${h.by ? ' · ' + h.by : ''}` : 'Not posted')}
-        </span>
+      <div className="hfoot mvp">
+        <span className="lbl">MVP</span>
+        {(() => {
+          const tot: Record<string, number> = {};
+          gms.forEach(gm => gm.hs.forEach((_h, hi) => {
+            Object.entries(holePoints(gm, s, hi)).forEach(([pk, pv]) => { tot[pk] = (tot[pk] || 0) + pv; });
+          }));
+          const order = gms.flatMap(gm => [...gm.a, ...gm.b]);
+          return order.map(pk => (
+            <span key={pk} className="mp"><b className={P[pk]?.t || 'a'}>{fn(P[pk]?.n) || pk}</b> {tot[pk] || 0}</span>
+          ));
+        })()}
       </div>
 
       {/* One-thumb flow: the hole settles, the way forward appears where

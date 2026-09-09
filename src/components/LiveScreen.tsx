@@ -5,6 +5,7 @@ import { half, CFG } from '../lib/scoring';
 import { IconBinoculars } from './icons';
 import type { MomentsState } from '../lib/moments';
 import type { EventData } from '../hooks/useEventData';
+import { liveCard } from '../lib/cards';
 
 /** `**bold**` runs in feed text become <b>. */
 function rich(text: string): ReactNode[] {
@@ -83,6 +84,7 @@ export default function LiveScreen({ data, moments = null, onMoment, strip = tru
 
   // most recent day open by default; -1 closes them all
   const [openDay, setOpenDay] = useState(0);
+  const liveDay = liveCard(data)?.s.day ?? null;
 
   const won = moments?.won ?? null;
   return (
@@ -126,22 +128,25 @@ export default function LiveScreen({ data, moments = null, onMoment, strip = tru
       ) : days.map((g, i) => {
         const [dow, ...rest] = g.day.split(' ');
         const open = i === openDay;
+        // the day's summary card: the recap once it's in the book, the state
+        // of the Cup while it's on the course
+        const sumKey = moments?.days.find(x => x.day === g.day)?.key
+          ?? (liveDay === g.day ? 'live' : null);
         return (
           <div key={g.day} className="dayfade" style={{ animationDelay: `${i * 110}ms` }}>
-            <button
-              className="dayhd"
-              aria-expanded={open}
-              onClick={() => setOpenDay(open ? -1 : i)}
-            >
-              <span className="l">
+            <div className="dayhd" aria-expanded={open}>
+              <button className="l" onClick={() => setOpenDay(open ? -1 : i)}>
                 <span className="n">{dow}</span>
                 <span className="d">{rest.join(' ')}</span>
-              </span>
+              </button>
               <span className="r">
-                {open ? '' : `${g.items.length} updates`}
-                <span className="chev">▾</span>
+                {sumKey && onMoment && <button className="rchip sum" onClick={() => onMoment(sumKey)}>Summary</button>}
+                <button className="tog" onClick={() => setOpenDay(open ? -1 : i)} aria-label={open ? 'Collapse' : 'Expand'}>
+                  {open ? '' : `${g.items.length} updates`}
+                  <span className="chev">▾</span>
+                </button>
               </span>
-            </button>
+            </div>
             {open && g.items.map((e, ix) => {
               const mk = openFor(e);
               return (
@@ -174,14 +179,14 @@ function FeedRow({ e, delay = 0, spike = false, onOpen }: { e: FeedItem; delay?:
     >
       <div className="t">{clock(e.at)}</div>
       <div className="bd">
+        {tag && <div className="tagline">{tag}</div>}
         {e.hl ? (
           <>
-            <div className="hl">{tag}{e.hl}</div>
+            <div className="hl">{e.hl}</div>
             {e.text && rich(e.text)}
           </>
         ) : (
           <>
-            {tag}
             {e.who && <span className={`who ${e.who.side}`}>{e.who.name}</span>}
             {rich(e.text)}
           </>

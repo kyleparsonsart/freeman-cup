@@ -11,7 +11,7 @@ import { getActing, setActing, type Acting } from './lib/view';
 import LiveScreen from './components/LiveScreen';
 import MomentOverlay from './components/Moments';
 import ShareCard, { resolveCard } from './components/ShareCard';
-import { nextMatchCard, markCardSeen, liveCard } from './lib/cards';
+import { nextMatchCard, markCardSeen } from './lib/cards';
 import ScheduleScreen from './components/ScheduleScreen';
 import SignInScreen from './components/SignInScreen';
 import SettingsSheet from './components/SettingsSheet';
@@ -162,7 +162,6 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
     () => (data && moKey && moKey !== 'duel' ? resolveCard(data, moKey, when, data.event.shootout ?? null) : null),
     [data, moKey, when],
   );
-  const canShareLive = !!data && !!liveCard(data);
   // a key that no longer resolves (data corrected under it) just closes
   useEffect(() => {
     if (data && moKey && moKey !== 'duel' && !card) setMoKey(null);
@@ -234,13 +233,6 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
           <path d="M3 8.5 7.6 12 12 5.5 16.4 12 21 8.5 19.2 17H4.8L3 8.5z"/>
           <rect x="4.8" y="18.2" width="14.4" height="1.9"/>
         </svg>
-      )}
-      {tab === 'live' && canShareLive && (
-        <button className="cog book" aria-label="Share the state of the Cup" onClick={() => setMoKey('live')}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 3v12"/><path d="m8 7 4-4 4 4"/><path d="M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>
-          </svg>
-        </button>
       )}
       <button className="cog book" aria-label="The rulebook" onClick={() => openRules()}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
