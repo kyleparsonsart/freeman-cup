@@ -15,6 +15,7 @@
 import { calc, P, CFG, type Match, type Session, type CalcResult } from './scoring';
 import type { DbPlayer, DbTeeGroup, DbMatch } from './types';
 import { plannedPoints } from './moments';
+import { roundRaces, type RaceRow } from './standings';
 
 export type Side = 'a' | 'b';
 
@@ -465,6 +466,24 @@ export function spikes(d: CardData): SpikeCard[] {
 
 export function spikeCard(d: CardData, key: string): SpikeCard | null {
   return spikes(d).find(x => x.key === key) || null;
+}
+
+/* ------------------------------------------------- player of the round */
+
+export interface PotrCard {
+  kind: 'potr';
+  key: string;
+  s: Session;
+  winner: RaceRow;
+  second: RaceRow | null;
+}
+
+/** The round's best full card, once the round is final. */
+export function potrCard(d: CardData, sid: string): PotrCard | null {
+  const r = roundRaces(d.scoringSessions, d.scoringMatches).find(x => x.roundId === sid);
+  if (!r || !r.winner) return null;
+  const s = d.scoringSessions.find(x => x.id === sid)!;
+  return { kind: 'potr', key: `potr:${sid}`, s, winner: r.winner, second: r.second };
 }
 
 /* ---------------------------------------------------------- once per phone */

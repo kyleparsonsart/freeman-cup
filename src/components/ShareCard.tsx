@@ -2,14 +2,14 @@ import type { ReactNode } from 'react';
 import { half, CFG } from '../lib/scoring';
 import {
   type CardData, type MatchCard, type DayCard, type FinaleCard, type ShootoutCard,
-  type PlayerCard, type WeekCard, type LiveCard, type SpikeCard, type Side,
-  matchCard, dayCard, finaleCard, shootoutCard, playerCard, weekCard, liveCard, spikeCard,
+  type PlayerCard, type WeekCard, type LiveCard, type SpikeCard, type PotrCard, type Side,
+  matchCard, dayCard, finaleCard, shootoutCard, playerCard, weekCard, liveCard, spikeCard, potrCard,
   names, first, dowOf, teeOf, ordinal, recordLabel, other,
 } from '../lib/cards';
 import { TIEBREAK } from '../lib/moments';
-import { mvpBoard, holePoints } from '../lib/standings';
+import { mvpBoard, holePoints, relLabel } from '../lib/standings';
 
-export type Card = MatchCard | DayCard | FinaleCard | ShootoutCard | PlayerCard | WeekCard | LiveCard | SpikeCard;
+export type Card = MatchCard | DayCard | FinaleCard | ShootoutCard | PlayerCard | WeekCard | LiveCard | SpikeCard | PotrCard;
 
 /** Resolve a card key against the data. Unknown or not-yet-true keys give null. */
 export function resolveCard(
@@ -27,6 +27,7 @@ export function resolveCard(
   if (kind === 'day') return dayCard(d, rest);
   if (kind === 'player') return playerCard(d, rest);
   if (kind === 'spike') return spikeCard(d, key);
+  if (kind === 'potr') return potrCard(d, rest);
   return null;
 }
 
@@ -88,6 +89,7 @@ function Body({ card, onOpen, year, data }: { card: Card; onOpen: (key: string) 
     }
     case 'live': return <LiveBody c={card} />;
     case 'spike': return <SpikeBody c={card} />;
+    case 'potr': return <PotrBody c={card} onOpen={onOpen} />;
   }
 }
 
@@ -337,6 +339,29 @@ function SpikeBody({ c }: { c: SpikeCard }) {
       <h2 className="mid">{c.headline}</h2>
       <div className={`k ${tc(c.side)}`} style={{ marginTop: 14 }}>{c.who} · {CFG.teams[c.side].name}</div>
       <div className="pline" style={{ marginTop: 22 }}>{c.line}</div>
+    </div>
+  );
+}
+
+/* 9 · player of the round */
+function PotrBody({ c, onOpen }: { c: PotrCard; onOpen: (k: string) => void }) {
+  const w = c.winner, r = c.second;
+  const won = w.solo + w.team;
+  const how = w.solo && w.team ? `${w.solo} alone, ${w.team} with a partner`
+    : w.solo ? (c.s.fmt === 'Singles' ? 'every one on his own ball' : `all ${w.solo} alone`)
+    : `all ${w.team} with a partner`;
+  const margin = r
+    ? (r.pts === w.pts ? `Level with ${r.name} on points; ${relLabel(w.rel)} net takes it.` : `${r.name} next on ${r.pts}.`)
+    : 'The only full card in the round.';
+  return (
+    <div className="pcenter spk">
+      <div className="ptop full"><Badge /><div className="k">{dowOf(c.s.day)} · {c.s.course}<br />{c.s.rd} · {c.s.fmt}</div></div>
+      <div className="pnum giant tbrass">{w.pts}</div>
+      <h2 className="mid"><Name k={w.key} side={w.side} onOpen={onOpen} /></h2>
+      <div className={`k ${tc(w.side)}`} style={{ marginTop: 14 }}>Player of the Round · {CFG.teams[w.side].name}</div>
+      <div className="pline" style={{ marginTop: 22 }}>
+        <b>{w.pts} hole points</b> from {won} hole{won === 1 ? '' : 's'} won, {how}. <b>{relLabel(w.rel)} net</b> for the round. {margin}
+      </div>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { calc, roundState, half, P, CFG, type Match, type Session } from '../lib/scoring';
 import Scorecard from './Scorecard';
-import { mvpBoard, roundRaces, relLabel } from '../lib/standings';
+import { mvpBoard, roundRaces, relLabel, type RoundRace } from '../lib/standings';
 import type { MomentsState } from '../lib/moments';
 import { IconMedal, IconCrown } from './icons';
 import type { EventData } from '../hooks/useEventData';
@@ -21,6 +21,7 @@ export default function ScheduleScreen({ data, moments = null, onMoment, onRule 
   const isOpen = (m: Match, st: string) => cards[m.id] ?? st === 'live';
 
   const days = [...new Set(sessions.map(x => x.day))];
+  const races = roundRaces(sessions, matches);
 
   const won = moments?.won ?? null;
 
@@ -65,6 +66,7 @@ export default function ScheduleScreen({ data, moments = null, onMoment, onRule 
                 isOpen={isOpen}
                 toggle={(m, st) => setCards(c => ({ ...c, [m.id]: !isOpen(m, st) }))}
                 onCard={onMoment}
+                race={races.find(r => r.roundId === x.id)}
               />
             </div>))}
           </div>
@@ -79,14 +81,13 @@ export default function ScheduleScreen({ data, moments = null, onMoment, onRule 
 }
 
 /**
- * The races: the MVP board and Player of the Round, in place of the old
- * rosters. Net against par, own-ball rounds, full cards only — a short
+ * The race: the MVP board, in place of the old rosters. Player of the
+ * Round lives on each round's card. Net against par, own-ball rounds, full cards only — a short
  * card stays on the board, struck through, so the missing byes have a
  * face.
  */
 function TheRaces({ sessions, matches, onOpen, onRule }: { sessions: Session[]; matches: Match[]; onOpen?: (key: string) => void; onRule?: (article: number) => void }) {
   const board = mvpBoard(sessions, matches);
-  const races = roundRaces(sessions, matches);
   return (
     <>
       <div className="sh"><h2>The King’s Race</h2>{onRule && <button className="rchip" onClick={() => onRule(11)}>How points work</button>}</div>
@@ -116,20 +117,6 @@ function TheRaces({ sessions, matches, onOpen, onRule }: { sessions: Session[]; 
       </div>
       </>)}
 
-      <Squiggle />
-      <div className="sh"><h2>Player of the round</h2></div>
-      {races.map(r => (
-        <div key={r.roundId} className={`potr${r.state === 'final' ? '' : ' up'}`}>
-          <span className="r3">{r.rd} · {r.course}</span>
-          <span className="w3">
-            {r.winner
-              ? <><b className={r.winner.side}>{r.winner.name}</b> · {r.winner.pts} pts · {relLabel(r.winner.rel)} net</>
-              : r.state === 'live' ? 'In play'
-              : r.state === 'upcoming' ? 'To come'
-              : 'No full cards'}
-          </span>
-        </div>
-      ))}
     </>
   );
 }
@@ -182,17 +169,17 @@ interface RoundCardProps {
   isOpen: (m: Match, st: string) => boolean;
   toggle: (m: Match, st: string) => void;
   onCard?: (key: string) => void;
+  race?: RoundRace;
 }
 
-function RoundCard({ s, ms, isOpen, toggle, onCard }: RoundCardProps) {
+function RoundCard({ s, ms, isOpen, toggle, onCard, race }: RoundCardProps) {
   const st = roundState(s);
   let a = 0, b = 0;
   ms.forEach(m => { const r = calc(m); a += r.pts.a; b += r.pts.b; });
   const done = ms.filter(m => calc(m).done).length;
 
-  const pill = st === 'live' ? <span className="spill live"><i className="pulse" />Live</span>
-    : st === 'final' ? <span className="spill final">Final</span>
-    : <span className="spill up">To play</span>;
+  // only Live earns a pill; the score line says final or to play on its own
+  const pill = st === 'live' ? <span className="spill live"><i className="pulse" />Live</span> : null;
 
   const scoreline = st === 'final'
     ? <div className="rscore"><span className="a">{half(a)}</span><span className="d">–</span><span className="b">{half(b)}</span></div>
@@ -260,6 +247,17 @@ function RoundCard({ s, ms, isOpen, toggle, onCard }: RoundCardProps) {
         );
       })}
 
+      {st === 'final' && (
+        <div className="potrrow">
+          <span className="lbl">Player of the round</span>
+          <span className="who">
+            {race?.winner
+              ? <><b className={race.winner.side}>{race.winner.name}</b> · {race.winner.pts} pts · {relLabel(race.winner.rel)} net</>
+              : 'No full cards'}
+          </span>
+          {race?.winner && onCard && <button className="rchip sum" onClick={() => onCard(`potr:${s.id}`)}>View ›</button>}
+        </div>
+      )}
       {st === 'upcoming' && (
         <div className="rfoot"><span>{ms.length ? 'Pairings set. Cards handed in the night before.' : 'Pairings post the night before, from the captains’ sheets.'}</span></div>
       )}

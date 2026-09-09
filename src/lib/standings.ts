@@ -34,8 +34,12 @@ export interface RoundRace {
   course: string;
   day: string;
   state: 'final' | 'live' | 'upcoming';
-  winner: { key: string; name: string; side: 'a' | 'b'; pts: number; rel: number } | null;
+  winner: RaceRow | null;
+  /** next best full card, for the margin on the card */
+  second: RaceRow | null;
 }
+
+export interface RaceRow { key: string; name: string; side: 'a' | 'b'; pts: number; rel: number; solo: number; team: number }
 
 const fn = (n?: string | null) => (n || '').split(' ')[0];
 
@@ -147,16 +151,15 @@ export function roundRaces(sessions: Session[], matches: Match[]): RoundRace[] {
       const state = s.state === 'final' ? 'final'
         : matches.some(m => m.s === s.id && calc(m).played > 0) ? 'live'
         : 'upcoming';
-      let winner: RoundRace['winner'] = null;
+      const rows: RaceRow[] = [];
       if (state === 'final') {
         const acc = accumulate([s], matches.filter(m => m.s === s.id), s.id);
         Object.entries(acc).forEach(([k, e]) => {
           if (e.holes !== s.holes) return; // full round card only
-          if (!winner || e.pts > winner.pts || (e.pts === winner.pts && e.rel < winner.rel)) {
-            winner = { key: k, name: fn(P[k]?.n) || k, side: P[k]?.t || 'a', pts: e.pts, rel: e.rel };
-          }
+          rows.push({ key: k, name: fn(P[k]?.n) || k, side: P[k]?.t || 'a', pts: e.pts, rel: e.rel, solo: e.solo, team: e.team });
         });
+        rows.sort((x, y) => y.pts - x.pts || x.rel - y.rel);
       }
-      return { roundId: s.id, rd: s.rd, course: s.course, day: s.day, state, winner };
+      return { roundId: s.id, rd: s.rd, course: s.course, day: s.day, state, winner: rows[0] || null, second: rows[1] || null };
     });
 }
