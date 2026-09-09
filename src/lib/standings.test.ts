@@ -41,17 +41,17 @@ beforeAll(() => setContext(P, S, [fb, ag, sg]));
 
 describe('hole points', () => {
   it('scores solo, team, halved (nothing) and pick-ups at four-ball', () => {
-    expect(holePoints(fb, S[0], 0)).toEqual({ griffin: 3, matt: 0, kyle: 0, justin: 0 });
-    expect(holePoints(fb, S[0], 1)).toEqual({ griffin: 2, matt: 2, kyle: 0, justin: 0 });
+    expect(holePoints(fb, S[0], 0)).toEqual({ griffin: 2, matt: 0, kyle: 0, justin: 0 });
+    expect(holePoints(fb, S[0], 1)).toEqual({ griffin: 1, matt: 1, kyle: 0, justin: 0 });
     expect(holePoints(fb, S[0], 2)).toEqual({ griffin: 0, matt: 0, kyle: 0, justin: 0 });
-    expect(holePoints(fb, S[0], 3)).toEqual({ griffin: 0, matt: 3, kyle: 0, justin: 0 });
+    expect(holePoints(fb, S[0], 3)).toEqual({ griffin: 0, matt: 2, kyle: 0, justin: 0 });
     expect(holePoints(fb, S[0], 4)).toEqual({ griffin: 0, matt: 0, kyle: 0, justin: 0 });
   });
   it('is empty until the hole is fully scored', () => {
     expect(holePoints(fb, S[0], 5)).toEqual({});
   });
   it('aggregate wins are team wins', () => {
-    expect(holePoints(ag, S[1], 0)).toEqual({ griffin: 2, matt: 2, kyle: 0, justin: 0 });
+    expect(holePoints(ag, S[1], 0)).toEqual({ griffin: 1, matt: 1, kyle: 0, justin: 0 });
     expect(holePoints(ag, S[1], 1)).toEqual({ griffin: 0, matt: 0, kyle: 0, justin: 0 });
   });
   it('singles wins are always solo', () => {
@@ -64,13 +64,13 @@ describe('the board', () => {
   it('ranks by points, net breaking ties', () => {
     const board = mvpBoard(S, [fb, ag, sg]);
     const g = board.find(r => r.key === 'griffin')!;
-    // four-ball 3+2+0+0+0 = 5, aggregate 2+0 = 2, singles 3+0 = 3; halves score nothing but are counted
-    expect(g.pts).toBe(10);
+    // four-ball 2+1+0+0+0 = 3, aggregate 1+0 = 1, singles 2+0 = 2; halves score nothing but are counted
+    expect(g.pts).toBe(6);
     expect(g.solo).toBe(2);
     expect(g.team).toBe(2);
     expect(g.halves).toBe(4);
     const m = board.find(r => r.key === 'matt')!;
-    expect(m.pts).toBe(0 + 2 + 0 + 3 + 0 + 2 + 0);
+    expect(m.pts).toBe(0 + 1 + 0 + 2 + 0 + 1 + 0);
     expect(board[0].key).toBe('griffin');
   });
   it('player of the round wants a full card, then most points', () => {

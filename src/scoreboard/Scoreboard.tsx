@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import { calc, half, getsStroke, CFG, type Match, type Session } from '../lib/scoring';
 import { plannedPoints } from '../lib/moments';
-import { mvpBoard, roundRaces, relLabel } from '../lib/standings';
+import { mvpBoard, relLabel } from '../lib/standings';
 import { leadSeries, matchStory } from '../lib/cards';
 import { shape, teeClock, teeClockAmPm, type Shaped, type Snapshot } from './shape';
 import { matchMoments, clockCT } from './moments';
@@ -288,7 +288,7 @@ function HowBar({ open, clinch, total, trophy }: { open: boolean; clinch: number
         <p><b>It's match play.</b> Nobody counts total strokes. Each hole is its own contest. Win the hole and you're 1 up. A match ends when one side leads by more holes than remain, which is what 4 &amp; 3 means.</p>
         <p><b>Every match is one point.</b> Win it, your team gets 1. All square after the last hole is halved, half a point each. First team to {half(clinch)} of the {half(total)} takes the cup.</p>
         <p><b>{trophy}</b> is the trophy, a silver claret jug that lives with the winning side for a year and gets talked about for the other eleven months.</p>
-        <p><b>The King’s Race runs alongside.</b> Every hole a player wins earns points: 3 if his ball won it alone, 2 if his side won it together, nothing for a halve. Most points across the four rounds is the MVP, and each round crowns a Player of the Round. Net against par breaks ties.</p>
+        <p><b>The King’s Race runs alongside.</b> Every hole a player wins earns points: 2 if his ball won it alone, 1 if his side won it together, nothing for a halve. Most points across the four rounds is the MVP. Net against par breaks ties.</p>
         <p><b>Strokes</b> come off the low handicap in each match, hardest holes first: the full difference at singles and at the 12-hole aggregate (scaled to twelve), 90% of it at four-ball.</p>
       </div></div>
     </div>
@@ -509,13 +509,11 @@ function LeadBars({ m, s }: { m: Match; s: Session }) {
 
 function Race({ d }: { d: Shaped }) {
   const board = mvpBoard(d.sessions, d.matches);
-  const races = roundRaces(d.sessions, d.matches);
-  const anyPotr = races.some(r => r.winner);
   return (
     <section className="sect dayfade" ref={reveal}>
       <div className="wrap">
         <h2>The King’s Race</h2>
-        <p className="sub">Most hole points across the week is the MVP: 3 for a hole your ball won alone, 2 for one your side won together, nothing for a halve. Bye holes count, net against par breaks ties, and only full cards stay on the board.</p>
+        <p className="sub">Most hole points across the week is the MVP: 2 for a hole your ball won alone, 1 for one your side won together, nothing for a halve. Bye holes count, net against par breaks ties, and only full cards stay on the board.</p>
         {board.length === 0 ? (
           <div className="emp">
             <svg width="22" height="44"><use href="#claretjug" /></svg>
@@ -533,22 +531,6 @@ function Race({ d }: { d: Shaped }) {
               </div>
             ))}
           </div>
-        )}
-        {anyPotr && (
-          <>
-            <h3 className="h3">Player of the round</h3>
-            <div className="mvp potr">
-              {races.map((r, i) => (
-                <div key={r.roundId} className={`r${r.winner ? '' : ' off'}`}>
-                  <span className="pos">R{i + 1}</span>
-                  <b>{r.winner
-                    ? <><span className={cls(r.winner.side)}>{r.winner.name}</span> · {r.winner.pts} pts · {relLabel(r.winner.rel)} net</>
-                    : r.state === 'live' ? 'In play' : r.state === 'upcoming' ? 'To come' : 'No full cards'}</b>
-                  <span className="rd">{r.course}</span>
-                </div>
-              ))}
-            </div>
-          </>
         )}
       </div>
     </section>

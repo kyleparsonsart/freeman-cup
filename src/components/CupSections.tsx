@@ -24,8 +24,8 @@ export function TheRaces({ sessions, matches, onOpen, onRule }: { sessions: Sess
         <div className="empty">
           <IconMedal />
           <b>The board opens Thursday</b>
-          First cards start the race. Hole points: 3 for a hole your ball
-          won alone, 2 for one your side won together. A halve earns nothing.
+          First cards start the race. Hole points: 2 for a hole your ball
+          won alone, 1 for one your side won together. A halve earns nothing.
         </div>
       ) : (<>
       <div className="mvpboard">
