@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
 import { enqueueHoleWrite, getQueuedWrites, onQueueChange, dismissBlocked, type QueuedHoleWrite } from '../lib/writeQueue';
 import { groupMatches, openHoles, holesShort, byeProgress } from '../lib/card';
@@ -814,7 +815,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
       {/* The card-in drawer: the scorer's handshake at the end of the day.
           Mounted only while open — parked offscreen its shadow used to
           bleed a smudge over the tab bar. */}
-      {drawerOpen && (
+      {drawerOpen && createPortal(
         <>
           <div className="scrim hi on rise" onClick={() => setDrawerOpen(false)} />
           <div className="drawer cardin on" role="dialog" aria-modal="true" aria-label="Card in">
@@ -827,7 +828,8 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
               onClose={() => setDrawerOpen(false)}
             />
           </div>
-        </>
+        </>,
+        document.body,
       )}
     </div>
   );
