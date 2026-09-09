@@ -4,8 +4,9 @@
  * Every hole result already lives in match_hole with a real updated_at, so
  * the feed is a pure function of the match data: re-derive and a correction
  * simply moves or removes its line, which is the "edit in place, never
- * append a retraction" rule for free. Scorer switches are the one thing the
- * holes can't know; they come from feed_event.
+ * append a retraction" rule for free. Cards coming home are the one thing
+ * the holes can't know; they come from feed_event (scorer switches live
+ * there too, but are housekeeping, not news).
  *
  * Ported from buildFeed() in the prototype, with real timestamps in place
  * of the invented ones.
@@ -226,12 +227,8 @@ export function buildFeed(input: FeedInput): FeedDay[] {
         key: `ci:${ev.id}`, day: s.day, at: new Date(ev.occurred_at).getTime(), side: '',
         text: `**${byId(ev.body.by)}** handed in Group ${letter}'s card for ${s.rd}.`,
       });
-      return;
     }
-    out.push({
-      key: `s:${ev.id}`, day: s.day, at: new Date(ev.occurred_at).getTime(), side: '',
-      text: `**${byId(ev.body.to)}** took over scoring for ${s.rd} Group ${letter} from ${byId(ev.body.from)}.`,
-    });
+    // scorer switches stay in feed_event for the record but are not feed lines (Sep 9)
   });
 
   if (firstEver !== Infinity) {

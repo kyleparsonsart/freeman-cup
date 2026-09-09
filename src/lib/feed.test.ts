@@ -103,7 +103,7 @@ describe('buildFeed', () => {
     expect(day.items.some(i => i.tag === 'Lead change')).toBe(false);
   });
 
-  it('adds scorer switches from feed_event', () => {
+  it('keeps scorer switches out of the feed', () => {
     const m = match('m1', 'griffin', 'kyle', ['A']);
     setContext(PLAYERS, [singles], [m]);
     const sw: DbFeedEvent = {
@@ -113,10 +113,7 @@ describe('buildFeed', () => {
     };
     const input = { ...base([m], [sw]), playerById: { p1: { name: 'Griffin S.' }, p2: { name: 'Kyle P.' } } as never };
     const [day] = buildFeed(input);
-    const s = day.items.find(i => i.key === 's:1')!;
-    expect(s.text).toContain('Kyle');
-    expect(s.text).toContain('Group A');
-    expect(s.text).toContain('from Griffin');
+    expect(day.items.find(i => i.key === 's:1')).toBeUndefined();
   });
 
   it('announces a card coming home', () => {
