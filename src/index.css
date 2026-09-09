@@ -1590,3 +1590,6 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .potrrow .who b.a{color:var(--red)} .potrrow .who b.b{color:var(--blue)}
 .potrrow .rchip{flex:none}
 .pc h2.mid .pname{font:inherit;letter-spacing:inherit}
+/* Sep 9: the round divider covers the card's own hairline so it reads as one 2px band of page ink */
+.perf{height:2px;border:none;background:var(--ink);margin-top:-1px;position:relative;z-index:1}
+.potrrow{background:rgba(15,30,25,.45)}
