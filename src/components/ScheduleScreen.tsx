@@ -247,15 +247,11 @@ function RoundCard({ s, ms, isOpen, toggle, onCard, race }: RoundCardProps) {
         );
       })}
 
-      {st === 'final' && (
+      {st === 'final' && race?.winner && onCard && (
+        // the name stays sealed until the card opens
         <div className="potrrow">
           <span className="lbl">Player of the round</span>
-          <span className="who">
-            {race?.winner
-              ? <><b className={race.winner.side}>{race.winner.name}</b> · {race.winner.pts} pts · {relLabel(race.winner.rel)} net</>
-              : 'No full cards'}
-          </span>
-          {race?.winner && onCard && <button className="rchip sum" onClick={() => onCard(`potr:${s.id}`)}>View ›</button>}
+          <button className="rchip sum" onClick={() => onCard(`potr:${s.id}`)}>View ›</button>
         </div>
       )}
       {st === 'upcoming' && (

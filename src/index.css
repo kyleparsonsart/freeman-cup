@@ -1607,3 +1607,4 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .envmo .shots .row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
 .envmo .shots .row .k{color:var(--moss-dim);flex:none}
 .envmo .shots .row .v{font-family:var(--num);font-weight:600;font-size:15px;color:var(--bone);text-align:right}
+.potrrow{justify-content:space-between}
