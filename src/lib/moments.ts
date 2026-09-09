@@ -70,7 +70,14 @@ export interface MomentsInput {
   shootout: ShootoutJson | null | undefined;
   players: DbPlayer[];
   teams: DbTeam[];
+  /** tee groups with their card-in stamps; when given, no moment fires
+   *  for a round until every group's card is handed in */
+  teeGroups?: { round_id: string; submitted_at?: string | null }[];
 }
+
+/** Points the schedule will decide in total: one per match, two per tee at singles. */
+export const plannedPoints = (sessions: Session[]): number =>
+  sessions.reduce((n, s) => n + s.tees.length * (s.fmt === 'Singles' ? 2 : 1), 0);
 
 const fn = (n?: string | null) => (n || '').split(' ')[0];
 const names = (keys: string[]) => keys.map(k => fn(P[k]?.n) || k).join(' / ');
@@ -93,7 +100,15 @@ const list = (xs: string[]): string =>
   xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`;
 
 export function deriveMoments(input: MomentsInput): MomentsState {
-  const { sessions, matches, matchHoles, clinchPoints, shootout, players, teams } = input;
+  const { sessions, matches, matchHoles, clinchPoints, shootout, players, teams, teeGroups } = input;
+
+  // a round's cards are in when every tee group has handed its card in;
+  // without tee-group data (public scoreboard, tests) the matches decide
+  const cardsIn = (sid: string): boolean => {
+    if (!teeGroups) return true;
+    const gs = teeGroups.filter(g => g.round_id === sid);
+    return gs.length > 0 && gs.every(g => !!g.submitted_at);
+  };
 
   const when: Record<string, number> = {};
   matchHoles.forEach(h => { when[`${h.match_id}:${h.hole}`] = new Date(h.updated_at).getTime(); });
@@ -133,7 +148,7 @@ export function deriveMoments(input: MomentsInput): MomentsState {
     let da = 0, db = 0;
     ms.forEach(m => { const r = calc(m); da += r.pts.a; db += r.pts.b; });
     cumA += da; cumB += db;
-    const done = ss.length > 0 && ss.every(s => s.state === 'final') && ms.some(m => calc(m).done);
+    const done = ss.length > 0 && ss.every(s => s.state === 'final' && cardsIn(s.id)) && ms.some(m => calc(m).done);
     if (!done) return;
 
     const dow = dowOf(day);
@@ -165,10 +180,14 @@ export function deriveMoments(input: MomentsInput): MomentsState {
     });
   });
 
-  // overall points, and the clinch walked final by final
+  // overall points, and the clinch walked final by final. "All done" means
+  // the whole Cup: every planned point decided, not merely every match
+  // posted so far (after Thursday only two matches exist).
   let a = 0, b = 0;
   matches.forEach(m => { const r = calc(m); a += r.pts.a; b += r.pts.b; });
-  const allDone = matches.length > 0 && matches.every(m => calc(m).done);
+  const planned = plannedPoints(sessions);
+  const allDone = matches.length > 0 && matches.every(m => calc(m).done)
+    && a + b >= planned && sessions.every(s => cardsIn(s.id));
 
   let wa = 0, wb = 0;
   let clincher: Final | null = null;
@@ -177,6 +196,8 @@ export function deriveMoments(input: MomentsInput): MomentsState {
     const r = calc(f.m);
     wa += r.pts.a; wb += r.pts.b;
     if (wa >= clinchPoints || wb >= clinchPoints) {
+      // the finale waits for the clinching round's cards to be handed in
+      if (!cardsIn(f.s.id)) break;
       clincher = f;
       clinchSide = wa >= clinchPoints ? 'a' : 'b';
       break;

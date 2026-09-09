@@ -126,6 +126,7 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
     shootout: data.event.shootout ?? null,
     players: data.players,
     teams: data.teams,
+    teeGroups: data.teeGroups,
   }) : null, [data]);
   const [moKey, setMoKey] = useState<string | null>(null);
   const autoShown = useRef<Set<string>>(new Set());

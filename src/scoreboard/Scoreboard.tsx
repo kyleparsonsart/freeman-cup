@@ -8,6 +8,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import { calc, half, getsStroke, CFG, type Match, type Session } from '../lib/scoring';
+import { plannedPoints } from '../lib/moments';
 import { mvpBoard, relLabel } from '../lib/standings';
 import { shape, teeClock, teeClockAmPm, type Shaped, type Snapshot } from './shape';
 import { matchMoments, clockCT } from './moments';
@@ -107,7 +108,9 @@ export default function Scoreboard() {
   const today = todayCT();
   const first = rounds[0];
   const anyScored = d.matches.some(m => calc(m).played > 0);
-  const allDone = d.matches.length > 0 && d.matches.every(m => calc(m).done);
+  // final means the whole Cup is decided, not merely every posted match
+  const decided = d.matches.reduce((n, m) => { const r = calc(m); return n + r.pts.a + r.pts.b; }, 0);
+  const allDone = d.matches.length > 0 && d.matches.every(m => calc(m).done) && decided >= plannedPoints(d.sessions);
   const phase: 'pre' | 'live' | 'final' = allDone ? 'final' : anyScored || today >= first.date ? 'live' : 'pre';
 
   const totals = { a: 0, b: 0 };

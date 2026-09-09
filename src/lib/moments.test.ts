@@ -128,13 +128,35 @@ describe('deriveMoments', () => {
     expect(levelPutts.won).toBeNull();
   });
 
+  it('does not call a 1-1 Thursday a level Cup, and waits for cards to come in', () => {
+    const thu = ses('r1', 'Thu Oct 8', 'final', 'Round 1', 'Mammoth Dunes');
+    const sat = ses('r4', 'Sat Oct 10', 'upcoming');
+    const ms = [sweep('m1', 'r1', 'griffin', 'kyle', 'A'), sweep('m2', 'r1', 'matt', 'jt', 'B')];
+    setContext(PLAYERS, [thu, sat], ms);
+    // only Thursday's matches exist; Saturday's two points are still to play
+    const early = deriveMoments(input([thu, sat], ms));
+    expect(early.tie).toBeNull();
+    expect(early.duelPending).toBe(false);
+    expect(early.won).toBeNull();
+    // with tee groups: the day recap waits for both cards
+    const oneIn = deriveMoments({ ...input([thu, sat], ms), teeGroups: [
+      { round_id: 'r1', submitted_at: '2026-10-08T22:00:00Z' }, { round_id: 'r1', submitted_at: null },
+    ] });
+    expect(oneIn.days).toEqual([]);
+    const bothIn = deriveMoments({ ...input([thu, sat], ms), teeGroups: [
+      { round_id: 'r1', submitted_at: '2026-10-08T22:00:00Z' }, { round_id: 'r1', submitted_at: '2026-10-08T22:10:00Z' },
+    ] });
+    expect(bothIn.days.map(d => d.key)).toEqual(['day:Thu Oct 8']);
+  });
+
   it('gives the MVP to the lowest full-card net against par', () => {
     const s = ses('r1', 'Sat Oct 10', 'final');
     // 18 holes, all halved, griffin nets par everywhere, kyle one over each hole
     const scores = PAR.map(p => ({ griffin: p, kyle: p + 1 }));
     const m = match('m1', 'r1', 'griffin', 'kyle', Array(18).fill('H'), scores);
-    setContext(PLAYERS, [s], [m]);
-    const out = deriveMoments(input([s], [m], { a: [3, 3, 3], b: [2, 2, 2], done: true }));
+    const m2 = level('m2', 'r1', 'matt', 'jt');   // the tee's second singles point, no scores kept
+    setContext(PLAYERS, [s], [m, m2]);
+    const out = deriveMoments(input([s], [m, m2], { a: [3, 3, 3], b: [2, 2, 2], done: true }));
     expect(out.won?.mvp?.name).toBe('Griffin');
     expect(out.won?.mvp?.line).toContain('even net');
   });

@@ -14,6 +14,7 @@
  */
 import { calc, P, CFG, type Match, type Session, type CalcResult } from './scoring';
 import type { DbPlayer, DbTeeGroup, DbMatch } from './types';
+import { plannedPoints } from './moments';
 
 export type Side = 'a' | 'b';
 
@@ -174,7 +175,9 @@ export function finaleCard(
   const clinchPts = Number(d.event.clinch_points) || 5.5;
   let a = 0, b = 0;
   d.scoringMatches.forEach(m => { const r = calc(m); a += r.pts.a; b += r.pts.b; });
-  const allDone = d.scoringMatches.length > 0 && d.scoringMatches.every(m => calc(m).done);
+  // the whole Cup decided, not merely every match posted so far
+  const allDone = d.scoringMatches.length > 0 && d.scoringMatches.every(m => calc(m).done)
+    && a + b >= plannedPoints(d.scoringSessions);
   if (allDone && a === b) {
     const sh = shootoutCard(d, shootout);
     return sh ? { kind: 'won', key: 'won', winner: sh.winner, pts: { a, b }, clinch: null, viaShootout: true } : null;
