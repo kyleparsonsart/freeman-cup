@@ -53,7 +53,9 @@ export default function CupStrip({ decided = null, onOpenFinale }: {
       <div className="tug">
         <div className="f fa" style={{ width: `${paw}%` }} />
         <div className="f fb" style={{ width: `${pbw}%` }} />
-        {!decided && <div className="live" style={{ left: `${paw}%`, right: `${pbw}%` }} />}
+        {/* the crawling stripes span the whole bar and are clipped to the undecided middle, so the
+            pattern stays anchored to the bar while the edges move instead of dragging with them */}
+        {!decided && <div className="live" style={{ clipPath: `inset(0 ${pbw}% 0 ${paw}%)` }} />}
         <div className="tick" style={{ left: `${cp}%` }} />
         <div className="tick" style={{ right: `${cp}%` }} />
       </div>

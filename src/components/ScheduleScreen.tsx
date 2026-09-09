@@ -52,7 +52,7 @@ export default function ScheduleScreen({ data, moments = null, onMoment }: {
               <span className="d">{rest.join(' ')}</span>
               <span className="h">{rs.length} round{rs.length > 1 ? 's' : ''} · {holes} holes</span>
               {dm && onMoment && (
-                <button className="rchip" onClick={() => onMoment(dm.key)}>Recap ›</button>
+                <button className="rchip" onClick={() => onMoment(dm.key)}>Recap</button>
               )}
             </div>
             {rs.map((x, xi) => (<div key={x.id}>
@@ -163,7 +163,7 @@ function RoundCard({ s, ms, isOpen, toggle, onCard, race }: RoundCardProps) {
         // the name stays sealed until the card opens
         <div className="potrrow">
           <span className="lbl">Player of the round</span>
-          <button className="rchip sum" onClick={() => onCard(`potr:${s.id}`)}>View ›</button>
+          <button className="rchip sum" onClick={() => onCard(`potr:${s.id}`)}>View</button>
         </div>
       )}
       {st === 'upcoming' && (
