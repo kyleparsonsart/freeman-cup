@@ -1659,3 +1659,13 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 /* Sep 9: recap rows are separated by air, not rules */
 .pres.story{border-bottom:none;padding:9px 0 11px}
 .pc .pres.story + .gk{margin-top:10px}
+/* Sep 10: the mail room */
+.mailrow{padding:11px 18px;border-top:1px solid var(--line)}
+.mailrow.off{opacity:.55}
+.mailrow .mt{font-family:var(--display);font-size:16px;color:var(--bone);font-synthesis:none}
+.mailrow .ms{font-size:12.5px;color:var(--moss-dim);margin-top:2px}
+.mailrow .ms.ok{color:var(--moss)} .mailrow .ms.err{color:var(--red)}
+.mailrow .ma{display:flex;align-items:baseline;gap:14px;margin-top:7px;flex-wrap:wrap}
+.mailrow .unbind{font-size:12.5px;color:var(--moss);text-decoration:underline;text-underline-offset:3px}
+.mailrow .unbind.go{color:var(--brass)}
+.mailrow .unbind:disabled{opacity:.5}

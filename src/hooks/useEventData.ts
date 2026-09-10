@@ -28,6 +28,8 @@ export interface EventData {
   handoffs: Record<string, Handoff>;
   /** every scorer switch, for the feed */
   switches: DbFeedEvent[];
+  /** emails that went out (feed_event kind 'mail_sent', written by /api/send-mail) */
+  mailSent: DbFeedEvent[];
   /** captain's sheets this phone may read (RLS: own, both after reveal, all once posted) */
   sheets: DbCaptainSheet[];
   /** who has sealed and opened, for every round, no lineups */
@@ -119,7 +121,7 @@ async function fetchTables(): Promise<RawTables> {
     supabase.from('tee_group').select('*').order('seq'),
     supabase.from('match').select('*').order('seq'),
     supabase.from('match_hole').select('*'),
-    supabase.from('feed_event').select('*').in('kind', ['scorer_switch', 'card_in']).order('occurred_at', { ascending: false }),
+    supabase.from('feed_event').select('*').in('kind', ['scorer_switch', 'card_in', 'mail_sent']).order('occurred_at', { ascending: false }),
     supabase.from('captain_sheet').select('*'),
     supabase.rpc('sheet_status'),
   ]);
@@ -372,7 +374,8 @@ export function useEventData() {
     setData({
       event, teams: teamList, players: playerList, courses: courseList,
       rounds: roundList, teeGroups: tgList, matches: matchList, matchHoles: holeList, handoffs,
-      switches: raw.switches || [],
+      switches: (raw.switches || []).filter(e => e.kind !== 'mail_sent'),
+      mailSent: (raw.switches || []).filter(e => e.kind === 'mail_sent'),
       sheets: raw.sheets || [],
       sheetStatus: raw.sheetStatus || [],
       scoringSessions, scoringMatches, playerMap, playerById,

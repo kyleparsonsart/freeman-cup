@@ -86,6 +86,18 @@ Do these in order. Items 1–3 now; 4–6 before invites go out Sep 27.
 signs in as any seed player (password auth, test accounts only). It is
 compiled out of production builds.
 
+## The mail room (Sep 10 2026)
+
+`/api/send-mail` runs on Vercel. In the Vercel project, Settings -> Environment
+Variables, add for Production (and Preview if you test there):
+
+- `SUPABASE_URL` = the project URL (same value as `VITE_SUPABASE_URL`)
+- `SUPABASE_SERVICE_ROLE_KEY` = Project Settings -> API -> service_role (server only)
+- `RESEND_API_KEY` = the key already used for SMTP
+
+Redeploy after adding them. No SQL: sends are logged to `feed_event` with kind
+`mail_sent`, which every signed-in phone can already read.
+
 ## Sign-in code email template (Sep 3 2026)
 
 The styled sign-in email lives at `emails/signin-code.html`. To install it:

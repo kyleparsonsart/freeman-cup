@@ -8,6 +8,7 @@ import type { EventData } from '../hooks/useEventData';
 import { IconFlagCheckered } from './icons';
 import type { DbPlayer } from '../lib/types';
 import { clockLocal } from '../lib/sheets';
+import MailRoom from './MailRoom';
 
 interface Props {
   data: EventData;
@@ -262,6 +263,9 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
                 </button>
               </div>
             )}
+
+            {/* ---- Emails ---- */}
+            <MailRoom data={data} moments={moments} reload={reload} />
 
             {/* ---- Rounds ---- */}
             <div className="grp">
