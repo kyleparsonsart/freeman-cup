@@ -138,15 +138,17 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
   const desk: DeskState | null = commish ? deskFor(data) : null;
 
   // The commissioner's controls, grouped by job under tabs.
-  const [stab, setStab] = useState<'today' | 'setup' | 'event' | 'you'>('today');
+  const [stab, setStab] = useState<'today' | 'rounds' | 'emails' | 'setup'>('today');
   const setBodyRef = useRef<HTMLDivElement>(null);
   const goStab = (t: typeof stab) => {
     setStab(t);
     setBodyRef.current?.scrollTo(0, 0);
   };
   const STABS: ReadonlyArray<readonly [typeof stab, string]> = [
-    ['today', 'Today'], ['setup', 'Setup'], ['event', 'Event'], ['you', 'You'],
+    ['today', 'Today'], ['rounds', 'Rounds'], ['emails', 'Emails'], ['setup', 'Setup'],
   ];
+  // one card per round; today's (the desk's) round starts open
+  const [openRound, setOpenRound] = useState<string | null>(null);
 
   const teamOf = (side: 'a' | 'b') => data.teams.find(t => t.side === side);
   const playersOf = (side: 'a' | 'b'): DbPlayer[] => {
@@ -167,6 +169,23 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
     return ids;
   };
 
+  const todayId = desk?.round.id ?? data.rounds.find(r => r.state !== 'final')?.id ?? data.rounds[0]?.id ?? null;
+  const isOpen = (id: string) => (openRound ?? todayId) === id;
+
+  const account = (
+    <>
+      <div className="grp"><h3>Account</h3></div>
+      <div className="fld">
+        <label>
+          {fname(me?.name) || 'Signed in'}
+          <span className="sub2">{commish ? 'Commissioner' : 'Player'}</span>
+        </label>
+        <button className="aghost" onClick={signOut}>Sign out</button>
+      </div>
+      <div className="build">Build {__BUILD_STAMP__}</div>
+    </>
+  );
+
   return (
     <div
       className={`settings${open ? ' on' : ''}`}
@@ -177,6 +196,12 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
     >
       <div className="sethd">
         <h2>{armed ? 'Commissioner' : 'Settings'}</h2>
+        {commish && onActing && (
+          <div className="seg mini" role="tablist" aria-label="Acting as">
+            <button role="tab" aria-selected={acting === 'player'} className={acting === 'player' ? 'on' : ''} onClick={() => onActing('player')}>Player</button>
+            <button role="tab" aria-selected={acting === 'commish'} className={acting === 'commish' ? 'on' : ''} onClick={() => onActing('commish')}>Commish</button>
+          </div>
+        )}
         <button className="done" onClick={onClose}>Done</button>
       </div>
       {armed && (
@@ -191,41 +216,23 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
       <div className="setbody" ref={setBodyRef}>
         {err && <div className="holine err">{err}</div>}
 
-        {commish && (!armed || stab === 'you') && onActing && (
+        {!armed && (
           <>
-            <div className="grp">
-              <h3>Acting as</h3>
-              <div className="hint">
-                Player is the default: you see the app exactly as the other
-                seven do, and your scores-anywhere powers stay holstered.
-                Commissioner arms them and puts the crown by the cog.
+            {commish && (
+              <div className="grp">
+                <h3>Player mode</h3>
+                <div className="hint">
+                  You see the app exactly as the other seven do. Switch to Commish
+                  above for the desk, the rounds, the emails and the seats.
+                </div>
               </div>
-            </div>
-            <div className="seg" role="tablist" aria-label="Acting as">
-              <button role="tab" aria-selected={acting === 'player'} className={acting === 'player' ? 'on' : ''} onClick={() => onActing('player')}>Player</button>
-              <button role="tab" aria-selected={acting === 'commish'} className={acting === 'commish' ? 'on' : ''} onClick={() => onActing('commish')}>Commissioner</button>
-            </div>
+            )}
+            {account}
           </>
         )}
 
-        {(!armed || stab === 'you') && (
+        {armed && stab === 'today' && (
           <>
-            <div className="grp"><h3>Account</h3></div>
-            <div className="fld">
-              <label>
-                {fname(me?.name) || 'Signed in'}
-                <span className="sub2">{commish ? 'Commissioner' : 'Player'}</span>
-              </label>
-              <button className="aghost" onClick={signOut}>Sign out</button>
-            </div>
-            <div className="build">Build {__BUILD_STAMP__}</div>
-          </>
-        )}
-
-        {armed && (
-          <>
-            {stab === 'today' && <>
-            {/* ---- The desk ---- */}
             {desk && (
               <Desk
                 desk={desk}
@@ -238,7 +245,7 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
               <div className="empty">
                 <IconFlagCheckered />
                 <b>All four rounds in the book</b>
-                The desk stands down. Reopen a card from Setup if anything
+                The desk stands down. Reopen a card from Rounds if anything
                 needs correcting.
               </div>
             )}
@@ -251,235 +258,27 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
               </div>
             )}
 
-            {/* ---- Emails ---- */}
-            <MailRoom data={data} moments={moments} reload={reload} />
-
-            {/* ---- Rounds ---- */}
-            <div className="grp">
-              <h3>Rounds</h3>
-              <div className="hint">
-                Set a round live on the first tee; the Scoring tab follows it.
-                Complete locks its scores for everyone but you.
-              </div>
-            </div>
-            {data.rounds.map((r, i) => {
-              const s = data.scoringSessions[i];
+            {/* today's scorers and cards, the two things that change during play */}
+            {desk && desk.state !== 'upcoming' && tgsOfRound(desk.round.id).map((tg, gi) => {
+              const gp = groupPlayerIds(tg.id);
               return (
-                <div key={r.id} className="rdrow">
-                  <div className="r1">
-                    <span className="nm2">{r.label} · {s?.course}</span>
-                    <span className="cs">{s?.day}</span>
-                  </div>
-                  <div className="r2">
-                    <select value={r.state} onChange={e => requestRoundState(r.id, e.target.value)}>
-                      {STATES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                    </select>
-                  </div>
-                  {finalGuard?.roundId === r.id && (
-                    <div className="guard">
-                      {finalGuard.msg}{' '}
-                      <button className="glock" onClick={() => { setFinalGuard(null); setRoundState(r.id, 'final'); }}>
-                        Lock it anyway
-                      </button>
-                    </div>
+                <div key={tg.id} className="fld">
+                  <label>
+                    Group {String.fromCharCode(65 + gi)} · {desk.session.tees[gi]}
+                    <span className="sub2">{gp.map(first).join(', ')}{tg.submitted_at ? ' · Card in' : ''}</span>
+                  </label>
+                  {tg.submitted_at && (
+                    <button className="aghost" onClick={() => run(supabase.rpc('reopen_card', { tg: tg.id }))}>Reopen</button>
                   )}
+                  <select value={tg.scorer_player_id ?? ''} onChange={e => setScorer(tg.id, e.target.value)} aria-label="Scorer">
+                    {!tg.scorer_player_id && <option value="">Nobody</option>}
+                    {gp.map(id => <option key={id} value={id}>{first(id)}</option>)}
+                  </select>
                 </div>
               );
             })}
 
-            </>}
-            {stab === 'setup' && <>
-            {/* ---- Captain's sheets ---- */}
-            {(() => {
-              const pending = data.rounds.filter(r => r.state !== 'final' && !data.matches.some(m => m.round_id === r.id));
-              const posted = data.rounds.filter(r => data.matches.some(m => m.round_id === r.id));
-              return (
-                <>
-                  {posted.length > 0 && (
-                    <>
-                      <div className="grp">
-                        <h3>Posted rounds</h3>
-                        <div className="hint">
-                          Reset takes a round back to the captain’s sheets: its
-                          pairings, scores and feed lines go, and so do any later
-                          rounds’, since their sheets were checked against it.
-                        </div>
-                      </div>
-                      {posted.map(r => (
-                        <div key={r.id} className="shadmin">
-                          <span className="n">{r.label}</span>
-                          <span className="s">{data.scoringSessions.find(s => s.id === r.id)?.course} · {data.matches.filter(m => m.round_id === r.id).length} matches</span>
-                          {resetArm === r.id
-                            ? <>
-                                <button onClick={() => { setResetArm(null); run(supabase.rpc('reset_round', { r: r.id })); }}>Yes, reset</button>
-                                <button onClick={() => setResetArm(null)}>Keep</button>
-                              </>
-                            : <button onClick={() => setResetArm(r.id)}>Reset to sheets</button>}
-                        </div>
-                      ))}
-                    </>
-                  )}
-                  {pending.length > 0 && <>
-                  <div className="grp">
-                    <h3>Captain’s sheets</h3>
-                    <div className="hint">
-                      Rounds whose pairings haven’t been sent. Unseal hands a
-                      sheet back. “Seal as” stands in for the other captain with
-                      his default lineup, so the whole flow can be rehearsed from
-                      one phone. Send lives on the Scoring tab.
-                    </div>
-                  </div>
-                  {pending.map(r => (
-                    <div key={r.id}>
-                      <div className="grp sub"><h3>{r.label} · {data.scoringSessions.find(s => s.id === r.id)?.course}</h3></div>
-                      {data.teams.map(t => {
-                        const st = data.sheetStatus.find(x => x.round_id === r.id && x.team_id === t.id);
-                        const cap = data.players.find(p => p.team_id === t.id && p.is_captain);
-
-                        return (
-                          <div key={t.id} className="shadmin">
-                            <span className="n">{t.name}</span>
-                            <span className="s">{!st ? 'Not sealed' : st.auto ? 'Defaulted' : `Sealed ${clockLocal(st.sealed_at)}`}</span>
-                            {st
-                              ? <button className="unbind" onClick={() => run(supabase.rpc('unseal_sheet', { r: r.id, t: t.id }))}>Unseal</button>
-                              : <button className="unbind" onClick={() => run(supabase.rpc('commish_seal_for', { r: r.id, t: t.id }))}>Seal as {(cap ? first(cap.id) : t.name)}</button>}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ))}
-                  </>}
-                </>
-              );
-            })()}
-            {/* ---- Scorers ---- */}
-            <div className="grp">
-              <h3>Scorers</h3>
-              <div className="hint">
-                One per tee time, not per match. At singles a group carries two
-                matches and the scorer covers both. Elected on the first tee,
-                changeable any time.
-              </div>
-            </div>
-            {data.rounds.map((r, ri) =>
-              tgsOfRound(r.id).map((tg, gi) => {
-                const gp = groupPlayerIds(tg.id);
-                return (
-                  <div key={tg.id} className="fld">
-                    <label>
-                      {r.label} · {data.scoringSessions[ri]?.tees[gi]}
-                      <span className="sub2">
-                        {gp.map(first).join(', ')}
-                        {tg.submitted_at ? ' · Card in' : ''}
-                      </span>
-                    </label>
-                    {tg.submitted_at && (
-                      <button className="aghost" onClick={() => run(supabase.rpc('reopen_card', { tg: tg.id }))}>
-                        Reopen
-                      </button>
-                    )}
-                    <select
-                      value={tg.scorer_player_id ?? ''}
-                      onChange={e => setScorer(tg.id, e.target.value)}
-                    >
-                      {!tg.scorer_player_id && <option value="">Nobody</option>}
-                      {gp.map(id => (
-                        <option key={id} value={id}>{first(id)}</option>
-                      ))}
-                    </select>
-                  </div>
-                );
-              }),
-            )}
-
-            {/* ---- Pairings ---- */}
-            <div className="grp">
-              <h3>Pairings</h3>
-              <div className="hint">
-                Celts first, Vikes second, as everywhere. Cards go in the night before;
-                changing a match with scores on it does not clear them.
-              </div>
-            </div>
-            {data.rounds.map((r, ri) => {
-              const s = data.scoringSessions[ri];
-              const slots = r.format === 'singles' ? 1 : 2;
-              const tgs = tgsOfRound(r.id);
-              const ms = data.matches.filter(m => m.round_id === r.id).sort((a, b) => a.seq - b.seq);
-              return (
-                <div key={r.id}>
-                  <div className="grp sub">
-                    <h3>{r.label} · {s?.fmt}</h3>
-                  </div>
-                  {ms.map(m => {
-                    const gi = tgs.findIndex(t => t.id === m.tee_group_id);
-                    const letter = String.fromCharCode(65 + Math.max(0, gi));
-                    return (
-                      <div key={m.id} className="rdrow">
-                        <div className="r1">
-                          <span className="nm2">Match {m.seq} · Group {letter}</span>
-                          <span className="cs">{s?.tees[gi]}</span>
-                        </div>
-                        {(['b', 'a'] as const).map(side => {
-                          const ids = side === 'a' ? m.side_a : m.side_b;
-                          const team = teamOf(side);
-                          return (
-                            <div key={side} className="r2" style={{ marginTop: side === 'a' ? 8 : 0 }}>
-                              <span
-                                className="cs"
-                                style={{ width: 34, flex: 'none', alignSelf: 'center', color: `var(--${side === 'a' ? 'red' : 'blue'})` }}
-                              >
-                                {team?.short}
-                              </span>
-                              {Array.from({ length: slots }, (_, k) => (
-                                <select
-                                  key={k}
-                                  value={ids[k] ?? ''}
-                                  onChange={e => {
-                                    const next = [...ids];
-                                    next[k] = e.target.value;
-                                    setSide(m.id, side, next.filter(Boolean));
-                                  }}
-                                >
-                                  {!ids[k] && <option value="">—</option>}
-                                  {playersOf(side).map(p => (
-                                    <option key={p.id} value={p.id}>{fname(p.name)}</option>
-                                  ))}
-                                </select>
-                              ))}
-                            </div>
-                          );
-                        })}
-                        {r.format === 'foursomes' && (
-                          <div className="r2" style={{ marginTop: 8 }}>
-                            <span className="cs" style={{ width: 34, flex: 'none', alignSelf: 'center' }}>Odds</span>
-                            {(['b', 'a'] as const).map(side => {
-                              const ids = side === 'a' ? m.side_a : m.side_b;
-                              const cur = side === 'a' ? m.odds_a : m.odds_b;
-                              return (
-                                <select
-                                  key={side}
-                                  value={cur ?? ''}
-                                  onChange={e => setOdds(m.id, side, e.target.value)}
-                                >
-                                  <option value="">Tees off odd holes…</option>
-                                  {ids.map(id => (
-                                    <option key={id} value={id}>{first(id)}</option>
-                                  ))}
-                                </select>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })}
-
-            </>}
-            {stab === 'event' && <>
-            {/* ---- Captains Shootout ---- */}
+            {/* the Shootout, only when the Cup is level or one is on the books */}
             {(moments?.tie || data.event.shootout) && (
               <>
                 <div className="grp">
@@ -542,7 +341,191 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
                 </div>
               </>
             )}
+          </>
+        )}
 
+        {armed && stab === 'rounds' && (
+          <>
+            <div className="grp">
+              <h3>Rounds</h3>
+              <div className="hint">
+                Everything about one round in one place: its state, the tees,
+                the captains' sheets until pairings go out and the pairings
+                after, and who keeps each card. Send Pairings lives on the
+                Scoring tab.
+              </div>
+            </div>
+            {data.rounds.map((r, ri) => {
+              const s = data.scoringSessions[ri];
+              const posted = data.matches.some(m => m.round_id === r.id);
+              const tgs = tgsOfRound(r.id);
+              const ms = data.matches.filter(m => m.round_id === r.id).sort((a, b) => a.seq - b.seq);
+              const slots = r.format === 'singles' ? 1 : 2;
+              const opened = isOpen(r.id);
+              const stateLabel = STATES.find(([v]) => v === r.state)?.[1] ?? r.state;
+              return (
+                <div key={r.id} className={`rcardx${opened ? ' open' : ''}${r.state === 'live' ? ' live' : ''}`}>
+                  <button className="rxhd" onClick={() => setOpenRound(opened ? '' : r.id)} aria-expanded={opened}>
+                    <span className="rxn">{r.label} · {s?.course}</span>
+                    <span className="rxs">{s?.day} · {s?.fmt} · {stateLabel}</span>
+                    <span className="rxar">{opened ? '▾' : '▸'}</span>
+                  </button>
+                  {opened && (
+                    <div className="rxbody">
+                      {/* state */}
+                      <div className="fld">
+                        <label>State<span className="sub2">Live on the first tee; Complete locks the cards</span></label>
+                        <select value={r.state} onChange={e => requestRoundState(r.id, e.target.value)}>
+                          {STATES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                        </select>
+                      </div>
+                      {finalGuard?.roundId === r.id && (
+                        <div className="guard">
+                          {finalGuard.msg}{' '}
+                          <button className="glock" onClick={() => { setFinalGuard(null); setRoundState(r.id, 'final'); }}>
+                            Lock it anyway
+                          </button>
+                        </div>
+                      )}
+
+                      {/* tees */}
+                      <div className="grp sub"><h3>Tees</h3></div>
+                      <TeeRow r={r} course="" onSave={(f) => run(supabase.from('round').update(f).eq('id', r.id))} />
+
+                      {/* sheets, until pairings are sent */}
+                      {!posted && r.state !== 'final' && (
+                        <>
+                          <div className="grp sub">
+                            <h3>Captain’s sheets</h3>
+                            <div className="hint">Unseal hands a sheet back. “Seal as” stands in for a captain with his default lineup, so the whole flow can be rehearsed from one phone.</div>
+                          </div>
+                          {data.teams.map(t => {
+                            const st = data.sheetStatus.find(x => x.round_id === r.id && x.team_id === t.id);
+                            const cap = data.players.find(p => p.team_id === t.id && p.is_captain);
+                            return (
+                              <div key={t.id} className="shadmin">
+                                <span className="n">{t.name}</span>
+                                <span className="s">{!st ? 'Not sealed' : st.auto ? 'Defaulted' : `Sealed ${clockLocal(st.sealed_at)}`}</span>
+                                {st
+                                  ? <button className="unbind" onClick={() => run(supabase.rpc('unseal_sheet', { r: r.id, t: t.id }))}>Unseal</button>
+                                  : <button className="unbind" onClick={() => run(supabase.rpc('commish_seal_for', { r: r.id, t: t.id }))}>Seal as {(cap ? first(cap.id) : t.name)}</button>}
+                              </div>
+                            );
+                          })}
+                        </>
+                      )}
+
+                      {/* pairings, once posted */}
+                      {posted && (
+                        <>
+                          <div className="grp sub">
+                            <h3>Pairings</h3>
+                            <div className="hint">Celts first, Vikes second. Changing a match with scores on it does not clear them.</div>
+                          </div>
+                          {ms.map(m => {
+                            const gi = tgs.findIndex(t => t.id === m.tee_group_id);
+                            const letter = String.fromCharCode(65 + Math.max(0, gi));
+                            return (
+                              <div key={m.id} className="rdrow">
+                                <div className="r1">
+                                  <span className="nm2">Match {m.seq} · Group {letter}</span>
+                                  <span className="cs">{s?.tees[gi]}</span>
+                                </div>
+                                {(['b', 'a'] as const).map(side => {
+                                  const ids = side === 'a' ? m.side_a : m.side_b;
+                                  const team = teamOf(side);
+                                  return (
+                                    <div key={side} className="r2" style={{ marginTop: side === 'a' ? 8 : 0 }}>
+                                      <span className="cs" style={{ width: 34, flex: 'none', alignSelf: 'center', color: `var(--${side === 'a' ? 'red' : 'blue'})` }}>{team?.short}</span>
+                                      {Array.from({ length: slots }, (_, k) => (
+                                        <select
+                                          key={k}
+                                          value={ids[k] ?? ''}
+                                          onChange={e => {
+                                            const next = [...ids];
+                                            next[k] = e.target.value;
+                                            setSide(m.id, side, next.filter(Boolean));
+                                          }}
+                                        >
+                                          {!ids[k] && <option value="">–</option>}
+                                          {playersOf(side).map(p => (
+                                            <option key={p.id} value={p.id}>{fname(p.name)}</option>
+                                          ))}
+                                        </select>
+                                      ))}
+                                    </div>
+                                  );
+                                })}
+                                {r.format === 'foursomes' && (
+                                  <div className="r2" style={{ marginTop: 8 }}>
+                                    <span className="cs" style={{ width: 34, flex: 'none', alignSelf: 'center' }}>Odds</span>
+                                    {(['b', 'a'] as const).map(side => {
+                                      const ids = side === 'a' ? m.side_a : m.side_b;
+                                      const cur = side === 'a' ? m.odds_a : m.odds_b;
+                                      return (
+                                        <select key={side} value={cur ?? ''} onChange={e => setOdds(m.id, side, e.target.value)}>
+                                          <option value="">Tees off odd holes…</option>
+                                          {ids.map(id => <option key={id} value={id}>{first(id)}</option>)}
+                                        </select>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+
+                          {/* scorers and cards */}
+                          <div className="grp sub">
+                            <h3>Scorers</h3>
+                            <div className="hint">One per tee time, not per match. Elected on the first tee, changeable any time.</div>
+                          </div>
+                          {tgs.map((tg, gi) => {
+                            const gp = groupPlayerIds(tg.id);
+                            return (
+                              <div key={tg.id} className="fld">
+                                <label>
+                                  Group {String.fromCharCode(65 + gi)} · {s?.tees[gi]}
+                                  <span className="sub2">{gp.map(first).join(', ')}{tg.submitted_at ? ' · Card in' : ''}</span>
+                                </label>
+                                {tg.submitted_at && (
+                                  <button className="aghost" onClick={() => run(supabase.rpc('reopen_card', { tg: tg.id }))}>Reopen</button>
+                                )}
+                                <select value={tg.scorer_player_id ?? ''} onChange={e => setScorer(tg.id, e.target.value)} aria-label="Scorer">
+                                  {!tg.scorer_player_id && <option value="">Nobody</option>}
+                                  {gp.map(id => <option key={id} value={id}>{first(id)}</option>)}
+                                </select>
+                              </div>
+                            );
+                          })}
+
+                          {/* back to the sheets */}
+                          <div className="shadmin">
+                            <span className="n">Reset</span>
+                            <span className="s">Back to the captain’s sheets: its pairings, scores and feed lines go, and so do any later rounds’.</span>
+                            {resetArm === r.id
+                              ? <>
+                                  <button onClick={() => { setResetArm(null); run(supabase.rpc('reset_round', { r: r.id })); }}>Yes, reset</button>
+                                  <button onClick={() => setResetArm(null)}>Keep</button>
+                                </>
+                              : <button onClick={() => setResetArm(r.id)}>Reset to sheets</button>}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </>
+        )}
+
+        {armed && stab === 'emails' && (
+          <MailRoom data={data} moments={moments} reload={reload} />
+        )}
+
+        {armed && stab === 'setup' && (
+          <>
             {/* ---- Seats ---- */}
             <div className="grp">
               <h3>Seats</h3>
@@ -559,22 +542,9 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
                 onUnbind={() => unbindSeat(p.id)} />
             ))}
 
-            {/* ---- Tees ---- */}
-            <div className="grp">
-              <h3>Tees</h3>
-              <div className="hint">
-                One set for everyone (Art. 5). The name and yardage show on the
-                Schedule, the letters and the site once saved.
-              </div>
-            </div>
-            {data.rounds.map((r, i) => (
-              <TeeRow key={r.id} r={r} course={data.scoringSessions[i]?.course || ''}
-                onSave={(f) => run(supabase.from('round').update(f).eq('id', r.id))} />
-            ))}
-
             {/* ---- Danger ---- */}
             <div className="grp">
-              <h3>Danger</h3>
+              <h3>Start over</h3>
               <div className="hint">
                 Clears every score, every pairing and captain’s sheet, reopens every card, puts all four rounds back to Not started. The history table keeps the record. Do this once before Thursday, and the captains’ sheets take over from there.
               </div>
@@ -584,7 +554,8 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
                 {cleared ? 'Cleared' : 'Clear all scores…'}
               </button>
             </div>
-            </>}
+
+            {account}
           </>
         )}
       </div>
@@ -663,7 +634,7 @@ function TeeRow({ r, course, onSave }: {
   };
   return (
     <div className="seatrow edit">
-      <span className="sn2 tee">{r.label}<small>{course}</small></span>
+      <span className="sn2 tee">{course ? <>{r.label}<small>{course}</small></> : 'Tees'}</span>
       <input className="sein" type="text" placeholder="Tees, e.g. Black" value={tee} onChange={e => setTee(e.target.value)} onBlur={saveTee} onKeyDown={onKey} aria-label={`${r.label} tees`} />
       <input className="sein hcp" type="text" inputMode="numeric" placeholder="Yards" value={yards} onChange={e => setYards(e.target.value)} onBlur={saveYards} onKeyDown={onKey} aria-label={`${r.label} yards`} />
     </div>
