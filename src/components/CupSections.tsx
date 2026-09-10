@@ -30,7 +30,7 @@ export function TheRaces({ sessions, matches, onOpen, onRule }: { sessions: Sess
       ) : (<>
       <div className="mvpboard">
           {board.map((r, i) => (
-            <button key={r.key} className={`mvprow${r.eligible ? '' : ' off'}`} onClick={() => onOpen?.(`player:${r.key}`)} disabled={!onOpen}>
+            <button key={r.key} className={`mvprow${r.eligible ? '' : ' off'}${r.eligible && i === 0 ? ' lead' : ''}`} onClick={() => onOpen?.(`player:${r.key}`)} disabled={!onOpen}>
               <span className="rk">{r.eligible ? i + 1 : '–'}</span>
               <span className={`nm4 ${r.side}`}>{r.name}{r.eligible && i === 0 && <IconCrown />}</span>
               <span className="rd2">{r.eligible ? `${relLabel(r.rel)} net · ${r.solo} solo` : 'card short'}</span>

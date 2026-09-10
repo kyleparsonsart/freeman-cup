@@ -285,8 +285,13 @@ body::before{content:'';position:fixed;inset:0 0 -140px 0;z-index:-2;background:
 @media(prefers-reduced-motion:reduce){.dayfade{opacity:1}.dayfade.in{animation:none}}
 
 /* Sep 9: the King's Race, Player of the round, and the lead bars under a match */
-/* Sep 10: the race is an individual effort, so every name is bone */
-.mvp .r b .vik,.mvp .r b.vik,.mvp .r b .cel,.mvp .r b.cel{color:var(--bone)}
+/* Sep 10: the race is an individual effort: serif names in light green, the leader on a golden row */
+.mvp .r b{font-family:var(--display);font-size:17px;font-synthesis:none}
+.mvp .r b .vik,.mvp .r b.vik,.mvp .r b .cel,.mvp .r b.cel{color:var(--moss)}
+.mvp .r.lead{background:rgba(216,169,63,.12)}
+.mvp .r.lead b .vik,.mvp .r.lead b.vik,.mvp .r.lead b .cel,.mvp .r.lead b.cel{color:var(--bone)}
+.mvp .r.lead .pt{color:var(--brass)}
+.mvp .r .crown{color:var(--brass)}
 .mvp .r .rd{font-family:var(--clock);font-size:13px;color:var(--moss-dim);white-space:nowrap}
 .mvp .r .pt{font-family:var(--clock);font-size:18px;font-weight:600;color:var(--bone);width:36px;text-align:right}
 .mvp .r.off{opacity:.55} .mvp .r.off .pt{text-decoration:line-through}

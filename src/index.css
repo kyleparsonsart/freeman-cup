@@ -995,8 +995,12 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .mvprow .rk{font-family:var(--num);font-weight:600;font-size:15px;color:var(--moss-dim);width:18px;flex:none}
 .mvprow .nm4{font-family:var(--display);font-size:17px;flex:1;font-synthesis:none;min-width:0;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* Sep 10: the race is an individual effort, so every name is bone */
-.mvprow .nm4.a,.mvprow .nm4.b{color:var(--bone)}
+/* Sep 10: the race is an individual effort: names in light green, the leader on a golden row */
+.mvprow .nm4.a,.mvprow .nm4.b{color:var(--moss)}
+.mvprow.lead{background:rgba(216,169,63,.12)}
+.mvprow.lead .nm4.a,.mvprow.lead .nm4.b{color:var(--bone)}
+.mvprow.lead .net{color:var(--brass)}
+.mvprow .nm4 .crown{color:var(--brass)}
 .mvprow .rd2{font-size:12px;color:var(--moss-dim);flex:none}
 .mvprow .net{font-family:var(--num);font-weight:600;font-size:18px;color:var(--bone);width:44px;text-align:right;flex:none}
 .mvprow.off{opacity:.5}
