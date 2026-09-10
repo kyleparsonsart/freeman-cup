@@ -50,8 +50,10 @@ describe('hole points', () => {
   it('is empty until the hole is fully scored', () => {
     expect(holePoints(fb, S[0], 5)).toEqual({});
   });
-  it('aggregate wins are team wins', () => {
+  it('aggregate wins go to the low net ball, both when they match', () => {
     expect(holePoints(ag, S[1], 0)).toEqual({ griffin: 1, matt: 1, kyle: 0, justin: 0 });
+    const ag2 = mk('ag2', 'ag', ['griffin', 'matt'], ['kyle', 'justin'], [hole({ griffin: 4, matt: 5, justin: 4, kyle: 6 })], 12);
+    expect(holePoints(ag2, S[1], 0)).toEqual({ griffin: 2, matt: 0, kyle: 0, justin: 0 });
     expect(holePoints(ag, S[1], 1)).toEqual({ griffin: 0, matt: 0, kyle: 0, justin: 0 });
   });
   it('singles wins are always solo', () => {

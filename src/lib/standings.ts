@@ -66,8 +66,7 @@ export function holePoints(m: Match, s: Session, i: number): Record<string, numb
   if (r === 'H') { all.forEach(k => { out[k] = POINTS.half; }); return out; }   // 0: a halve is not a win
   const w: 'a' | 'b' = r === 'A' ? 'a' : 'b';
   all.forEach(k => { out[k] = 0; });
-  if (s.fmt === 'Aggregate') { m[w].forEach(k => { out[k] = POINTS.team; }); return out; }
-  // own ball: who held the side's best net
+  // own ball, four-ball and aggregate alike (Sep 10): who held the side's best net
   const nets = m[w].map(k => {
     const g = m.hs[i].sc[k];
     return typeof g === 'number' ? g - getsStroke(m, k, i) : Infinity;
