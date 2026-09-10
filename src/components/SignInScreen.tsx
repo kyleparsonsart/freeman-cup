@@ -68,6 +68,8 @@ export default function SignInScreen({ sendCode, verifyCode, devSignIn }: Props)
     boxes.current[Math.min(d.length, 5)]?.focus();
   };
 
+  // the home-screen copy keeps its own sign-in, so only nudge people who are not in it yet
+  const installed = typeof window !== 'undefined' && (window.matchMedia?.('(display-mode: standalone)').matches || (navigator as unknown as { standalone?: boolean }).standalone === true);
   return (
     <div className="signin">
       <span className="silogo" aria-hidden="true" />
@@ -96,6 +98,10 @@ export default function SignInScreen({ sendCode, verifyCode, devSignIn }: Props)
               {busy ? 'Sending…' : 'Email me a code'}
             </button>
           </form>
+          <p className="sifine">
+            {!installed && <>Reading this in Safari or Chrome? Add the Cup to your home screen first (Share, then Add to Home Screen), then sign in there. </>}
+            Your email is only used to sign in and for the week's six emails.
+          </p>
         </>
       ) : (
         <>
