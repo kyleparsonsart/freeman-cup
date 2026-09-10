@@ -12,7 +12,6 @@ import { supabase } from '../lib/supabase';
 import type { EventData } from '../hooks/useEventData';
 import type { DbPlayer, DbRound, DbTeam } from '../lib/types';
 import { calc, half, type Session } from '../lib/scoring';
-import { IconEnvelope } from './icons';
 import { sheetView, usedPairs, pairingOptions, clockLocal, type SheetView } from '../lib/sheets';
 
 interface Props { data: EventData; round: DbRound; session: Session; reload: () => void; secondary?: boolean }
@@ -97,7 +96,6 @@ function SheetIntro({ data, round, session, view, onStart }: { data: EventData; 
     <div className="mymatch csintro">
       <div className="mmk">{prev ? `${prev.rd} · in the book` : 'The Cup opens'}</div>
       <div className="mmt">{singles ? `Time to order your four` : `Time to set your pairings`}</div>
-      <div className="csenv"><IconEnvelope /></div>
       <div className="mml">
         {prev
           ? <>{prev.day.split(' ')[0]}{prevDone ? ' is officially complete' : '’s cards are in'}: <b className="b">Celts {half(pb)}</b>, <b className="a">Vikes {half(pa)}</b>{prev.rd !== 'Round 1' ? <>. {lead}, <b className="b">{half(tb)}</b> to <b className="a">{half(ta)}</b> overall</> : null}. </>
