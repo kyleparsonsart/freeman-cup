@@ -21,7 +21,7 @@ export interface FeedItem {
   key: string;
   day: string;
   at: number;                 // epoch ms
-  side: '' | 'a' | 'b' | 'a win' | 'b win' | 'cup' | 'gold';
+  side: '' | 'a' | 'b' | 'a win' | 'b win' | 'cup' | 'a win cup' | 'b win cup' | 'gold';
   big?: boolean;
   tag?: string;
   tagGold?: boolean;
@@ -198,8 +198,8 @@ export function buildFeed(input: FeedInput): FeedDay[] {
       clinched = true;
       const w = a >= clinchPoints ? 'a' : 'b';
       out.push({
-        key: `c:${f.key}`, day: f.day, at: f.at + 1, side: 'cup', big: true,
-        tag: 'Clinched', hl: `${CFG.teams[w].name} win ${CFG.trophy}`,
+        key: `c:${f.key}`, day: f.day, at: f.at + 1, side: `${w} win cup`, big: true,
+        tag: 'Clinched', tagGold: true, hl: `${CFG.teams[w].name} win ${CFG.trophy}`,
         text: '', score: { a, b },
       });
       lead = w;

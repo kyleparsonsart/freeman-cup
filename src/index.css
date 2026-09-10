@@ -118,11 +118,8 @@ body.light .syncdot span{color:var(--on-brass)}
 .ev.win .bd,.ev.win .bd b,.ev.win .hl,.ev.win .who.a,.ev.win .who.b{color:#fff}
 .ev.win .tag{border-color:rgba(255,255,255,.5);color:#fff}
 .ev.win .sub2{color:rgba(255,255,255,.72)}
-.ev.cup{background:var(--bone);border-left-color:var(--bone)}
-.ev.cup .t{color:rgba(15,30,25,.55)}
-.ev.cup .bd,.ev.cup .bd b,.ev.cup .hl{color:var(--ink)}
-.ev.cup .tag{border-color:rgba(15,30,25,.3);color:rgba(15,30,25,.75)}
-.ev.cup .score .d{color:rgba(15,30,25,.45)}
+/* Sep 10: the clinched row rides the winner's gradient (.ev.win.a/.b) with a brass tag */
+.ev.cup .hl{font-family:var(--display);font-size:18px}
 .bder .lead,.derive .lead{color:var(--moss-dim);font-weight:600;margin-right:5px}
 .tag{display:inline-block;font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:20px;
   border:1px solid var(--line);color:var(--moss-dim);margin-right:7px;vertical-align:1px}
@@ -1686,3 +1683,7 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .seatrow .schip.warn{color:var(--red);border-color:rgba(200,64,47,.5)}
 .seatrow.edit .sn2.tee{width:150px;flex-direction:column;align-items:flex-start;gap:0;white-space:nowrap;line-height:1.15}
 .seatrow.edit .sn2.tee small{font-size:11px;letter-spacing:0;font-weight:400}
+
+/* Sep 10: MVP and Medalist on the finale poster */
+.pline.honors{display:flex;flex-direction:column;gap:6px;margin-top:18px;padding-top:16px;border-top:1px solid rgba(240,235,220,.12)}
+.pline.honors b{font-weight:600}

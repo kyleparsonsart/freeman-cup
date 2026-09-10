@@ -7,7 +7,7 @@ import {
   names, first, dowOf, teeOf, ordinal, recordLabel, other, leadSeries, matchStory,
 } from '../lib/cards';
 import { TIEBREAK } from '../lib/moments';
-import { mvpBoard, holePoints, relLabel } from '../lib/standings';
+import { mvpBoard, holePoints, relLabel, type BoardRow } from '../lib/standings';
 
 export type Card = MatchCard | DayCard | FinaleCard | ShootoutCard | PlayerCard | WeekCard | LiveCard | SpikeCard | PotrCard;
 
@@ -81,7 +81,7 @@ function Body({ card, onOpen, year, data }: { card: Card; onOpen: (key: string) 
   switch (card.kind) {
     case 'match': return <MatchBody c={card} onOpen={onOpen} />;
     case 'day': return <DayBody c={card} />;
-    case 'won': return <FinaleBody c={card} year={year} />;
+    case 'won': return <FinaleBody c={card} year={year} board={mvpBoard(data.scoringSessions, data.scoringMatches)} />;
     case 'shootout': return <ShootoutBody c={card} />;
     case 'player': {
       const row = mvpBoard(data.scoringSessions, data.scoringMatches).find(r => r.key === card.pkey) || null;
@@ -227,10 +227,14 @@ function LeadLine({ m, holes, played }: { m: Match; holes: number; played: numbe
 }
 
 /* 3 · finale */
-function FinaleBody({ c, year }: { c: FinaleCard; year: number }) {
+function FinaleBody({ c, year, board }: { c: FinaleCard; year: number; board: BoardRow[] }) {
   const t = CFG.teams[c.winner];
   const cl = c.clinch;
   const w = cl && cl.r.w !== 'h' ? (cl.r.w as Side) : null;
+  // MVP of the Cup: most hole points on a full card; Medalist: best net on a full card
+  const full = board.filter(r => r.eligible);
+  const mvp = full[0] || null;
+  const med = full.length ? [...full].sort((x, y) => x.rel - y.rel || y.pts - x.pts)[0] : null;
   return (
     <div className="pcenter fin">
       <Badge size={54} />
@@ -250,6 +254,12 @@ function FinaleBody({ c, year }: { c: FinaleCard; year: number }) {
         </div>
       )}
       {c.viaShootout && <div className="pline">Won on the practice green<br /><b>{TIEBREAK.name}</b></div>}
+      {mvp && (
+        <div className="pline honors">
+          <span>MVP of the Cup <b className={tc(mvp.side)}>{mvp.name}</b> · {mvp.pts} points</span>
+          {med && <span>Medalist <b className={tc(med.side)}>{med.name}</b> · {relLabel(med.rel)} net</span>}
+        </div>
+      )}
     </div>
   );
 }
