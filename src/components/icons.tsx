@@ -46,3 +46,13 @@ export function IconCrown() {
     </svg>
   );
 }
+
+/** Phosphor envelope-simple, for the sealed sheet */
+export function IconEnvelope() {
+  return (
+    <svg className="ph" viewBox="0 0 256 256" fill="none" stroke="currentColor" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="32" y="56" width="192" height="144" rx="8" />
+      <path d="M32 64l96 72 96-72" />
+    </svg>
+  );
+}

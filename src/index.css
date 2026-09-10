@@ -1715,3 +1715,10 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .rcardx .rxbody{padding-bottom:8px;border-top:1px solid var(--line)}
 .rcardx .grp.sub{padding-top:18px}
 .rcardx .fld select{max-width:46%}
+
+/* Sep 10: the captain's intro before the sheet */
+.csintro .csenv{display:flex;justify-content:center;margin:12px 0 4px}
+.csintro .csenv svg{width:44px;height:44px;color:var(--brass)}
+.csintro .mml{font-size:14.5px;line-height:1.6;margin-bottom:16px}
+.csintro .mml b{font-weight:600} .csintro .mml b.a{color:var(--red)} .csintro .mml b.b{color:var(--blue)}
+.csintro .abtn{width:100%}

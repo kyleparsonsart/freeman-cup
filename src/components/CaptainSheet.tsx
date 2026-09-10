@@ -11,7 +11,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { EventData } from '../hooks/useEventData';
 import type { DbPlayer, DbRound, DbTeam } from '../lib/types';
-import type { Session } from '../lib/scoring';
+import { calc, half, type Session } from '../lib/scoring';
+import { IconEnvelope } from './icons';
 import { sheetView, usedPairs, pairingOptions, clockLocal, type SheetView } from '../lib/sheets';
 
 interface Props { data: EventData; round: DbRound; session: Session; reload: () => void; secondary?: boolean }
@@ -29,6 +30,10 @@ export default function CaptainSheet({ data, round, session, reload, secondary =
   }), [round, data]);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // the intro before the editor, once per round per phone
+  const introKey = `cs-intro:${round.id}`;
+  const [intro, setIntro] = useState<boolean>(() => { try { return !localStorage.getItem(introKey); } catch { return true; } });
+  const startSheet = () => { try { localStorage.setItem(introKey, '1'); } catch { /* private mode */ } setIntro(false); };
 
   const run = async (call: PromiseLike<{ error: { message: string } | null }>) => {
     if (data.offline) { setErr('Needs a signal. Sealing and opening go straight to the clubhouse; try again when you have one.'); return false; }
@@ -57,7 +62,10 @@ export default function CaptainSheet({ data, round, session, reload, secondary =
       {err && <div className="holine err">{err}</div>}
       {data.offline && !err && view.stage !== 'waiting' && <div className="holine">Offline. Sealing and opening need a signal; everything here is read-only until it’s back.</div>}
       {view.stage === 'locked' && <Locked view={view} session={session} />}
-      {view.stage === 'open' && view.myTeam && (
+      {view.stage === 'open' && view.myTeam && intro && (
+        <SheetIntro data={data} round={round} session={session} view={view} onStart={startSheet} />
+      )}
+      {view.stage === 'open' && view.myTeam && !intro && (
         <SheetEditor data={data} round={round} session={session} team={view.myTeam} view={view} busy={busy}
           onSeal={slots => run(supabase.rpc('seal_sheet', { r: round.id, slots }))} />
       )}
@@ -69,6 +77,36 @@ export default function CaptainSheet({ data, round, session, reload, secondary =
         <SendFoot view={view} busy={busy} onSend={() => run(supabase.rpc('reveal_sheets', { r: round.id }))} />
       )}
       {view.stage === 'waiting' && <Waiting view={view} session={session} />}
+    </div>
+  );
+}
+
+/** Before the editor: the round before is in the book, the sheet is open and blind, one button in. */
+function SheetIntro({ data, round, session, view, onStart }: { data: EventData; round: DbRound; session: Session; view: SheetView; onStart: () => void }) {
+  const singles = round.format === 'singles';
+  // the most recent round with matches, and its points
+  const prevRound = [...data.rounds].filter(r => r.seq < round.seq && data.matches.some(m => m.round_id === r.id)).sort((a, b) => b.seq - a.seq)[0] || null;
+  const prev = prevRound ? data.scoringSessions.find(s => s.id === prevRound.id) : null;
+  let pa = 0, pb = 0;
+  if (prev) data.scoringMatches.filter(m => m.s === prev.id).forEach(m => { const r = calc(m); pa += r.pts.a; pb += r.pts.b; });
+  let ta = 0, tb = 0;
+  data.scoringMatches.forEach(m => { const r = calc(m); ta += r.pts.a; tb += r.pts.b; });
+  const prevDone = !!prev && prev.state === 'final';
+  const lead = ta === tb ? 'All square' : ta > tb ? 'Vikes lead' : 'Celts lead';
+  return (
+    <div className="mymatch csintro">
+      <div className="mmk">{prev ? `${prev.rd} · in the book` : 'The Cup opens'}</div>
+      <div className="mmt">{singles ? `Time to order your four` : `Time to set your pairings`}</div>
+      <div className="csenv"><IconEnvelope /></div>
+      <div className="mml">
+        {prev
+          ? <>{prev.day.split(' ')[0]}{prevDone ? ' is officially complete' : '’s cards are in'}: <b className="b">Celts {half(pb)}</b>, <b className="a">Vikes {half(pa)}</b>{prev.rd !== 'Round 1' ? <>. {lead}, <b className="b">{half(tb)}</b> to <b className="a">{half(ta)}</b> overall</> : null}. </>
+          : <>Nobody has hit a shot yet. </>}
+        Your sheet for {session.rd}, {session.fmt.toLowerCase()} at {session.course} on {session.day}, is open.
+        It is blind: sealed the moment you submit, and unseen by anyone until the commissioner sends the pairings.
+        Due {clockLocal(view.due)} course time.
+      </div>
+      <button className="abtn" onClick={onStart}>{singles ? 'Order my four' : 'Set my pairings'} ›</button>
     </div>
   );
 }
