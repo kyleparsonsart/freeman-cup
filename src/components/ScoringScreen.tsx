@@ -786,7 +786,9 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
       {/* Handoff log line */}
       {handoff && (
         <div className="holine">
-          Taken over from {playerName(handoff.from, data)} by {playerName(handoff.by, data)}, {ago(handoff.at)}
+          {handoff.by && handoff.by === handoff.from
+            ? <>Handed to {playerName(handoff.to, data)} by {playerName(handoff.from, data)}, {ago(handoff.at)}</>
+            : <>Taken over from {playerName(handoff.from, data)} by {playerName(handoff.by, data)}, {ago(handoff.at)}</>}
         </div>
       )}
       {swapErr && <div className="holine err">{swapErr}</div>}
