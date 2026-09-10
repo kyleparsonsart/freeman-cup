@@ -1687,3 +1687,8 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 /* Sep 10: MVP and Medalist on the finale poster */
 .pline.honors{display:flex;flex-direction:column;gap:6px;margin-top:18px;padding-top:16px;border-top:1px solid rgba(240,235,220,.12)}
 .pline.honors b{font-weight:600}
+
+/* Sep 10: the pick-up note under the stroke legend */
+.legend.pick{background:rgba(23,43,36,.9);color:var(--moss)}
+.legend.pick b{color:var(--bone)}
+.legend.pick .ldot{background:var(--moss-dim)}

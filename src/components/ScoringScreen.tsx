@@ -26,7 +26,7 @@ const NOTE = [
   { o: 1,  sh: 'o1', cap: 'Bogey' },
   { o: 2,  sh: 'o2', cap: 'Double' },
   { o: 3,  sh: 'o3', cap: 'Triple' },
-  { o: 4,  sh: '',   cap: '\u2013' },
+  { o: 4,  sh: '',   cap: 'Pick up' },
   { o: 5,  sh: '',   cap: '\u2013' },
   { o: 6,  sh: '',   cap: '\u2013' },
   { o: 7,  sh: '',   cap: '\u2013' },
@@ -606,6 +606,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
 
       {/* Stroke legend */}
       <StrokeLegend match={m} holeIdx={i} session={s} />
+      <PickupNote match={m} holeIdx={i} session={s} />
 
       {/* Bye hole bar */}
       {bye && (() => {
@@ -697,7 +698,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
                     }}
                   >
                     {on && stars > 0 && (
-                      <span className="stars" aria-label={stars === 2 ? 'Won the hole alone, 3 points' : 'Won the hole together, 2 points'}>
+                      <span className="stars" aria-label={stars === 2 ? 'Won the hole alone, 2 points' : 'Won the hole together, 1 point'}>
                         {Array.from({ length: stars }).map((_, n) => <StarGlyph key={n} />)}
                       </span>
                     )}
@@ -861,6 +862,22 @@ function StrokeLegend({ match: m, holeIdx: i, session: s }: { match: Match; hole
       <i className="ldot" />
       <b>{who}</b> {verb} a shot on this hole.
       The gold underline marks the score it plays as.
+    </div>
+  );
+}
+
+/** A pick-up is entered as par plus four (Art. 4.2); say so on the hole where one went in. */
+function PickupNote({ match: m, holeIdx: i, session: s }: { match: Match; holeIdx: number; session: EventData['scoringSessions'][0] }) {
+  const par = s.par[i];
+  if (!par) return null;
+  const keys = holeKeys(m).filter(k => m.hs[i]?.sc[k] === par + 4);
+  if (!keys.length) return null;
+  const label = (k: string) => s.fmt === 'Foursomes' ? CFG.teams[k].name : (fn(P[k]?.n) || k);
+  const who = keys.length === 1 ? label(keys[0]) : keys.slice(0, -1).map(label).join(', ') + ' and ' + label(keys[keys.length - 1]);
+  return (
+    <div className="legend pick">
+      <i className="ldot" />
+      <b>{who}</b> {keys.length === 1 && s.fmt !== 'Foursomes' ? 'has' : 'have'} par plus four, a pick-up: once you are +2 you may pick up and it costs two more (Art. 4.2). The Pick up tile enters it.
     </div>
   );
 }
