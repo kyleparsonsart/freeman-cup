@@ -461,10 +461,13 @@ function DayBlock({ d, r, open }: { d: Shaped; r: RoundView; open: boolean }) {
                 ? <span className="sc lv">{c.w === 'h' ? 'All square' : `${CFG.teams[c.w as Side].name} ${Math.abs(c.diff)} up`} · {c.played}</span>
                 : <span className="sc tb">Match {i + 1}</span>;
             return (
-              <div key={m.id} className={`r${m.a.length && m.b.length ? '' : ' ph'}`}>
-                <span className="tt">{teeClock(t)}</span>
-                <span className="who"><span className="c">{names(d, m.b) || CFG.teams.b.name}</span><i>vs</i><span className="v">{names(d, m.a) || CFG.teams.a.name}</span></span>
-                {st}
+              <div key={m.id} className={`rw${c.played ? ' has-lead' : ''}`}>
+                <div className={`r${m.a.length && m.b.length ? '' : ' ph'}`}>
+                  <span className="tt">{teeClock(t)}</span>
+                  <span className="who"><span className="c">{names(d, m.b) || CFG.teams.b.name}</span><i>vs</i><span className="v">{names(d, m.a) || CFG.teams.a.name}</span></span>
+                  {st}
+                </div>
+                {c.played > 0 && <LeadBars m={m} s={r.s} />}
               </div>
             );
           })}
@@ -539,44 +542,61 @@ function Race({ d }: { d: Shaped }) {
 
 /* ---------------- players ---------------- */
 
+/** Net strokes a player has taken in a round so far (gross less strokes;
+ *  a pick-up is par plus four), with the holes counted. */
+function netRound(d: Shaped, s: Session, k: string): { net: number; holes: number } {
+  let net = 0, holes = 0;
+  d.matches.filter(m => m.s === s.id && (m.a.includes(k) || m.b.includes(k))).forEach(m => {
+    m.hs.forEach((h, i) => {
+      const g = h?.sc?.[k];
+      if (g === undefined || g === null) return;
+      const gross = g === 'X' ? (s.par[i] ?? 4) + 4 : (g as number);
+      net += gross - getsStroke(m, k, i);
+      holes++;
+    });
+  });
+  return { net, holes };
+}
+
 function Players({ d, phase, totals }: { d: Shaped; phase: 'pre' | 'live' | 'final'; totals: { a: number; b: number } }) {
   const pre = phase === 'pre';
-  const rec: Record<string, { w: number; l: number; h: number; pts: number }> = {};
-  d.matches.forEach(m => {
-    const r = calc(m);
-    if (!r.done) return;
-    (['a', 'b'] as Side[]).forEach(side => m[side].forEach(k => {
-      const e = (rec[k] = rec[k] || { w: 0, l: 0, h: 0, pts: 0 });
-      if (r.w === 'h') { e.h++; e.pts += 0.5; } else if (r.w === side) { e.w++; e.pts++; } else e.l++;
-    }));
-  });
+  const rounds = d.sessions.filter(s => s.fmt !== 'Foursomes');
+  const parOf = (s: Session) => s.par.slice(0, s.holes).reduce((t, p) => t + p, 0);
   const roster = (side: Side) => Object.entries(d.players).filter(([, p]) => p.t === side)
-    .sort(([ka, pa], [kb, pb]) => Number(pb.cap || 0) - Number(pa.cap || 0) || (rec[kb]?.pts || 0) - (rec[ka]?.pts || 0) || pa.n.localeCompare(pb.n))
+    .sort(([, pa], [, pb]) => Number(pb.cap || 0) - Number(pa.cap || 0) || pa.n.localeCompare(pb.n))
     .map(([k, p]) => {
-      const e = rec[k] || { w: 0, l: 0, h: 0, pts: 0 };
+      const cells = rounds.map(s => {
+        const { net, holes } = netRound(d, s, k);
+        if (!holes) return <span key={s.id} className="rn par" title={`Par at ${s.course}`}>{parOf(s)}</span>;
+        const full = holes >= s.holes;
+        return <span key={s.id} className={`rn${full ? '' : ' thru'}`} title={full ? `${s.course}, net` : `${s.course}, net through ${holes}`}>{net}</span>;
+      });
       return (
         <li key={k}>
           <span className="nm">{fn(d, k)}{p.cap && <i>Captain</i>}</span>
-          {pre ? <><span /><span /></> : <>
-            <span className="rec">{e.w}–{e.l}–{e.h}</span>
-            <span className="pts">{half(e.pts)}</span>
-          </>}
+          {cells}
         </li>
       );
     });
+  const head = (
+    <li className="hd">
+      <span className="nm" />
+      {rounds.map((s, i) => <span key={s.id} className="rn">R{i + 1}</span>)}
+    </li>
+  );
   return (
     <section className="sect dayfade" ref={reveal}>
       <div className="wrap">
         <h2>{pre ? 'The teams' : 'The players'}</h2>
-        <p className="sub">{pre ? 'Four a side. Records appear once play starts.' : 'Record and points won for the Cup across the week.'}</p>
-        <div className="teams">
+        <p className="sub">Net strokes per round, gross less handicap strokes. Until a round is played the column shows the par of the course.</p>
+        <div className="teams" style={{ ['--rounds' as string]: rounds.length }}>
           <div className="team cel">
             <div className="th"><span>The {CFG.teams.b.name}</span><span className="tp">{pre ? '4 players' : `${half(totals.b)} pt${totals.b === 1 ? '' : 's'}`}</span></div>
-            <ul>{roster('b')}</ul>
+            <ul>{head}{roster('b')}</ul>
           </div>
           <div className="team vik">
             <div className="th"><span>The {CFG.teams.a.name}</span><span className="tp">{pre ? '4 players' : `${half(totals.a)} pt${totals.a === 1 ? '' : 's'}`}</span></div>
-            <ul>{roster('a')}</ul>
+            <ul>{head}{roster('a')}</ul>
           </div>
         </div>
       </div>
