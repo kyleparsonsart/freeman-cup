@@ -663,7 +663,7 @@ function TeeRow({ r, course, onSave }: {
   };
   return (
     <div className="seatrow edit">
-      <span className="sn2">{r.label}<small> {course}</small></span>
+      <span className="sn2 tee">{r.label}<small>{course}</small></span>
       <input className="sein" type="text" placeholder="Tees, e.g. Black" value={tee} onChange={e => setTee(e.target.value)} onBlur={saveTee} onKeyDown={onKey} aria-label={`${r.label} tees`} />
       <input className="sein hcp" type="text" inputMode="numeric" placeholder="Yards" value={yards} onChange={e => setYards(e.target.value)} onBlur={saveYards} onKeyDown={onKey} aria-label={`${r.label} yards`} />
     </div>

@@ -1684,3 +1684,5 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .seatrow .sein.hcp{flex:none;width:58px;text-align:center;font-family:var(--num);font-size:15px}
 .seatrow.warn .sein[type=email]{border-color:rgba(200,64,47,.55)}
 .seatrow .schip.warn{color:var(--red);border-color:rgba(200,64,47,.5)}
+.seatrow.edit .sn2.tee{width:150px;flex-direction:column;align-items:flex-start;gap:0;white-space:nowrap;line-height:1.15}
+.seatrow.edit .sn2.tee small{font-size:11px;letter-spacing:0;font-weight:400}
