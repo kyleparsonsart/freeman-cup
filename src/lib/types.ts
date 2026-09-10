@@ -59,6 +59,9 @@ export interface DbRound {
   state: 'upcoming' | 'live' | 'final';
   /** set when the commissioner hands out the envelopes (captain's sheet) */
   revealed_at?: string | null;
+  /** the one set of tees everyone plays, e.g. 'Black' (Art. 5) */
+  tee?: string | null;
+  yards?: number | null;
 }
 
 export interface DbTeeGroup {

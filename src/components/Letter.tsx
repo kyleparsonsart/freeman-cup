@@ -58,7 +58,7 @@ export default function LetterMoment({ data, letter, onClose, onSeeMatch }: {
             <div className="card">
               <i className="badge" />
               <div className="k1">THE FREEMAN CUP · 2026</div>
-              <div className="k2">{s.fmt} · off at {letter.tee}</div>
+              <div className="k2">{s.fmt} · off at {letter.tee}{s.tee ? ` · ${s.tee.replace(/ · .*$/, '')}` : ''}</div>
               <div className={`line ${side}`}>{named(me)}{letter.partner && <><i>&amp;</i>{named(letter.partner)}</>}</div>
               <div className="k2 vs">against</div>
               <div className={`line ${side === 'a' ? 'b' : 'a'}`}>{letter.opponents.map((k, i) => <span key={k}>{i > 0 && <i>&amp;</i>}{named(k)}</span>)}</div>

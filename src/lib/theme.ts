@@ -9,12 +9,10 @@ const KEY = 'fc-theme';
 // --ink in each theme: the page colour Safari's chrome should match
 const META: Record<Theme, string> = { dark: '#0F1E19', light: '#F7F3E8' };
 
+/** Light is shelved for 2026 (QA, Sep 10): every phone runs dark. The
+ *  stylesheet keeps body.light for the day it comes back. */
 export function getTheme(): Theme {
-  try {
-    return localStorage.getItem(KEY) === 'light' ? 'light' : 'dark';
-  } catch {
-    return 'dark';
-  }
+  return 'dark';
 }
 
 export function applyTheme(t: Theme): void {

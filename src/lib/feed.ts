@@ -103,7 +103,7 @@ export function buildFeed(input: FeedInput): FeedDay[] {
             tag: kind || undefined, tagGold: !!kind,
             who: { side: w, name: win ? win.n : CFG.teams[w].name },
             text: ` won ${i + 1}${kind ? ` with ${kind === 'Eagle' ? 'an eagle' : 'a birdie'}` : ''}.`,
-            sub: `${firstOf(m.a)} v ${firstOf(m.b)} · ${runningAt(m, i)}`,
+            sub: `${firstOf(m.b)} v ${firstOf(m.a)} · ${runningAt(m, i)}`,
           });
         }
 
@@ -119,7 +119,7 @@ export function buildFeed(input: FeedInput): FeedDay[] {
               tag: 'Streak', tagGold: true,
               who: { side, name: s.fmt === 'Singles' ? firstOf(m[side]) : names(m[side]) },
               text: ` won four in a row, ${i - 2} through ${i + 1}.`,
-              sub: `${firstOf(m.a)} v ${firstOf(m.b)} · ${runningAt(m, i)}`,
+              sub: `${firstOf(m.b)} v ${firstOf(m.a)} · ${runningAt(m, i)}`,
             });
           }
         }

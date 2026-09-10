@@ -66,6 +66,7 @@ function pairings(round: DbRound, s: Session, m: Match, me: string): Omit<Mail, 
     sentence(`${s.holes} holes of ${esc(fmt)}. ${esc(shots)}`),
     rows([
       ['First tee', `${esc(tee)} &middot; ${esc(date)}`],
+      ...(s.tee ? [['Tees', esc(s.tee)] as [string, string]] : []),
       ['Strokes', low ? 'Straight up' : Object.entries(sm).filter(([, n]) => n > 0).map(([k, n]) => `${k === me ? 'You' : esc(fn(k))} ${n}`).join(' &middot; ')],
       scorer ? ['Scorer', scorer === fn(me) ? 'You. Keep the card.' : esc(scorer)] : ['Colors', `${teamName(them)} in ${them === 'a' ? 'red' : 'blue'}`],
     ]),

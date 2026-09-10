@@ -430,7 +430,7 @@ function Scorecard({ d, m, s }: { d: Shaped; m: Match; s: Session }) {
 function DayBlock({ d, r, open }: { d: Shaped; r: RoundView; open: boolean }) {
   const won: Side | null = r.state === 'final' ? (r.pts.a > r.pts.b ? 'a' : r.pts.b > r.pts.a ? 'b' : null) : null;
   const fmt = r.s.fmt === 'Aggregate' ? 'Aggregate' : r.s.fmt;
-  const small = `${dow(r.date)} ${shortDate(r.date).split(' ')[1] ? shortDate(r.date) : ''} · ${fmt}${r.state === 'final' ? ' · Final' : r.state === 'live' ? ' · In play' : ''}`;
+  const small = `${dow(r.date)} ${shortDate(r.date).split(' ')[1] ? shortDate(r.date) : ''} · ${fmt}${r.s.tee ? ` · ${r.s.tee}` : ''}${r.state === 'final' ? ' · Final' : r.state === 'live' ? ' · In play' : ''}`;
   return (
     <div className={`dayblk dayfade${won ? ` ${cls(won)}-won` : ''}${r.state === 'live' ? ' live' : ''}`} ref={reveal}>
       <input type="checkbox" className="dx" id={`d-${r.s.id}`} defaultChecked={open} />

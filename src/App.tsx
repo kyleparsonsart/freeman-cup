@@ -89,7 +89,7 @@ function Header({ title, sub, right, slide }: { title?: string; sub?: string | n
     <header className="hd">
       <div key={slide} className={slide ? `hdtext ${slide}` : 'hdtext'}>
         <h1>{title ?? 'The Freeman Cup'}</h1>
-        {sub !== null && <div className="sub">{sub ?? '5th Annual · Sand Valley · Oct 2026'}</div>}
+        {sub !== null && <div className="sub">{sub ?? '1st Annual · Sand Valley · Oct 2026'}</div>}
       </div>
       {right}
     </header>
@@ -262,7 +262,7 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
     : null;
   const header = !data ? <Header right={cog} />
     : tab === 'scoring' ? <Header title={round ? round.course : 'The Freeman Cup 2026'} sub={scoringSub} right={cog} slide={slide} />
-    : tab === 'schedule' ? <Header title="The Freeman Cup 2026" sub="5th Annual Invitational" right={cog} slide={slide} />
+    : tab === 'schedule' ? <Header title="The Freeman Cup 2026" sub="1st Annual Invitational" right={cog} slide={slide} />
     : <Header title={`The Road to ${half(Number(data.event.clinch_points) || 5.5)}`} sub={lastSync(data)} right={cog} slide={slide} />;
 
   return (

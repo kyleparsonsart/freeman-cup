@@ -167,14 +167,14 @@ function GroupTabs({ matches, heroId, onSelect, meKey }: GroupTabsProps) {
             </span>
             <span className="ftrow">
               <span className="avs">
-                {m.a.map(p => (
-                  <i key={p} className="av a">{initials(p)}</i>
+                {m.b.map(p => (
+                  <i key={p} className="av b">{initials(p)}</i>
                 ))}
               </span>
               <span className={`ft2 ${colCls}`}>{st2}</span>
               <span className="avs">
-                {m.b.map(p => (
-                  <i key={p} className="av b">{initials(p)}</i>
+                {m.a.map(p => (
+                  <i key={p} className="av a">{initials(p)}</i>
                 ))}
               </span>
             </span>
@@ -546,13 +546,13 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
             <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>
           </svg>
           {submitted && !data.meIsCommissioner ? (
-            <span>Card's in — only <b>{commishName}</b> can edit now.</span>
+            <span>Card's in. Only <b>{commishName}</b> can edit now.</span>
           ) : scorerKey ? (
-            <span><b>{fn(P[scorerKey]?.n) || 'The scorer'}</b> has the pencil — scores go in from his phone.</span>
+            <span><b>{fn(P[scorerKey]?.n) || 'The scorer'}</b> has the pencil; scores go in from his phone.</span>
           ) : inGroup ? (
             <span>Nobody has the pencil yet. <button className="takepen" onClick={() => switchScorer(data.meKey)}>Take it</button> if you’re keeping the card.</span>
           ) : (
-            <span>Nobody has the pencil yet — someone in the group takes it on the first tee.</span>
+            <span>Nobody has the pencil yet; someone in the group takes it on the first tee.</span>
           )}
         </div>
       )}
@@ -614,7 +614,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
         return (
           <div className="byebar">
             <b>Match closed on {r.byeStart}{res ? ` · ${res}` : ''}.</b>{' '}
-            Keep the scores coming — byes count for day totals and the MVP card.
+            Keep the scores coming; byes count for day totals and the MVP card.
             {bp && <span className="byeprog"> {bp.got} of {bp.total} in</span>}
           </div>
         );
@@ -919,7 +919,7 @@ function BlockedCard({ rows, data, commishName }: {
       <div className="sfwhy">
         Usually the round was marked Complete, or this card handed in, while
         these were waiting to sync. They are kept on this phone and retry on
-        their own — show this screen to {commishName}, who can unlock or enter
+        their own. Show this screen to {commishName}, who can unlock or enter
         them by hand.
       </div>
       {rows.map(w => (
@@ -937,7 +937,7 @@ function BlockedCard({ rows, data, commishName }: {
           setConfirm(false);
         }}
       >
-        {confirm ? 'Tap again — they’ll be gone for good' : 'Dismiss these scores (they’ll be lost)'}
+        {confirm ? 'Tap again and they’re gone for good' : 'Dismiss these scores (they’ll be lost)'}
       </button>
     </div>
   );
@@ -991,10 +991,10 @@ function CardDrawer({ gms, session: s, pending, blockedCount, onClose }: {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
             Everything reached the server · 0 to sync
           </>
-        ) : blockedCount > 0 ? `${blockedCount} score${blockedCount === 1 ? '' : 's'} could not save — see the card above`
+        ) : blockedCount > 0 ? `${blockedCount} score${blockedCount === 1 ? '' : 's'} could not save; see the card above`
           : `Still syncing ${pending}…`}
       </div>
-      <button className="abtn cidone" onClick={onClose}>Done — the card is in</button>
+      <button className="abtn cidone" onClick={onClose}>Done, the card is in</button>
     </div>
   );
 }
@@ -1049,7 +1049,7 @@ function MatchBrief({ m, session: s, data, scorerKey, onPeek, onTake }: {
         <i className="ldot" />
         <span>
           {withShots.length === 0
-            ? 'Straight up — no shots either way.'
+            ? 'Straight up, no shots either way.'
             : <>
                 {withShots.map((k, ix) => (
                   <span key={k}>{ix > 0 ? ' ' : ''}{label(k)} {verb(k)} a shot on <b>{listJoin(holesFor(k))}</b>.</span>
@@ -1063,7 +1063,7 @@ function MatchBrief({ m, session: s, data, scorerKey, onPeek, onTake }: {
           <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>
         </svg>
         {scorerKey
-          ? `${fn(P[scorerKey]?.n) || 'Somebody'} keeps the card for ${mine ? 'your' : 'this'} group.`
+          ? scorerKey === data.meKey ? 'You keep the card for your group.' : `${fn(P[scorerKey]?.n) || 'Somebody'} keeps the card for ${mine ? 'your' : 'this'} group.`
           : mine && onTake
             ? <>Nobody has the pencil yet. <button className="takepen" onClick={onTake}>Take it</button> if you’re keeping the card.</>
             : 'Nobody has the pencil yet; the group picks on the first tee.'}

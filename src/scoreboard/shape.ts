@@ -71,7 +71,7 @@ export function teeClock(t: string): string {
 
 export function teeClockAmPm(t: string): string {
   const [h] = t.split(':').map(Number);
-  return `${teeClock(t)} ${h >= 12 ? 'PM' : 'AM'}`;
+  return `${teeClock(t)}${h >= 12 ? 'pm' : 'am'}`;
 }
 
 export function shape(snap: Snapshot): Shaped {
@@ -118,6 +118,7 @@ export function shape(snap: Snapshot): Shaped {
       tees: tgs.map(tg => teeClockAmPm(tg.tee_time)),
       scorer: tgs.map(() => ''),
       state: r.state ?? (r.locked ? 'final' : 'upcoming'),
+      tee: r.tee ? `${r.tee} tees${r.yards ? ` · ${Number(r.yards).toLocaleString('en-US')} yards` : ''}` : undefined,
       par: course?.par || [],
       si: course?.stroke_index || null,
     };

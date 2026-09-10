@@ -88,8 +88,8 @@ const FMT_MAP: Record<string, 'Four-ball' | 'Foursomes' | 'Aggregate' | 'Singles
 
 function formatTeeTime(t: string): string {
   const [h, m] = t.split(':').map(Number);
-  const ap = h >= 12 ? 'PM' : 'AM';
-  return `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${ap}`;
+  const ap = h >= 12 ? 'pm' : 'am';
+  return `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')}${ap}`;
 }
 
 function formatDate(d: string): string {
@@ -134,8 +134,13 @@ async function fetchTables(): Promise<RawTables> {
 
   return {
     event,
-    teams: teams as DbTeam[],
-    players: players as DbPlayer[],
+    // Celts (side b) first everywhere, players grouped by team the same way
+    teams: [...(teams as DbTeam[])].sort((x, y) => (x.side === 'b' ? 0 : 1) - (y.side === 'b' ? 0 : 1)),
+    players: [...(players as DbPlayer[])].sort((x, y) => {
+      const sx = (teams as DbTeam[]).find(t => t.id === x.team_id)?.side === 'b' ? 0 : 1;
+      const sy = (teams as DbTeam[]).find(t => t.id === y.team_id)?.side === 'b' ? 0 : 1;
+      return sx - sy || Number(y.is_captain) - Number(x.is_captain) || x.name.localeCompare(y.name);
+    }),
     courses: courses as DbCourse[],
     rounds: rounds as DbRound[],
     teeGroups: teeGroups as DbTeeGroup[],
@@ -308,6 +313,7 @@ export function useEventData() {
         tees: tgs.map(tg => formatTeeTime(tg.tee_time)),
         scorer: tgs.map(tg => tg.scorer_player_id ? playerKey(tg.scorer_player_id) : ''),
         state: r.state ?? (r.locked ? 'final' : 'upcoming'),
+        tee: r.tee ? `${r.tee} tees${r.yards ? ` · ${Number(r.yards).toLocaleString('en-US')} yards` : ''}` : undefined,
         par: course?.par || [],
         si: course?.stroke_index || null,
       };

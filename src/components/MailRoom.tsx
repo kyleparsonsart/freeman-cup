@@ -25,10 +25,11 @@ export default function MailRoom({ data, moments, reload }: { data: EventData; m
   const items: Item[] = [];
   data.rounds.slice().sort((a, b) => a.seq - b.seq).forEach(r => {
     const posted = !!r.revealed_at && data.matches.some(m => m.round_id === r.id);
+    const over = r.state === 'final';
     items.push({
       id: `pairings:${r.id}`, kind: 'pairings', key: r.id, roundId: r.id,
-      title: `Pairings · ${r.label}`, sub: posted ? `${course(r.id)} · one email per player` : 'Unlocks when you Send Pairings',
-      ready: posted, build: () => pairingsMail(data, r),
+      title: `Pairings · ${r.label}`, sub: over ? `${course(r.id)} · round is in the book` : posted ? `${course(r.id)} · one email per player` : 'Unlocks when you Send Pairings',
+      ready: posted && !over, build: () => pairingsMail(data, r),
     });
   });
   const days = [...new Set(data.scoringSessions.map(s => s.day))];

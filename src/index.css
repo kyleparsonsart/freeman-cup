@@ -1370,7 +1370,7 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .env .card .line .hi{font-family:var(--num);font-size:11px;color:#5a6a61;margin-left:3px}
 .env .card .line i{font-style:normal;color:#5a6a61;margin:0 4px}
 .shadmin{display:flex;align-items:center;gap:12px;padding:11px 18px;border-top:1px solid var(--line);min-width:0}
-.shadmin .n{font-family:var(--display);font-size:16px;color:var(--bone);width:56px;flex:none;font-synthesis:none}
+.shadmin .n{font-family:var(--display);font-size:16px;color:var(--bone);width:76px;flex:none;font-synthesis:none;white-space:nowrap}
 .shadmin .s{font-size:12.5px;color:var(--moss-dim);flex:1;min-width:0;line-height:1.35}
 .shadmin button{font-size:12px;color:var(--brass);text-decoration:underline;text-underline-offset:3px;flex:none;white-space:nowrap;padding:4px 0}
 .env .card .k2.vs{margin-top:8px;font-family:var(--display);text-transform:none;letter-spacing:0;font-size:12px;font-style:italic;color:#7a8079}
@@ -1672,3 +1672,15 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 
 /* Sep 10: the fine print under the sign-in form */
 .sifine{font-size:12.5px;line-height:1.5;color:var(--dim);max-width:300px;margin:14px auto 0;text-align:center}
+
+/* Sep 10: editable seats and tees in Settings */
+.seatrow.edit{align-items:center;gap:8px}
+.seatrow.edit .sn2{width:72px;display:flex;align-items:baseline;gap:4px}
+.seatrow.edit .sn2.a{color:var(--red)} .seatrow.edit .sn2.b{color:var(--blue)}
+.seatrow.edit .sn2 small{font-family:var(--body);font-size:10px;color:var(--moss-dim);font-weight:600;letter-spacing:.5px}
+.seatrow .sein{flex:1;min-width:0;height:34px;padding:0 10px;border-radius:8px;border:1px solid var(--line);background:rgba(15,30,25,.45);color:var(--bone);font:inherit;font-size:13px}
+.seatrow .sein::placeholder{color:var(--dim)}
+.seatrow .sein:focus{outline:none;border-color:var(--brass)}
+.seatrow .sein.hcp{flex:none;width:58px;text-align:center;font-family:var(--num);font-size:15px}
+.seatrow.warn .sein[type=email]{border-color:rgba(200,64,47,.55)}
+.seatrow .schip.warn{color:var(--red);border-color:rgba(200,64,47,.5)}

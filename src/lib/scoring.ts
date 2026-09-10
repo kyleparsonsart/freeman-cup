@@ -38,6 +38,8 @@ export interface Session {
   tees: string[];
   scorer: string[];
   state: string;
+  /** 'Black tees · 6,547 yards' once the commissioner posts it (Art. 5) */
+  tee?: string;
   par: number[];
   si: number[] | null;
 }

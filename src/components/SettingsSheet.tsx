@@ -1,12 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { supabase } from '../lib/supabase';
-import { getTheme, setTheme, type Theme } from '../lib/theme';
 import { TIEBREAK, type MomentsState } from '../lib/moments';
 import { deskFor, quietMins, type DeskState } from '../lib/desk';
 import type { Acting } from '../lib/view';
 import type { EventData } from '../hooks/useEventData';
 import { IconFlagCheckered } from './icons';
-import type { DbPlayer } from '../lib/types';
+import type { DbPlayer, DbRound } from '../lib/types';
 import { clockLocal } from '../lib/sheets';
 import MailRoom from './MailRoom';
 
@@ -45,15 +44,12 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
   const [err, setErr] = useState<string | null>(null);
   const [cleared, setCleared] = useState(false);
   const [resetArm, setResetArm] = useState<string | null>(null);
-  const [theme, setThemeState] = useState<Theme>(getTheme());
-  const flipTheme = () => {
-    const next: Theme = theme === 'light' ? 'dark' : 'light';
-    setTheme(next);
-    setThemeState(next);
-  };
 
   const me = data.playerById[data.mePlayerId];
   const commish = data.meIsCommissioner;
+  // the commissioner's tabs appear only while acting as commissioner; in
+  // player mode the sheet is exactly what the other seven see, plus the switch
+  const armed = commish && acting === 'commish';
 
   const run = async (q: Outcome) => {
     setErr(null);
@@ -97,7 +93,7 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
       gm.forEach(m => { for (let i = 0; i < (session?.holes || 0); i++) if (!m.hs[i]?.r) openHoles++; });
     });
     return `${letters.join(' and ')} ${out.length === 1 ? "hasn't" : "haven't"} handed the card in` +
-      (openHoles ? ` — ${openHoles} hole${openHoles === 1 ? '' : 's'} still open` : '') +
+      (openHoles ? `, ${openHoles} hole${openHoles === 1 ? '' : 's'} still open` : '') +
       '. Completing locks scoring and any unsynced scores will be refused.';
   };
   const requestRoundState = (id: string, state: string) => {
@@ -180,10 +176,10 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
       aria-hidden={!open}
     >
       <div className="sethd">
-        <h2>{commish ? 'Commissioner' : 'Settings'}</h2>
+        <h2>{armed ? 'Commissioner' : 'Settings'}</h2>
         <button className="done" onClick={onClose}>Done</button>
       </div>
-      {commish && (
+      {armed && (
         <div className="stabs" role="tablist">
           {STABS.map(([t, label]) => (
             <button key={t} role="tab" aria-selected={stab === t} onClick={() => goStab(t)}>
@@ -195,7 +191,7 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
       <div className="setbody" ref={setBodyRef}>
         {err && <div className="holine err">{err}</div>}
 
-        {commish && stab === 'you' && onActing && (
+        {commish && (!armed || stab === 'you') && onActing && (
           <>
             <div className="grp">
               <h3>Acting as</h3>
@@ -212,17 +208,8 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
           </>
         )}
 
-        {(!commish || stab === 'you') && (
+        {(!armed || stab === 'you') && (
           <>
-            <div className="grp">
-              <h3>Appearance</h3>
-              <div className="hint">Dark holds up better in direct sun on the course. Light is easier indoors.</div>
-            </div>
-            <div className="fld">
-              <label>Light mode</label>
-              <button className="sw" role="switch" aria-checked={theme === 'light'} aria-label="Light mode" onClick={flipTheme} />
-            </div>
-
             <div className="grp"><h3>Account</h3></div>
             <div className="fld">
               <label>
@@ -235,7 +222,7 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
           </>
         )}
 
-        {commish && (
+        {armed && (
           <>
             {stab === 'today' && <>
             {/* ---- The desk ---- */}
@@ -409,7 +396,7 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
             <div className="grp">
               <h3>Pairings</h3>
               <div className="hint">
-                Red on the left, blue on the right. Cards go in the night before;
+                Celts first, Vikes second, as everywhere. Cards go in the night before;
                 changing a match with scores on it does not clear them.
               </div>
             </div>
@@ -432,11 +419,11 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
                           <span className="nm2">Match {m.seq} · Group {letter}</span>
                           <span className="cs">{s?.tees[gi]}</span>
                         </div>
-                        {(['a', 'b'] as const).map(side => {
+                        {(['b', 'a'] as const).map(side => {
                           const ids = side === 'a' ? m.side_a : m.side_b;
                           const team = teamOf(side);
                           return (
-                            <div key={side} className="r2" style={{ marginTop: side === 'b' ? 8 : 0 }}>
+                            <div key={side} className="r2" style={{ marginTop: side === 'a' ? 8 : 0 }}>
                               <span
                                 className="cs"
                                 style={{ width: 34, flex: 'none', alignSelf: 'center', color: `var(--${side === 'a' ? 'red' : 'blue'})` }}
@@ -465,7 +452,7 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
                         {r.format === 'foursomes' && (
                           <div className="r2" style={{ marginTop: 8 }}>
                             <span className="cs" style={{ width: 34, flex: 'none', alignSelf: 'center' }}>Odds</span>
-                            {(['a', 'b'] as const).map(side => {
+                            {(['b', 'a'] as const).map(side => {
                               const ids = side === 'a' ? m.side_a : m.side_b;
                               const cur = side === 'a' ? m.odds_a : m.odds_b;
                               return (
@@ -503,7 +490,7 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
                     every phone. Clear puts the jug back on the line.
                   </div>
                 </div>
-                {(['a', 'b'] as const).map(side => {
+                {(['b', 'a'] as const).map(side => {
                   const team = teamOf(side);
                   const cap = moments?.captains[side] || team?.name || side;
                   return (
@@ -560,19 +547,29 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
             <div className="grp">
               <h3>Seats</h3>
               <div className="hint">
-                Who each chair belongs to. Unbind clears a stale account so the
-                right email can claim the seat — run this before invites go out.
+                Who each chair belongs to, with the address his invitation and
+                letters go to and the index his strokes come from. Edit a field
+                and tap away to save. Unbind clears a stale account so the right
+                email can claim the seat; run this before invites go out.
               </div>
             </div>
             {data.players.map(p => (
-              <div key={p.id} className="seatrow">
-                <span className="sn2">{fname(p.name)}</span>
-                <span className="se">{p.email}</span>
-                <span className={`schip${p.auth_uid ? ' ok' : ''}`}>{p.auth_uid ? 'Claimed' : 'Open'}</span>
-                {p.auth_uid && p.id !== data.mePlayerId && (
-                  <button className="unbind" onClick={() => unbindSeat(p.id)}>Unbind</button>
-                )}
+              <SeatRow key={p.id} p={p} side={teamOf('b')?.id === p.team_id ? 'b' : 'a'} me={p.id === data.mePlayerId}
+                onSave={(f) => run(supabase.from('player').update(f).eq('id', p.id))}
+                onUnbind={() => unbindSeat(p.id)} />
+            ))}
+
+            {/* ---- Tees ---- */}
+            <div className="grp">
+              <h3>Tees</h3>
+              <div className="hint">
+                One set for everyone (Art. 5). The name and yardage show on the
+                Schedule, the letters and the site once saved.
               </div>
+            </div>
+            {data.rounds.map((r, i) => (
+              <TeeRow key={r.id} r={r} course={data.scoringSessions[i]?.course || ''}
+                onSave={(f) => run(supabase.from('round').update(f).eq('id', r.id))} />
             ))}
 
             {/* ---- Danger ---- */}
@@ -616,6 +613,62 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
   );
 }
 
+
+/** One seat: name, editable email and index, claim state. Saves on blur. */
+function SeatRow({ p, side, me, onSave, onUnbind }: {
+  p: DbPlayer; side: 'a' | 'b'; me: boolean;
+  onSave: (f: { email?: string; handicap_index?: number }) => void;
+  onUnbind: () => void;
+}) {
+  const [email, setEmail] = useState(p.email);
+  const [hcp, setHcp] = useState(String(p.handicap_index));
+  useEffect(() => { setEmail(p.email); setHcp(String(p.handicap_index)); }, [p.email, p.handicap_index]);
+  const placeholder = /@example\.com$/i.test(p.email);
+  const saveEmail = () => {
+    const v = email.trim().toLowerCase();
+    if (v && v !== p.email) onSave({ email: v }); else setEmail(p.email);
+  };
+  const saveHcp = () => {
+    const n = Number(hcp);
+    if (hcp.trim() !== '' && Number.isFinite(n) && n !== Number(p.handicap_index)) onSave({ handicap_index: n }); else setHcp(String(p.handicap_index));
+  };
+  const onKey = (e: KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') e.currentTarget.blur(); };
+  return (
+    <div className={`seatrow edit${placeholder ? ' warn' : ''}`}>
+      <span className={`sn2 ${side}`}>{p.name.split(' ')[0]}{p.is_captain ? <small> C</small> : null}</span>
+      <input className="sein" type="email" inputMode="email" autoComplete="off" value={email} onChange={e => setEmail(e.target.value)} onBlur={saveEmail} onKeyDown={onKey} aria-label={`${p.name} email`} />
+      <input className="sein hcp" type="text" inputMode="decimal" value={hcp} onChange={e => setHcp(e.target.value)} onBlur={saveHcp} onKeyDown={onKey} aria-label={`${p.name} index`} />
+      <span className={`schip${p.auth_uid ? ' ok' : placeholder ? ' warn' : ''}`}>{p.auth_uid ? 'Claimed' : placeholder ? 'No email' : 'Open'}</span>
+      {p.auth_uid && !me && (
+        <button className="unbind" onClick={onUnbind}>Unbind</button>
+      )}
+    </div>
+  );
+}
+
+/** One round's tees: the set everyone plays and its yardage. Saves on blur. */
+function TeeRow({ r, course, onSave }: {
+  r: DbRound; course: string;
+  onSave: (f: { tee?: string | null; yards?: number | null }) => void;
+}) {
+  const [tee, setTee] = useState(r.tee || '');
+  const [yards, setYards] = useState(r.yards ? String(r.yards) : '');
+  useEffect(() => { setTee(r.tee || ''); setYards(r.yards ? String(r.yards) : ''); }, [r.tee, r.yards]);
+  const onKey = (e: KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') e.currentTarget.blur(); };
+  const saveTee = () => { const v = tee.trim() || null; if (v !== (r.tee || null)) onSave({ tee: v }); };
+  const saveYards = () => {
+    const n = yards.trim() === '' ? null : Number(yards.replace(/,/g, ''));
+    if (n !== null && !Number.isFinite(n)) { setYards(r.yards ? String(r.yards) : ''); return; }
+    if (n !== (r.yards ?? null)) onSave({ yards: n });
+  };
+  return (
+    <div className="seatrow edit">
+      <span className="sn2">{r.label}<small> {course}</small></span>
+      <input className="sein" type="text" placeholder="Tees, e.g. Black" value={tee} onChange={e => setTee(e.target.value)} onBlur={saveTee} onKeyDown={onKey} aria-label={`${r.label} tees`} />
+      <input className="sein hcp" type="text" inputMode="numeric" placeholder="Yards" value={yards} onChange={e => setYards(e.target.value)} onBlur={saveYards} onKeyDown={onKey} aria-label={`${r.label} yards`} />
+    </div>
+  );
+}
 
 /** The commissioner's day on one card: launch, watch, landing. */
 function Desk({ desk, data, onLive, onComplete }: {
@@ -704,7 +757,7 @@ function Desk({ desk, data, onLive, onComplete }: {
           </div>
           <button className={`abtn deskgo${desk.cardsIn < total ? ' soft' : ''}`} onClick={onComplete}>
             {desk.cardsIn < total
-              ? `Mark complete \u2014 ${total - desk.cardsIn} card${total - desk.cardsIn === 1 ? '' : 's'} still out`
+              ? `Mark complete, ${total - desk.cardsIn} card${total - desk.cardsIn === 1 ? '' : 's'} still out`
               : `Mark ${s.rd} complete`}
           </button>
         </>
