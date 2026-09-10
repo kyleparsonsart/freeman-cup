@@ -179,7 +179,7 @@ export default function Scoreboard() {
       </section>
 
       <Race d={d} />
-      <Players d={d} phase={phase} totals={totals} />
+      <Players d={d} phase={phase} />
 
       <footer className="sfoot dayfade" ref={reveal}>
         <svg width="14" height="28"><use href="#claretjug" /></svg>
@@ -544,21 +544,22 @@ function Race({ d }: { d: Shaped }) {
 
 /** Net strokes a player has taken in a round so far (gross less strokes;
  *  a pick-up is par plus four), with the holes counted. */
-function netRound(d: Shaped, s: Session, k: string): { net: number; holes: number } {
-  let net = 0, holes = 0;
+function netRound(d: Shaped, s: Session, k: string): { gross: number; net: number; holes: number } {
+  let gross = 0, net = 0, holes = 0;
   d.matches.filter(m => m.s === s.id && (m.a.includes(k) || m.b.includes(k))).forEach(m => {
     m.hs.forEach((h, i) => {
       const g = h?.sc?.[k];
       if (g === undefined || g === null) return;
-      const gross = g === 'X' ? (s.par[i] ?? 4) + 4 : (g as number);
-      net += gross - getsStroke(m, k, i);
+      const gr = g === 'X' ? (s.par[i] ?? 4) + 4 : (g as number);
+      gross += gr;
+      net += gr - getsStroke(m, k, i);
       holes++;
     });
   });
-  return { net, holes };
+  return { gross, net, holes };
 }
 
-function Players({ d, phase, totals }: { d: Shaped; phase: 'pre' | 'live' | 'final'; totals: { a: number; b: number } }) {
+function Players({ d, phase }: { d: Shaped; phase: 'pre' | 'live' | 'final' }) {
   const pre = phase === 'pre';
   const rounds = d.sessions.filter(s => s.fmt !== 'Foursomes');
   const parOf = (s: Session) => s.par.slice(0, s.holes).reduce((t, p) => t + p, 0);
@@ -566,10 +567,10 @@ function Players({ d, phase, totals }: { d: Shaped; phase: 'pre' | 'live' | 'fin
     .sort(([, pa], [, pb]) => Number(pb.cap || 0) - Number(pa.cap || 0) || pa.n.localeCompare(pb.n))
     .map(([k, p]) => {
       const cells = rounds.map(s => {
-        const { net, holes } = netRound(d, s, k);
+        const { gross, net, holes } = netRound(d, s, k);
         if (!holes) return <span key={s.id} className="rn par" title={`Par at ${s.course}`}>{parOf(s)}</span>;
         const full = holes >= s.holes;
-        return <span key={s.id} className={`rn${full ? '' : ' thru'}`} title={full ? `${s.course}, net` : `${s.course}, net through ${holes}`}>{net}</span>;
+        return <span key={s.id} className={`rn${full ? '' : ' thru'}`} title={full ? `${s.course}: gross ${gross}, net ${net}` : `${s.course} through ${holes}: gross ${gross}, net ${net}`}>{gross}<small>/{net}</small></span>;
       });
       return (
         <li key={k}>
@@ -578,25 +579,20 @@ function Players({ d, phase, totals }: { d: Shaped; phase: 'pre' | 'live' | 'fin
         </li>
       );
     });
-  const head = (
-    <li className="hd">
-      <span className="nm" />
-      {rounds.map((s, i) => <span key={s.id} className="rn">R{i + 1}</span>)}
-    </li>
-  );
+  const head = rounds.map((s, i) => <span key={s.id} className="rn">R{i + 1}</span>);
   return (
     <section className="sect dayfade" ref={reveal}>
       <div className="wrap">
         <h2>{pre ? 'The teams' : 'The players'}</h2>
-        <p className="sub">Net strokes per round, gross less handicap strokes. Until a round is played the column shows the par of the course.</p>
+        <p className="sub">Gross strokes per round, with net (gross less handicap strokes) in gold beside it. Until a round is played the column shows the par of the course.</p>
         <div className="teams" style={{ ['--rounds' as string]: rounds.length }}>
           <div className="team cel">
-            <div className="th"><span>The {CFG.teams.b.name}</span><span className="tp">{pre ? '4 players' : `${half(totals.b)} pt${totals.b === 1 ? '' : 's'}`}</span></div>
-            <ul>{head}{roster('b')}</ul>
+            <div className="th"><span>The {CFG.teams.b.name}</span>{head}</div>
+            <ul>{roster('b')}</ul>
           </div>
           <div className="team vik">
-            <div className="th"><span>The {CFG.teams.a.name}</span><span className="tp">{pre ? '4 players' : `${half(totals.a)} pt${totals.a === 1 ? '' : 's'}`}</span></div>
-            <ul>{head}{roster('a')}</ul>
+            <div className="th"><span>The {CFG.teams.a.name}</span>{head}</div>
+            <ul>{roster('a')}</ul>
           </div>
         </div>
       </div>
