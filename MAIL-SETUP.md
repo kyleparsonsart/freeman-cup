@@ -24,17 +24,35 @@ send of the same thing, and logs each send to `feed_event` as `mail_sent`.
 1. **Push the repo.** Vercel picks up `api/send-mail.ts` automatically; nothing
    to configure for the function itself.
 
-2. **Add three environment variables in Vercel.** Project, Settings,
-   Environment Variables, for Production (add Preview too if you test on
-   preview deploys):
-   - `SUPABASE_URL`: the project URL, the same value as `VITE_SUPABASE_URL`.
-   - `SUPABASE_SERVICE_ROLE_KEY`: Supabase Dashboard, Project Settings, API,
-     "service_role" secret. Server only; it never reaches the browser.
-   - `RESEND_API_KEY`: the same key the SMTP settings use. It needs sending
-     access (the default "Full access" key is fine).
+2. **Add three environment variables in Vercel.**
 
-3. **Redeploy** (Deployments, the latest one, Redeploy). Environment variables
-   only apply to builds made after they were added.
+   Where the values come from:
+   - `SUPABASE_URL`: the project's API URL (`https://xxxxxxxx.supabase.co`),
+     the same value as `VITE_SUPABASE_URL` in `.env.local`. In Supabase it is
+     Project Settings, API, "Project URL". No trailing slash.
+   - `SUPABASE_SERVICE_ROLE_KEY`: Supabase Dashboard, Project Settings, API,
+     under "Project API keys", the `service_role` key (marked secret; reveal
+     or copy it). A long JWT starting `eyJ`. It bypasses row security, which
+     is why the function needs it and why it lives only in Vercel: never in
+     `.env.local`, never with a `VITE_` prefix, never in the repo. Newer
+     projects also show "publishable" and "secret" keys; the legacy
+     `service_role` JWT is behind a "Legacy API keys" tab, and either it or a
+     new `sb_secret_...` key works.
+   - `RESEND_API_KEY`: the key created on Sep 4 for SMTP (it is the SMTP
+     password in Supabase's SMTP settings). Resend shows a key in full only
+     once; if it is lost, make a new one at resend.com, API Keys, Create,
+     permission "Sending access", domain thefreemancup.com. A new key does
+     not affect SMTP unless the old one is deleted.
+
+   Adding them: vercel.com, the `freeman-cup` project, Settings, Environment
+   Variables. For each: Key exactly as above (uppercase, underscores, no
+   `VITE_` prefix), the raw value in Value (no quotes, no trailing space or
+   newline), Environments: Production (and Preview if you test from preview
+   URLs; not Development). Turn on "Sensitive" for the two keys. Save.
+
+3. **Redeploy.** Variables apply only to builds made after they were saved:
+   Deployments, the three-dot menu on the latest Production deployment,
+   Redeploy. Pushing the mail room commit does the same thing.
 
 4. **Send yourself a test.** Open the app signed in as yourself, gear, Today,
    scroll to Emails, and on "One week out" press *Send me a test*. It should
