@@ -307,7 +307,7 @@ body::before{content:'';position:fixed;inset:0 0 -140px 0;z-index:-2;background:
 /* Sep 10: net strokes per round in the Players section */
 .team li .rn{font-family:var(--clock);font-weight:600;font-size:15px;color:var(--bone);text-align:right;white-space:nowrap}
 .team li .rn small{font-size:11px;font-weight:600;color:var(--brass);margin-left:2px;letter-spacing:.02em}
-.team li .rn.par{color:var(--dim);font-weight:500}
+.team li .rn.par{color:var(--moss);font-weight:500;opacity:.8}
 .team li .rn.thru{color:var(--moss)}
 /* Sep 10: lead-change bars inside the round-by-round accordion */
 .tee .rw{border-bottom:1px solid rgba(38,68,58,.55)}
