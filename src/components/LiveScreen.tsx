@@ -183,6 +183,7 @@ export default function LiveScreen({ data, moments = null, onMoment, onRule, str
       <TheRaces sessions={data.scoringSessions} matches={data.scoringMatches} onOpen={onMoment} onRule={onRule} />
       <Squiggle />
       <TheField onOpen={onMoment} />
+      <div className="memoriam">In loving memory of David J. Freeman</div>
     </>
   );
 }

@@ -323,3 +323,7 @@ body::before{content:'';position:fixed;inset:0 0 -140px 0;z-index:-2;background:
 @media(max-width:560px){.team .th,.team li{grid-template-columns:1fr repeat(var(--rounds,4),58px)}}
 .mvp .r b{display:flex;align-items:center;gap:7px;min-width:0}
 .mvp .r b .crown{display:block;margin-left:0;flex:none}
+
+/* Sep 10: the dedication */
+.sfoot .memoriam{font-family:var(--display);font-style:italic;font-size:15px;color:var(--moss);margin-top:14px;font-synthesis:none}
+.sfoot .memoriam + p{margin-top:12px}

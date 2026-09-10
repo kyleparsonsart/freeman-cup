@@ -1697,3 +1697,6 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .legend.pick{background:rgba(23,43,36,.9);color:var(--moss)}
 .legend.pick b{color:var(--bone)}
 .legend.pick .ldot{background:var(--moss-dim)}
+
+/* Sep 10: the dedication at the foot of the Cup tab */
+.memoriam{text-align:center;font-family:var(--display);font-style:italic;font-size:14.5px;color:var(--moss);padding:34px 18px 28px;font-synthesis:none}

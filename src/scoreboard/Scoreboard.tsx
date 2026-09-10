@@ -183,6 +183,7 @@ export default function Scoreboard() {
 
       <footer className="sfoot dayfade" ref={reveal}>
         <svg width="14" height="28"><use href="#claretjug" /></svg>
+        <p className="memoriam">In loving memory of David J. Freeman</p>
         <p>Scores are entered on the course by the players and land here within a minute.<br />
           {d.snap.event.name} · an annual tradition · {d.snap.event.venue}, Wisconsin</p>
       </footer>
