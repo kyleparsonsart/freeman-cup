@@ -1457,7 +1457,7 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .pres .who span{display:flex;align-items:center;gap:7px}
 .pres .who .psw{width:6px;height:6px}
 .pres .sc{font-family:var(--num);font-size:16px;font-weight:600;letter-spacing:.02em}
-.pres.g{display:grid;grid-template-columns:1fr 48px 48px;align-items:center;white-space:nowrap}
+.pres.g{display:grid;grid-template-columns:1fr 72px 72px;align-items:center;white-space:nowrap}
 .pres.g>:nth-child(n+2){text-align:right}
 .pres.g.head{border-bottom-color:rgba(240,235,220,.14)}
 .pres.g.total{border-top:1px solid rgba(240,235,220,.2);border-bottom:0;padding-top:12px}

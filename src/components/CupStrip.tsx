@@ -64,7 +64,7 @@ export default function CupStrip({ decided = null, onOpenFinale }: {
       ) : (
         <div className="striplbl">
           <span>{half(a + b)} of {T} decided</span>
-          <span>{lead} · {half(C - Math.max(a, b))} to clinch</span>
+          <span>{Math.max(a, b) >= C ? `${a > b ? CFG.teams.a.name : CFG.teams.b.name} have the points · cards still out` : `${lead} · ${half(C - Math.max(a, b))} to clinch`}</span>
         </div>
       )}
     </div>

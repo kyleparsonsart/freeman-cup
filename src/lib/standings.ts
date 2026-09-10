@@ -118,7 +118,9 @@ function accumulate(sessions: Session[], matches: Match[], only?: string): Recor
  */
 export function mvpBoard(sessions: Session[], matches: Match[]): BoardRow[] {
   const acc = accumulate(sessions, matches);
-  const max = Math.max(0, ...Object.values(acc).map(e => e.holes));
+  // full card so far: every hole of every finished own-ball round. A round in
+  // play never knocks anyone off the board; its byes bite once it is final.
+  const due = sessions.filter(x => x.state === 'final' && x.fmt !== 'Foursomes').reduce((n, x) => n + x.holes, 0);
   const rows: BoardRow[] = Object.entries(acc).map(([k, e]) => ({
     key: k,
     name: fn(P[k]?.n) || k,
@@ -127,7 +129,7 @@ export function mvpBoard(sessions: Session[], matches: Match[]): BoardRow[] {
     rel: e.rel,
     holes: e.holes,
     rounds: e.rounds.size,
-    eligible: e.holes === max,
+    eligible: e.holes >= due,
   }));
   return rows.sort((x, y) =>
     Number(y.eligible) - Number(x.eligible) || y.pts - x.pts || x.rel - y.rel || x.name.localeCompare(y.name));

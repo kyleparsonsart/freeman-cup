@@ -103,7 +103,7 @@ export function buildFeed(input: FeedInput): FeedDay[] {
             tag: kind || undefined, tagGold: !!kind,
             who: { side: w, name: win ? win.n : CFG.teams[w].name },
             text: ` won ${i + 1}${kind ? ` with ${kind === 'Eagle' ? 'an eagle' : 'a birdie'}` : ''}.`,
-            sub: `${firstOf(m.b)} v ${firstOf(m.a)} · ${runningAt(m, i)}`,
+            sub: `${names(m.b)} v ${names(m.a)} · ${runningAt(m, i)}`,
           });
         }
 
@@ -119,7 +119,7 @@ export function buildFeed(input: FeedInput): FeedDay[] {
               tag: 'Streak', tagGold: true,
               who: { side, name: s.fmt === 'Singles' ? firstOf(m[side]) : names(m[side]) },
               text: ` won four in a row, ${i - 2} through ${i + 1}.`,
-              sub: `${firstOf(m.b)} v ${firstOf(m.a)} · ${runningAt(m, i)}`,
+              sub: `${names(m.b)} v ${names(m.a)} · ${runningAt(m, i)}`,
             });
           }
         }
@@ -156,7 +156,7 @@ export function buildFeed(input: FeedInput): FeedDay[] {
           const loser = r.w === 'a' ? 'b' : 'a';
           events.push({
             key, day: s.day, at, side: `${r.w} win`, big: true,
-            tag: 'Match final', hl: `${names(m[r.w])} win ${r.label}`,
+            tag: 'Match final', hl: `${names(m[r.w])} ${m[r.w].length === 1 ? 'wins' : 'win'} ${r.label}`,
             text: `Over ${names(m[loser])}.`,
           });
         }
@@ -181,7 +181,7 @@ export function buildFeed(input: FeedInput): FeedDay[] {
       out.push({
         key: `l:${s.id}`, day: s.day, at: tEnd + 3, side: '',
         text: `**Last group is in** at ${s.course}.`,
-        sub: `${s.rd} finishes ${half(a)} – ${half(b)}`,
+        sub: `${s.rd} finishes ${half(b)} – ${half(a)}`,
       });
     }
   });

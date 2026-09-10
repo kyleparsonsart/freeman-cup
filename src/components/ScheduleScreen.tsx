@@ -106,7 +106,7 @@ function RoundCard({ s, ms, isOpen, toggle, onCard, race }: RoundCardProps) {
           <div className="t1">{s.course}</div>
           <div className="t2">{s.rd} · {s.fmt} · {s.holes} holes{s.tee ? ` · ${s.tee}` : ''}</div>
           <div className="t3">
-            Tees {s.tees.join(' and ')} · {s.scorer.map(k => fn(P[k]?.n) || 'nobody').join(' and ')} scoring
+            Tees {s.tees.join(' and ')}{s.scorer.some(Boolean) ? ` · ${s.scorer.map(k => fn(P[k]?.n) || 'nobody').join(' and ')} scoring` : ''}
           </div>
           {onCard && ms.some(m => calc(m).done) && (
             <div className="sumchips">
