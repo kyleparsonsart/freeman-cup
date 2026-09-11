@@ -110,7 +110,7 @@ The invitation goes out as a Resend broadcast on Sep 27. The path is: read the e
 
 **PL-06** As a player, I want to know which tees we are playing. Pass when: the Schedule shows the tee for each course once the commissioner posts it. Status: Fixed (Sep 10, 4d4d703): round.tee and round.yards; shown on the Schedule, the letter, the pairings email and the site once the commissioner posts them.
 
-**PL-07** As a player, I want to know the sand ruling before Thursday. Pass when: Art. 6.3 no longer says "settled before Thursday and posted here" and states the ruling. Status: Not built: the sand ruling is still a content decision (Art. 6.3).
+**PL-07** As a player, I want to know the sand ruling before Thursday. Pass when: Art. 6.3 no longer says "settled before Thursday and posted here" and states the ruling. Status: Fixed (Sep 11): Art. 6.3 says all sand is waste area.
 
 ### 3b. The night before a round
 
@@ -264,7 +264,7 @@ The scorer is a player who holds the pencil. The role is per group and per round
 
 **CM-07** As the commissioner, I want to post the tee for each course. Pass when: each round carries a tee name and yardage that the Schedule and the site show. Status: Fixed (Sep 10, 4d4d703): Event, Tees.
 
-**CM-08** As the commissioner, I want to set the sand ruling. Pass when: Art. 6.3 text is editable or the decision is made in the code before freeze. Status: Not built (content).
+**CM-08** As the commissioner, I want to set the sand ruling. Pass when: Art. 6.3 text is editable or the decision is made in the code before freeze. Status: Fixed (Sep 11): Art. 6.3 says all sand is waste area.
 
 **CM-09** As the commissioner, I want to send the invitations. Pass when: the two invite files, with teammates filled in, go as Resend broadcasts to the two segments; a test broadcast to me first. Status: Partial (files exist; teammate lines and the Resend audience are pending).
 
@@ -401,9 +401,7 @@ These apply to every user type and are worth a pass of their own.
 
 Pulled from the Not built and Partial stories above, sorted into what fits before the Sep 13 freeze, what should be in before Oct 8 regardless, and what waits for 2027.
 
-**Quick fixes worth doing before freeze** (Sep 11: all done except the sand ruling)
-
-- PL-07 and CM-08 Write the sand ruling into Art. 6.3.
+**Quick fixes worth doing before freeze** (Sep 11: all done)
 
 **Must be true before Oct 8, freeze or not**
 
@@ -422,6 +420,5 @@ Pulled from the Not built and Partial stories above, sorted into what fits befor
 
 **Content decisions only Kyle can make**
 
-- The sand ruling (Art. 6.3).
 - The tee per course (Art. 5.1), if the round does not yet carry it.
 - The teammate lines in the two invitations.

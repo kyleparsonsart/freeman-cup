@@ -7,14 +7,14 @@ Written Sep 10 after the QA pass. Everything built today is in the repo and push
 Build, mine, all small:
 
 - [x] Fine print under the "Open the app" button in the four app emails and the two invitations, saying email links always open the browser and the home-screen copy is the one to use.
-- [ ] Art. 6.3 sand ruling text, once you tell me the ruling (waste area as through the green, or as bunkers; Sand Valley treats most of it as waste).
+- [x] Art. 6.3 sand ruling: all sand is waste area (ground the club, practice swings, loose impediments; play it as it lies).
 - [x] Rulebook Art. 5.1 to mention that the tee and yardage show on the Schedule once posted (one sentence).
 - [x] Seats: a "No account" chip on a row whose email has no auth user yet (seat_accounts RPC; run freeman-cup-accounts.sql once).
 - [x] HANDOFF.md and USER-STORIES.md refreshed for the settings sheet reorganization and the captain's intro.
 
 Decisions, yours:
 
-- [ ] The sand ruling (above).
+- [x] The sand ruling: waste area.
 - [ ] The tee name and yardage for each of the four courses, typed into Settings, Rounds, once you have them from Sand Valley.
 - [ ] Whether the finale poster should carry the dedication line too.
 
