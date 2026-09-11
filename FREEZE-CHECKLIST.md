@@ -16,7 +16,7 @@ Decisions, yours:
 
 - [x] The sand ruling: waste area.
 - [x] The tee name and yardage for each of the four courses, typed into Settings, Rounds.
-- [ ] Whether the finale poster (the "Celts take the Lassie" full-screen moment) should carry the dedication line too. Optional; yes or no.
+- [x] The finale poster stays as it is; the dedication lives on the Cup tab and the site footer only.
 
 Verify, both of us, in Chrome once the last push deploys:
 
