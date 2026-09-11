@@ -215,7 +215,7 @@ export interface ShootoutCard {
 }
 
 export function shootoutCard(d: CardData, sh: { a: number[]; b: number[] } | null | undefined): ShootoutCard | null {
-  if (!sh || sh.a.length !== 3 || sh.b.length !== 3) return null;
+  if (!sh || sh.a.length < 3 || sh.a.length !== sh.b.length) return null;
   const sum = (xs: number[]) => xs.reduce((t, x) => t + (Number(x) || 0), 0);
   const ta = sum(sh.a), tb = sum(sh.b);
   if (ta === tb) return null;

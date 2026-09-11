@@ -6,7 +6,7 @@ import {
   matchCard, dayCard, finaleCard, shootoutCard, playerCard, weekCard, liveCard, spikeCard, potrCard,
   names, first, dowOf, teeOf, ordinal, recordLabel, other, leadSeries, matchStory,
 } from '../lib/cards';
-import { TIEBREAK } from '../lib/moments';
+import { TIEBREAK, stationLabel } from '../lib/moments';
 import { mvpBoard, holePoints, relLabel, type BoardRow } from '../lib/standings';
 
 export type Card = MatchCard | DayCard | FinaleCard | ShootoutCard | PlayerCard | WeekCard | LiveCard | SpikeCard | PotrCard;
@@ -276,9 +276,9 @@ function ShootoutBody({ c }: { c: ShootoutCard }) {
       </div>
       <div className="phr" />
       <div className="pres g head"><span className="k dim">Station</span><span className={`k ${tc('b')}`}>{c.captains.b}</span><span className={`k ${tc('a')}`}>{c.captains.a}</span></div>
-      {TIEBREAK.stations.map((st, i) => (
-        <div key={st.n} className="pres g"><span>{st.n} · {st.d} ft</span><span className="sc">{c.b[i]}</span><span className="sc">{c.a[i]}</span></div>
-      ))}
+      {c.a.map((_, i) => { const st = stationLabel(i); return (
+        <div key={i} className="pres g"><span>{st.n} · {st.d} ft</span><span className="sc">{c.b[i]}</span><span className="sc">{c.a[i]}</span></div>
+      ); })}
       <div className="pres g total"><b>Total</b><span className={`pnum ${tc('b')}`}>{c.tb}</span><span className={`pnum ${tc('a')}`}>{c.ta}</span></div>
     </>
   );

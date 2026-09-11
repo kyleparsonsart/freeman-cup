@@ -7,6 +7,8 @@ import { calc, derive, settle, holeComplete, getsStroke, strokeMap, holeKeys, mi
 import { IconGolf } from './icons';
 import type { EventData } from '../hooks/useEventData';
 import CaptainSheet from './CaptainSheet';
+import ShootoutBoard from './ShootoutBoard';
+import type { MomentsState } from '../lib/moments';
 import { sheetDue } from '../lib/sheets';
 import { holePoints, POINTS } from '../lib/standings';
 
@@ -43,6 +45,8 @@ interface Props {
   reload: () => void;
   /** re-open the pairings letter for a round (the pre-round brief offers it) */
   onOpenLetter?: (roundId: string) => void;
+  /** recap moments; the Shootout board needs the tie and the captains */
+  moments?: MomentsState | null;
 }
 
 /** The round the Scoring tab shows: the one set live, else the earliest not finished. */
@@ -56,7 +60,7 @@ export function currentRound(data: EventData) {
   }) || scoringSessions[scoringSessions.length - 1];
 }
 
-export default function ScoringScreen({ data, reload, onOpenLetter }: Props) {
+export default function ScoringScreen({ data, reload, onOpenLetter, moments = null }: Props) {
   const { scoringSessions, scoringMatches, meKey } = data;
 
   // Always refresh the scoring context
@@ -80,6 +84,9 @@ export default function ScoringScreen({ data, reload, onOpenLetter }: Props) {
   }
 
   if (!todayRound || !hero) {
+    if (moments && (moments.tie || moments.won?.viaShootout)) {
+      return <ShootoutBoard data={data} moments={moments} reload={reload} />;
+    }
     return (
       <div className="empty">
         <IconGolf />
@@ -195,6 +202,8 @@ interface HeroCardProps {
   reload: () => void;
   tabbed: boolean;
   onOpenLetter?: (roundId: string) => void;
+  /** recap moments; the Shootout board needs the tie and the captains */
+  moments?: MomentsState | null;
 }
 
 /**

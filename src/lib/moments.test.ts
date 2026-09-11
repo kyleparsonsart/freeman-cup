@@ -126,6 +126,11 @@ describe('deriveMoments', () => {
     const levelPutts = deriveMoments(input([s], ms, { a: [3, 2, 2], b: [2, 3, 2], done: true }));
     expect(levelPutts.duelPending).toBe(true);
     expect(levelPutts.won).toBeNull();
+
+    // level after three: the Knee Knocker replays as a fourth entry
+    const replayed = deriveMoments(input([s], ms, { a: [3, 2, 2, 2], b: [2, 3, 2, 1], done: true }));
+    expect(replayed.won?.winner).toBe('b');
+    expect(replayed.won?.shootout).toEqual({ a: [3, 2, 2, 2], b: [2, 3, 2, 1], ta: 9, tb: 8 });
   });
 
   it('does not call a 1-1 Thursday a level Cup, and waits for cards to come in', () => {

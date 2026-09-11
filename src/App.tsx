@@ -304,7 +304,7 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
         )}
         {data && tab === 'scoring' && (
           <section id="v-scoring" className="view on">
-            <ScoringScreen data={data} reload={reload} onOpenLetter={id => setAgainRound(id)} />
+            <ScoringScreen data={data} reload={reload} onOpenLetter={id => setAgainRound(id)} moments={moments} />
           </section>
         )}
         {data && tab === 'live' && (

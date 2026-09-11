@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { calc, roundState, half, P, CFG, type Match, type Session } from '../lib/scoring';
 import Scorecard from './Scorecard';
 import { roundRaces, type RoundRace } from '../lib/standings';
-import type { MomentsState } from '../lib/moments';
+import { stationLabel, type MomentsState } from '../lib/moments';
 import type { EventData } from '../hooks/useEventData';
 
 const fn = (n?: string | null) => (n || '').split(' ')[0];
@@ -41,6 +41,7 @@ export default function ScheduleScreen({ data, moments = null, onMoment }: {
         </div>
       )}
       {days.map((d, di) => {
+        const lastDay = di === days.length - 1;
         const rs = sessions.filter(x => x.day === d);
         const holes = rs.reduce((a, x) => a + x.holes, 0);
         const [dow, ...rest] = d.split(' ');
@@ -67,11 +68,52 @@ export default function ScheduleScreen({ data, moments = null, onMoment }: {
                 race={races.find(r => r.roundId === x.id)}
               />
             </div>))}
+            {lastDay && moments && (moments.tie || moments.won?.viaShootout) && (
+              <>
+                <div className="perf" aria-hidden="true" />
+                <ShootoutCard moments={moments} shootout={data.event.shootout ?? null} onCard={onMoment} />
+              </>
+            )}
           </div>
         );
       })}
 
     </>
+  );
+}
+
+/** The fifth container, only once the Cup is level after the last card. */
+function ShootoutCard({ moments, shootout, onCard }: { moments: MomentsState; shootout: { a: number[]; b: number[] } | null; onCard?: (key: string) => void }) {
+  const done = !!moments.won?.viaShootout && !!moments.won.shootout;
+  const sh = moments.won?.shootout ?? null;
+  const cap = moments.captains;
+  const tie = moments.tie;
+  const replays = (shootout?.a.length ?? 3) - 3;
+  return (
+    <div className={`rcard shoot${done ? '' : ' live'}`}>
+      <div className="rtop">
+        <div className="rleft">
+          <div className="t1">Captains Shootout</div>
+          <div className="t2">Practice green · after the 18th{tie ? ` · ${half(tie.b)} to ${half(tie.a)}` : ''}</div>
+          <div className="t3">{done
+            ? `Three stations, every putt holed out.${replays > 0 ? ` The Knee Knocker replayed ${replays === 1 ? 'once' : `${replays} times`}.` : ''}`
+            : `${cap.b} and ${cap.a} putt for ${CFG.trophy}. Three stations, fewest strokes wins.`}</div>
+        </div>
+        {done && sh
+          ? <div className="rscore"><span className="b">{sh.tb}</span><span className="d">–</span><span className="a">{sh.ta}</span></div>
+          : <span className="spill live"><i className="pulse" />Live</span>}
+      </div>
+      {done && sh ? (
+        <>
+          {sh.a.map((_, i) => { const st = stationLabel(i); return (
+            <div key={i} className="shm"><span className="mvs">{st.n} · {st.d} ft</span><span className="stn"><b className="b">{sh.b[i]}</b><i>·</i><b className="a">{sh.a[i]}</b></span></div>
+          ); })}
+          {onCard && <div className="potrrow"><span className="lbl">The deciding putt</span><button className="rchip sum" onClick={() => onCard('shootout')}>View</button></div>}
+        </>
+      ) : (
+        <div className="shm"><span className="mvs"><span className="b">{cap.b}</span> v <span className="a">{cap.a}</span></span><span className="mres lv">On the green</span></div>
+      )}
+    </div>
   );
 }
 

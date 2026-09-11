@@ -28,6 +28,12 @@ export const TIEBREAK = {
   maxStrokes: 5,
 };
 
+/** Station i: the three by name, then the Knee Knocker again for every replay. */
+export function stationLabel(i: number): { n: string; d: number; hint: string } {
+  if (i < TIEBREAK.stations.length) return TIEBREAK.stations[i];
+  return { n: 'Knee Knocker, again', d: TIEBREAK.stations[2].d, hint: 'until someone blinks' };
+}
+
 export interface DayMoment {
   key: string;              // 'day:Thu Oct 8'
   day: string;              // as sessions carry it: 'Thu Oct 8'
@@ -207,7 +213,7 @@ export function deriveMoments(input: MomentsInput): MomentsState {
   // the shootout, if the commissioner has entered one
   const sum = (xs: number[]) => xs.reduce((t, x) => t + (Number(x) || 0), 0);
   const shA = shootout?.a || [], shB = shootout?.b || [];
-  const shOk = shA.length === 3 && shB.length === 3 && shootout?.done !== false;
+  const shOk = shA.length >= 3 && shA.length === shB.length && shootout?.done !== false;
   const shTa = sum(shA), shTb = sum(shB);
   const shWinner: 'a' | 'b' | null = shOk && shTa !== shTb ? (shTa < shTb ? 'a' : 'b') : null;
 

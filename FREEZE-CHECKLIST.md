@@ -18,6 +18,7 @@ Decisions, yours:
 - [x] The tee name and yardage for each of the four courses, typed into Settings, Rounds.
 - [x] The finale poster stays as it is; the dedication lives on the Cup tab and the site footer only.
 - [x] Rounds go live on their own 30 minutes before the first tee (round_tick; run freeman-cup-autolive.sql once).
+- [x] The Captains Shootout is scored on the Scoreboard tab and shown on the Schedule (run freeman-cup-shootout2.sql once).
 
 Verify, both of us, in Chrome once the last push deploys:
 
