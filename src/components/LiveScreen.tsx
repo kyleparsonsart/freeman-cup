@@ -102,13 +102,13 @@ export default function LiveScreen({ data, moments = null, onMoment, onRule, str
         <div className={`woncard ${won.winner}`}>
           <span className="wjug"><TrophySvg /></span>
           <span className="wk">The {new Date().getFullYear()} Freeman Cup</span>
-          <span className="wt">{CFG.teams[won.winner].name} take {CFG.trophy}</span>
+          <span className="wt">{CFG.teams[won.winner].name} take {CFG.trophy.replace(/^The /, 'the ')}</span>
           <span className="wscore">
             <b className={won.winner}>{half(won.pts[won.winner])}</b><i>to</i><b className={won.winner === 'a' ? 'b' : 'a'}>{half(won.pts[won.winner === 'a' ? 'b' : 'a'])}</b>
           </span>
           {won.viaShootout && won.shootout && moments && (
             <button className="wsh" onClick={onMoment ? () => onMoment('shootout') : undefined}>
-              Won on the practice green · {moments.captains[won.winner]} {won.winner === 'a' ? won.shootout.ta : won.shootout.tb}, {moments.captains[won.winner === 'a' ? 'b' : 'a']} {won.winner === 'a' ? won.shootout.tb : won.shootout.ta} ›
+              Won in a Captains Shootout · {moments.captains[won.winner]} {won.winner === 'a' ? won.shootout.ta : won.shootout.tb}, {moments.captains[won.winner === 'a' ? 'b' : 'a']} {won.winner === 'a' ? won.shootout.tb : won.shootout.ta} ›
             </button>
           )}
           {onMoment && <button className="wgo" onClick={() => onMoment('won')}>Open the finale ›</button>}

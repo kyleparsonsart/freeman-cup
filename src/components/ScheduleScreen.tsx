@@ -28,8 +28,8 @@ export default function ScheduleScreen({ data, moments = null, onMoment }: {
       {won && onMoment && (
         <div className="dayfade">
           <button className="wonbar" onClick={() => onMoment('won')}>
-            <span className="t"><b className={won.winner}>{CFG.teams[won.winner].name} take {CFG.trophy}</b>
-              <small>{half(won.pts[won.winner])} to {half(won.pts[won.winner === 'a' ? 'b' : 'a'])}{won.viaShootout ? ' · won on the practice green' : ''}</small></span>
+            <span className="t"><b className={won.winner}>{CFG.teams[won.winner].name} take {CFG.trophy.replace(/^The /, 'the ')}</b>
+              <small>{half(won.pts[won.winner])} to {half(won.pts[won.winner === 'a' ? 'b' : 'a'])}{won.viaShootout ? ' · won in a Captains Shootout' : ''}</small></span>
             <span className="go">Open ›</span>
           </button>
           {won.viaShootout && won.shootout && (
