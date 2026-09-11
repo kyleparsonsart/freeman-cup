@@ -62,6 +62,8 @@ export interface DbRound {
   /** the one set of tees everyone plays, e.g. 'Black' (Art. 5) */
   tee?: string | null;
   yards?: number | null;
+  /** set when round_tick flipped the round live on its own (never twice) */
+  auto_live_at?: string | null;
 }
 
 export interface DbTeeGroup {

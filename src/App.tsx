@@ -8,6 +8,8 @@ import { IconCloudSlash, IconArmchair } from './components/icons';
 import { half, roundState } from './lib/scoring';
 import { deriveMoments, nextUnseen, markSeen } from './lib/moments';
 import { getActing, setActing, type Acting } from './lib/view';
+import { dueForTick } from './lib/autolive';
+import { supabase } from './lib/supabase';
 import LiveScreen from './components/LiveScreen';
 import MomentOverlay from './components/Moments';
 import ShareCard, { resolveCard } from './components/ShareCard';
@@ -128,6 +130,20 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
     teams: data.teams,
     teeGroups: data.teeGroups,
   }) : null, [data]);
+  // Rounds go live on their own at tee minus 30: the first phone to notice
+  // asks the server, which flips it once (freeman-cup-autolive.sql).
+  useEffect(() => {
+    if (!rawData || rawData.offline) return;
+    let stop = false;
+    const check = () => {
+      const r = dueForTick(rawData.rounds, rawData.teeGroups, rawData.matches);
+      if (!r || stop) return;
+      supabase.rpc('round_tick', { r: r.id }).then(({ data: flipped, error }) => { if (!error && flipped && !stop) reload(); });
+    };
+    check();
+    const id = setInterval(check, 60_000);
+    return () => { stop = true; clearInterval(id); };
+  }, [rawData, reload]);
   const [moKey, setMoKey] = useState<string | null>(null);
   const autoShown = useRef<Set<string>>(new Set());
   useEffect(() => {

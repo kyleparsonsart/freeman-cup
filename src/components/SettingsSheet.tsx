@@ -7,6 +7,7 @@ import type { EventData } from '../hooks/useEventData';
 import { IconFlagCheckered } from './icons';
 import type { DbPlayer, DbRound } from '../lib/types';
 import { clockLocal } from '../lib/sheets';
+import { autoLiveAt, clockCourse } from '../lib/autolive';
 import MailRoom from './MailRoom';
 
 interface Props {
@@ -706,15 +707,37 @@ function Desk({ desk, data, onLive, onComplete }: {
             <span className="dv">{s.fmt} · {s.holes} holes</span>
             <span className="dtick" />
           </div>
-          <button
-            className="abtn deskgo"
-            disabled={desk.scorersSet < total || desk.pairingsSet < desk.pairingsTotal}
-            onClick={onLive}
-          >
-            {desk.scorersSet < total ? 'Name the scorers first'
-              : desk.pairingsSet < desk.pairingsTotal ? 'Finish the pairings first'
-              : `Set ${s.rd} live`}
-          </button>
+          {(() => {
+            const at = desk.pairingsSet === desk.pairingsTotal ? autoLiveAt(desk.round, data.teeGroups) : null;
+            const held = !!desk.round.auto_live_at;
+            return (
+              <>
+                {at !== null && !held && (
+                  <div className="deskrow ok">
+                    <span className="dk">Goes live</span>
+                    <span className="dv">{clockCourse(at)} on its own, 30 minutes before the first tee. Scorers pick up the pencil on the tee.</span>
+                    <span className="dtick">{'\u23F1'}</span>
+                  </div>
+                )}
+                {held && (
+                  <div className="deskrow warn">
+                    <span className="dk">Held</span>
+                    <span className="dv">This round already went live once and was set back. It stays Not started until you set it live here.</span>
+                    <span className="dtick">!</span>
+                  </div>
+                )}
+                <button
+                  className={`abtn deskgo${at !== null && !held ? ' soft' : ''}`}
+                  disabled={desk.pairingsSet < desk.pairingsTotal}
+                  onClick={onLive}
+                >
+                  {desk.pairingsSet < desk.pairingsTotal ? 'Finish the pairings first'
+                    : at !== null && !held ? `Set ${s.rd} live now`
+                    : `Set ${s.rd} live`}
+                </button>
+              </>
+            );
+          })()}
         </>
       ) : desk.state === 'live' ? (
         <>

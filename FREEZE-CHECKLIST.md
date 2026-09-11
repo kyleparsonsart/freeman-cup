@@ -17,6 +17,7 @@ Decisions, yours:
 - [x] The sand ruling: waste area.
 - [x] The tee name and yardage for each of the four courses, typed into Settings, Rounds.
 - [x] The finale poster stays as it is; the dedication lives on the Cup tab and the site footer only.
+- [x] Rounds go live on their own 30 minutes before the first tee (round_tick; run freeman-cup-autolive.sql once).
 
 Verify, both of us, in Chrome once the last push deploys:
 
@@ -52,7 +53,7 @@ Mine:
 - [ ] Run "Clear all scores" once from Setup, Start over, so the rehearsal rounds are gone and the captains' sheets take over.
 - [ ] Confirm all four rounds read Not started, all seats Claimed, all tees posted.
 - [ ] Wednesday night: Round 1 captains' sheets, Send Pairings, then Today, Emails, Pairings · Round 1 (test, then everyone).
-- [ ] Thursday morning: Set Round 1 live from the desk on the first tee.
+- [ ] Thursday morning: Round 1 goes live on its own at 11:30am (30 minutes before the first tee); the desk shows the time, and "Set live now" is there if you want it earlier.
 - [ ] Charge cables in both carts. Scorers' phones are the ones that matter.
 
 ## Only a real course can prove these (dress rehearsal Sep 19 or 26)
