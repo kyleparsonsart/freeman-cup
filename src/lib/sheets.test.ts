@@ -80,6 +80,18 @@ describe('sheetView', () => {
     expect(v.stage).toBe('locked');
     expect(v.waitingOn?.label).toBe('Round 2');
   });
+  it('Round 3 opens once my Round 2 sheet is sealed, and counts its pair as used', () => {
+    const r2sheet: DbCaptainSheet = { id: 'x', round_id: 'R2', team_id: 'TB', slots: [['kyle', 'phil'], ['justin', 'jt']], sealed_at: '', sealed_by: null, auto: false, opened_at: null, opened_by: null };
+    const posted = [M('R1', ['griffin', 'matt'], ['kyle', 'jt'])];
+    const v = sheetView({ ...base, round: rounds[2], rounds, matches: posted, sheets: [r2sheet], mePlayerId: 'kyle', meIsCommissioner: true });
+    expect(v.stage).toBe('open');
+    const used = usedPairs(teams[1], rounds[2], rounds, posted, [r2sheet]);
+    expect(used.size).toBe(3);   // Round 1's pair plus both of Round 2's
+    expect([...used.values()].sort()).toEqual(['Round 1', 'Round 2', 'Round 2']);
+    // the other captain's sheet does not count for me
+    const theirs = { ...r2sheet, team_id: 'TA' };
+    expect(sheetView({ ...base, round: rounds[2], rounds, matches: posted, sheets: [theirs], mePlayerId: 'kyle', meIsCommissioner: true }).stage).toBe('locked');
+  });
   it('a captain with no sheet is open, then sealed', () => {
     expect(sheetView({ ...base, mePlayerId: 'kyle', meIsCommissioner: true }).stage).toBe('open');
     expect(sheetView({ ...base, status: [S('TB')], sheets: [sheet('TB')], mePlayerId: 'kyle', meIsCommissioner: true }).stage).toBe('sealed');

@@ -75,8 +75,25 @@ export default function ScoringScreen({ data, reload, onOpenLetter }: Props) {
   // No matches yet: the night before, this is the captain's sheet (or
   // "pairings post tonight" for everyone else). See CaptainSheet.
   const dbRound = todayRound ? data.rounds.find(r => r.id === todayRound.id) : undefined;
+
+  // The next round without pairings, surfaced under today's brief (or under
+  // tonight's sheet) once its sheet is worth looking at: within 36 hours of
+  // its deadline, so Friday's two sheets sit together on Thursday night.
+  const nextSheet = (() => {
+    const r = data.rounds.find(x => x.seq > (dbRound?.seq ?? 0) && !scoringMatches.some(m => m.s === x.id) && x.state !== 'final');
+    const s = r && scoringSessions.find(x => x.id === r.id);
+    if (!r || !s) return null;
+    const due = sheetDue(r, data.rounds, data.teeGroups).getTime();
+    return due - Date.now() < 36 * 3600_000 ? { r, s } : null;
+  })();
+
   if (todayRound && dbRound && !roundMatches.length && todayRound.state !== 'final') {
-    return <CaptainSheet data={data} round={dbRound} session={todayRound} reload={reload} />;
+    return (
+      <>
+        <CaptainSheet data={data} round={dbRound} session={todayRound} reload={reload} />
+        {nextSheet && <CaptainSheet data={data} round={nextSheet.r} session={nextSheet.s} reload={reload} secondary />}
+      </>
+    );
   }
 
   if (!todayRound || !hero) {
@@ -92,15 +109,6 @@ export default function ScoringScreen({ data, reload, onOpenLetter }: Props) {
 
   const tabbed = roundMatches.length > 1;
 
-  // The next round without pairings, surfaced under today's brief once its
-  // sheet is worth looking at (Friday afternoon's sheet during Friday morning).
-  const nextSheet = (() => {
-    const r = data.rounds.find(x => x.seq > (dbRound?.seq ?? 0) && !scoringMatches.some(m => m.s === x.id) && x.state !== 'final');
-    const s = r && scoringSessions.find(x => x.id === r.id);
-    if (!r || !s) return null;
-    const due = sheetDue(r, data.rounds, data.teeGroups).getTime();
-    return due - Date.now() < 36 * 3600_000 ? { r, s } : null;
-  })();
 
   return (
     <>

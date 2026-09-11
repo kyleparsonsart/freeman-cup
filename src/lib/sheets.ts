@@ -43,7 +43,7 @@ export function sheetDue(round: Pick<DbRound, 'id' | 'play_date' | 'seq' | 'even
 const key = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
 
 /** Pairs this team has already used in earlier team rounds, keyed pair → the round's label. */
-export function usedPairs(team: DbTeam, round: DbRound, rounds: DbRound[], matches: DbMatch[]): Map<string, string> {
+export function usedPairs(team: DbTeam, round: DbRound, rounds: DbRound[], matches: DbMatch[], sheets: DbCaptainSheet[] = []): Map<string, string> {
   const out = new Map<string, string>();
   const earlier = new Map(rounds.filter(r => r.seq < round.seq && r.format !== 'singles').map(r => [r.id, r.label]));
   for (const m of matches) {
@@ -51,6 +51,13 @@ export function usedPairs(team: DbTeam, round: DbRound, rounds: DbRound[], match
     if (!label) continue;
     const side = team.side === 'a' ? m.side_a : m.side_b;
     if (side.length === 2) out.set(key(side[0], side[1]), label);
+  }
+  // a sheet sealed for an earlier round that has not posted yet counts too,
+  // so Friday's two sheets can be set together on Thursday night
+  for (const sh of sheets) {
+    const label = earlier.get(sh.round_id);
+    if (!label || sh.team_id !== team.id) continue;
+    for (const slot of sh.slots) if (slot.length === 2) out.set(key(slot[0], slot[1]), label);
   }
   return out;
 }
@@ -109,12 +116,15 @@ export function sheetView(input: {
   const { round, teams, players, sheets, status, mePlayerId, meIsCommissioner } = input;
   const now = input.now ?? new Date();
   const rounds = input.rounds ?? [];
-  // singles has no pairs to check, so it never waits on earlier rounds
-  const earlierPosted = round.format === 'singles'
-    || rounds.filter(r => r.seq < round.seq).every(r => (input.matches ?? []).some(m => m.round_id === r.id));
-  const waitingOn = rounds.filter(r => r.seq < round.seq && !(input.matches ?? []).some(m => m.round_id === r.id)).sort((a, b) => a.seq - b.seq)[0] || null;
   const me = players.find(p => p.id === mePlayerId) || null;
   const myTeam = me ? teams.find(t => t.id === me.team_id) || null : null;
+  // an earlier team round is settled for me once it is posted, or once my
+  // own sheet for it is sealed (Friday's two sheets go in together on
+  // Thursday night); singles has no pairs to check and never waits
+  const settled = (r: DbRound) => (input.matches ?? []).some(m => m.round_id === r.id)
+    || (!!myTeam && sheets.some(s => s.round_id === r.id && s.team_id === myTeam.id));
+  const earlierPosted = round.format === 'singles' || rounds.filter(r => r.seq < round.seq).every(settled);
+  const waitingOn = rounds.filter(r => r.seq < round.seq && !settled(r)).sort((a, b) => a.seq - b.seq)[0] || null;
   const theirTeam = myTeam ? teams.find(t => t.id !== myTeam.id) || null : null;
   const iAmCaptain = !!me?.is_captain;
   const due = sheetDue(round, rounds, input.teeGroups ?? []);
