@@ -76,6 +76,12 @@ export default function ScoringScreen({ data, reload, onOpenLetter, moments = nu
     || (meKey ? roundMatches.find(m => m.a.includes(meKey) || m.b.includes(meKey)) : undefined)
     || roundMatches[0];
 
+  // The Cup level after the last card: the tab is the Shootout, whatever
+  // currentRound falls back to.
+  if (moments && (moments.tie || moments.won?.viaShootout)) {
+    return <ShootoutBoard data={data} moments={moments} reload={reload} />;
+  }
+
   // No matches yet: the night before, this is the captain's sheet (or
   // "pairings post tonight" for everyone else). See CaptainSheet.
   const dbRound = todayRound ? data.rounds.find(r => r.id === todayRound.id) : undefined;
@@ -84,9 +90,6 @@ export default function ScoringScreen({ data, reload, onOpenLetter, moments = nu
   }
 
   if (!todayRound || !hero) {
-    if (moments && (moments.tie || moments.won?.viaShootout)) {
-      return <ShootoutBoard data={data} moments={moments} reload={reload} />;
-    }
     return (
       <div className="empty">
         <IconGolf />
