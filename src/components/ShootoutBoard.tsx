@@ -74,16 +74,16 @@ export default function ShootoutBoard({ data, moments, reload }: { data: EventDa
           <div key={i} className={`shst${s.a[i] !== null && s.b[i] !== null ? ' in' : ''}`}>
             <div className="shhd"><span className="num">{i + 1}</span><span className="nm">{st.n}</span><span className="d">{st.d} ft · {st.hint}</span></div>
             {(['b', 'a'] as const).map(side => (
-              <div key={side} className="shrowx">
-                <span className={`who ${side}`}>{cap[side]}</span>
-                <div className="tiles">
+              <div key={side} className="brow">
+                <div className="btop"><span className={`bn ${side}`}>{cap[side]}<span className="hcp">{CFG.teams[side].name}</span></span></div>
+                <div className="tgs-wrap"><div className="tgs shtiles">
                   {Array.from({ length: TIEBREAK.maxStrokes }, (_, k) => k + 1).map(v => (
                     <button key={v} className={`tg${s[side][i] === v ? ' sel' : ''}${edit ? '' : ' ro'}`} disabled={!edit} onClick={() => set(side, i, v)}>
                       <span className="mk">{v}</span>
                       <span className="cap">{v === 1 ? 'Holed' : v === TIEBREAK.maxStrokes ? 'Max' : ''}</span>
                     </button>
                   ))}
-                </div>
+                </div></div>
               </div>
             ))}
           </div>

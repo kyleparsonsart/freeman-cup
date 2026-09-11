@@ -1768,3 +1768,25 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .shm .stn{font-family:var(--num);font-size:16px;font-weight:600;padding-right:24px;display:flex;gap:6px}
 .shm .stn .b{color:var(--blue)} .shm .stn .a{color:var(--red)} .shm .stn i{font-style:normal;color:var(--moss-dim)}
 .rcard.shoot.live .t1::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--brass);margin-right:8px;vertical-align:2px}
+
+/* Sep 11: the winner card, a celebration rather than a status row */
+.woncard{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;width:calc(100% - 28px);margin:14px 14px 4px;padding:26px 18px 22px;
+  border:1px solid rgba(216,169,63,.55);border-radius:16px;color:var(--bone);position:relative;overflow:hidden}
+.woncard.a{background:radial-gradient(120% 90% at 50% 0%,rgba(200,64,47,.55),rgba(200,64,47,.12) 55%,var(--ink-2) 100%)}
+.woncard.b{background:radial-gradient(120% 90% at 50% 0%,rgba(76,134,196,.55),rgba(76,134,196,.12) 55%,var(--ink-2) 100%)}
+.woncard::before{content:'';position:absolute;inset:6px;border:1px solid rgba(216,169,63,.28);border-radius:11px;pointer-events:none}
+.woncard .wjug svg{width:34px;height:64px;color:var(--brass);filter:drop-shadow(0 0 14px rgba(216,169,63,.45))}
+.woncard .wk{font-family:var(--num);font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);margin-top:10px}
+.woncard .wt{font-family:var(--display);font-size:27px;line-height:1.1;color:var(--bone);font-synthesis:none;margin-top:2px}
+.woncard.a .wt{color:#F3B5AB} .woncard.b .wt{color:#BFD6F0}
+.woncard .ws{font-size:13.5px;color:var(--moss);margin-top:2px}
+.woncard .wgo{font-family:var(--num);font-size:13px;font-weight:600;letter-spacing:.06em;color:var(--ink);background:var(--brass);padding:9px 16px;border-radius:20px;margin-top:14px}
+
+/* Sep 11: shootout rows use the scorecard layout */
+.shst .brow{padding-top:8px}
+.shst .btop{margin-left:18px;margin-right:18px}
+.shst .tgs.shtiles{overflow:hidden}
+.shst .tgs.shtiles .tg{flex:1 1 20%;height:64px}
+.shst .tg.ro:disabled{opacity:1}
+.shst .tg.ro:disabled .mk,.shst .tg.ro:disabled .cap{color:inherit}
+.shrowx{display:none}
