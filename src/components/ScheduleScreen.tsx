@@ -21,25 +21,9 @@ export default function ScheduleScreen({ data, moments = null, onMoment }: {
   const days = [...new Set(sessions.map(x => x.day))];
   const races = roundRaces(sessions, matches);
 
-  const won = moments?.won ?? null;
 
   return (
     <>
-      {won && onMoment && (
-        <div className="dayfade">
-          <button className="wonbar" onClick={() => onMoment('won')}>
-            <span className="t"><b className={won.winner}>{CFG.teams[won.winner].name} take {CFG.trophy.replace(/^The /, 'the ')}</b>
-              <small>{half(won.pts[won.winner])} to {half(won.pts[won.winner === 'a' ? 'b' : 'a'])}{won.viaShootout ? ' · won in a Captains Shootout' : ''}</small></span>
-            <span className="go">Open ›</span>
-          </button>
-          {won.viaShootout && won.shootout && (
-            <button className="shrow" onClick={() => onMoment('shootout')}>
-              <span>Captains Shootout · {moments!.captains.b} {won.shootout.tb}, {moments!.captains.a} {won.shootout.ta}</span>
-              <span className="go">Open ›</span>
-            </button>
-          )}
-        </div>
-      )}
       {days.map((d, di) => {
         const lastDay = di === days.length - 1;
         const rs = sessions.filter(x => x.day === d);
