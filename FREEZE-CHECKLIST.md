@@ -15,8 +15,8 @@ Build, mine, all small:
 Decisions, yours:
 
 - [x] The sand ruling: waste area.
-- [ ] The tee name and yardage for each of the four courses, typed into Settings, Rounds, once you have them from Sand Valley.
-- [ ] Whether the finale poster should carry the dedication line too.
+- [x] The tee name and yardage for each of the four courses, typed into Settings, Rounds.
+- [ ] Whether the finale poster (the "Celts take the Lassie" full-screen moment) should carry the dedication line too. Optional; yes or no.
 
 Verify, both of us, in Chrome once the last push deploys:
 
