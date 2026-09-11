@@ -1722,3 +1722,7 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .csintro .mml{font-size:14.5px;line-height:1.6;margin-bottom:16px}
 .csintro .mml b{font-weight:600} .csintro .mml b.a{color:var(--red)} .csintro .mml b.b{color:var(--blue)}
 .csintro .abtn{width:100%}
+
+/* Sep 11: the pencil line wraps as one sentence; the Take it link never breaks */
+.mmsc>span{flex:1;min-width:0;line-height:1.5}
+.takepen{display:inline;white-space:nowrap}
