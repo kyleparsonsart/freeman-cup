@@ -1084,7 +1084,7 @@ function MatchBrief({ m, session: s, data, scorerKey, onPeek, onTake }: {
         {scorerKey
           ? scorerKey === data.meKey ? 'You keep the card for your group.' : `${fn(P[scorerKey]?.n) || 'Somebody'} keeps the card for ${mine ? 'your' : 'this'} group.`
           : mine && onTake
-            ? <span>Nobody has the pencil yet. <button className="takepen" onClick={onTake}>Take it</button> if you’re keeping the card.</span>
+            ? <span>Nobody has the pencil yet.<button className="takepen block" onClick={onTake}>Take it, I’m keeping the card</button></span>
             : 'Nobody has the pencil yet; the group picks on the first tee.'}
       </div>
       {onPeek && (

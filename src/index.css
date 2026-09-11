@@ -1726,3 +1726,4 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 /* Sep 11: the pencil line wraps as one sentence; the Take it link never breaks */
 .mmsc>span{flex:1;min-width:0;line-height:1.5}
 .takepen{display:inline;white-space:nowrap}
+.takepen.block{display:block;margin-top:6px;padding:0;text-align:left}
