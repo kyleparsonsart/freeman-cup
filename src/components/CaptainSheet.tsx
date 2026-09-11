@@ -31,7 +31,7 @@ export default function CaptainSheet({ data, round, session, reload, secondary =
   const [busy, setBusy] = useState(false);
   // the intro before the editor, once per round per phone
   const introKey = `cs-intro:${round.id}`;
-  const [intro, setIntro] = useState<boolean>(() => { if (secondary) return false; try { return !localStorage.getItem(introKey); } catch { return true; } });
+  const [intro, setIntro] = useState<boolean>(() => { try { return !localStorage.getItem(introKey); } catch { return true; } });
   const startSheet = () => { try { localStorage.setItem(introKey, '1'); } catch { /* private mode */ } setIntro(false); };
 
   const run = async (call: PromiseLike<{ error: { message: string } | null }>) => {
@@ -143,8 +143,8 @@ function Locked({ view, session }: { view: SheetView; session: Session }) {
   return (
     <div className="mymatch">
       <div className="mmk">{session.rd} · {session.fmt}</div>
-      <div className="mmt">{view.waitingOn ? `${view.waitingOn.label}’s sheet comes first` : 'Not yet'}</div>
-      <div className="mml">Your sheet for {session.rd} opens once you have sealed {view.waitingOn?.label || 'the round before'} (or it is posted); the app has to know which pairs have already played together. Due {clockLocal(view.due)} course time.</div>
+      <div className="mmt">{view.waitingOn ? `${view.waitingOn.label}’s pairings go out first` : 'Not yet'}</div>
+      <div className="mml">Your sheet for {session.rd} opens once {view.waitingOn?.label || 'the round before'} is posted; the app has to know which pairs have already played together. Due {clockLocal(view.due)} course time.</div>
     </div>
   );
 }
@@ -205,7 +205,7 @@ function SheetEditor({ data, round, session, team, view, busy, onSeal }: {
 }) {
   const singles = round.format === 'singles';
   const mine = useMemo(() => data.players.filter(p => p.team_id === team.id), [data.players, team.id]);
-  const used = useMemo(() => usedPairs(team, round, data.rounds, data.matches, data.sheets), [team, round, data.rounds, data.matches, data.sheets]);
+  const used = useMemo(() => usedPairs(team, round, data.rounds, data.matches), [team, round, data.rounds, data.matches]);
   const options = useMemo(() => pairingOptions(mine, used), [mine, used]);
   const [pick, setPick] = useState(() => Math.max(0, options.findIndex(o => !o.used)));
   const [lead, setLead] = useState(0);                       // which pair takes slot 1
@@ -233,7 +233,7 @@ function SheetEditor({ data, round, session, team, view, busy, onSeal }: {
 
       {!singles && (
         <>
-          <div className="shsub">Your pairing<small>Four players pair up three ways, and there are three team rounds, so each pairing plays once. Friday’s two sheets open together on Thursday night: pick the morning pairing here and the afternoon is whatever’s left, with its own tee order. Saturday is singles; you’ll order your four instead.</small></div>
+          <div className="shsub">Your pairing<small>Four players pair up three ways, and there are three team rounds, so each pairing plays once: pick from three tonight, two tomorrow, and Friday afternoon is whatever’s left. Saturday is singles; you’ll order your four instead.</small></div>
           {options.map((o, i) => (
             <button key={i} className={`shopt${i === pick ? ' sel' : ''}${o.used ? ' dim' : ''}`} disabled={o.used} onClick={() => setPick(i)} role="radio" aria-checked={i === pick}>
               <span className="rad" />
