@@ -8,7 +8,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import { calc, half, getsStroke, CFG, type Match, type Session } from '../lib/scoring';
-import { plannedPoints } from '../lib/moments';
+import { plannedPoints, TIEBREAK } from '../lib/moments';
 import { mvpBoard, relLabel } from '../lib/standings';
 import { leadSeries, matchStory } from '../lib/cards';
 import { shape, teeClock, teeClockAmPm, type Shaped, type Snapshot } from './shape';
@@ -219,8 +219,27 @@ function Strip({ d, phase, totals, clinch, total, rounds, onCourse }: {
   const first = rounds[0];
   const days = daysUntil(first.date);
   const ev = d.snap.event;
-  const winner: Side | null = totals.a >= clinch ? 'a' : totals.b >= clinch ? 'b' : null;
+  // the shootout, if the commissioner has entered one, breaks a level Cup
+  const sh = ev.shootout;
+  const sum = (xs: number[]) => xs.reduce((t, x) => t + (Number(x) || 0), 0);
+  const shA = sh?.a || [], shB = sh?.b || [];
+  const shOk = shA.length >= 3 && shA.length === shB.length && sh?.done !== false;
+  const shTa = sum(shA), shTb = sum(shB);
+  const shWinner: Side | null = shOk && shTa !== shTb ? (shTa < shTb ? 'a' : 'b') : null;
+  const level = phase === 'final' && totals.a === totals.b;
+  const clinched: Side | null = totals.a >= clinch ? 'a' : totals.b >= clinch ? 'b' : null;
+  const winner: Side | null = clinched ?? (level ? shWinner : null);
+  const viaShootout = !clinched && !!winner;
   const decided = phase === 'final' || !!winner;
+  const trophy = ev.trophy.replace(/^The /, 'the ');
+  const capOf = (side: Side) => {
+    const team = d.snap.teams.find(t => t.side === side);
+    const p = d.snap.players.find(x => x.is_captain && x.team_id === team?.id);
+    return p ? p.name.split(' ')[0] : CFG.teams[side].name;
+  };
+  const shLine = winner && viaShootout
+    ? `${capOf(winner)} ${winner === 'a' ? shTa : shTb}, ${capOf(winner === 'a' ? 'b' : 'a')} ${winner === 'a' ? shTb : shTa}`
+    : '';
   const lead = totals.a === totals.b ? 'All square' : `${CFG.teams[totals.a > totals.b ? 'a' : 'b'].name} lead`;
   const toClinch = Math.max(0, clinch - Math.max(totals.a, totals.b));
   const dayIdx = onCourse.length ? rounds.indexOf(onCourse[0]) + 1 : rounds.findIndex(r => r.state !== 'final') + 1;
@@ -236,7 +255,7 @@ function Strip({ d, phase, totals, clinch, total, rounds, onCourse }: {
   const paw = grown ? pa : 0, pbw = grown ? pb : 0;
 
   return (
-    <div className="strip">
+    <div className={`strip${winner ? ` won ${cls(winner)}` : ''}`}>
       {phase === 'pre' ? (
         <div className="cd">
           <div className="big">{days}</div>
@@ -245,12 +264,12 @@ function Strip({ d, phase, totals, clinch, total, rounds, onCourse }: {
         </div>
       ) : <div className="day">{dayLabel}</div>}
       <div className="striptop">
-        <div className={`sside cel${phase === 'pre' ? ' dim' : ''}`}><span className="pt">{half(totals.b)}</span><span className="nm">{CFG.teams.b.name}</span></div>
+        <div className={`sside cel${phase === 'pre' ? ' dim' : ''}${winner === 'b' ? ' champ' : ''}`}><span className="pt">{half(totals.b)}</span><span className="nm">{CFG.teams.b.name}</span></div>
         <div className="jugwrap">
           <svg width="29" height="48" style={{ width: 29, height: 48 }}><use href="#claretjug-body" /></svg>
-          <span className="juglbl">{decided && winner ? `${CFG.teams[winner].name} take ${ev.trophy}` : ev.trophy}</span>
+          <span className={`juglbl${winner ? ` ${cls(winner)}` : ''}`}>{winner ? `${CFG.teams[winner].name} take ${trophy}` : ev.trophy}</span>
         </div>
-        <div className={`sside r vik${phase === 'pre' ? ' dim' : ''}`}><span className="nm">{CFG.teams.a.name}</span><span className="pt">{half(totals.a)}</span></div>
+        <div className={`sside r vik${phase === 'pre' ? ' dim' : ''}${winner === 'a' ? ' champ' : ''}`}><span className="nm">{CFG.teams.a.name}</span><span className="pt">{half(totals.a)}</span></div>
       </div>
       <div className="tug">
         <div className="f fc" style={{ width: `${pbw}%` }} />
@@ -262,15 +281,19 @@ function Strip({ d, phase, totals, clinch, total, rounds, onCourse }: {
       <div className="striplbl">
         {phase === 'pre'
           ? <><span>{half(total)} points on the table</span><span>First to {half(clinch)} takes the cup</span></>
-          : decided && winner
-            ? <><span>{half(totals.a + totals.b)} of {half(total)} decided</span><span>{CFG.teams[winner].name} win, {half(totals.b)} to {half(totals.a)}</span></>
-            : <><span>{half(totals.a + totals.b)} of {half(total)} decided</span><span>{lead} · {half(toClinch)} to clinch</span></>}
+          : winner
+            ? <><span>{half(totals.a + totals.b)} of {half(total)} decided</span><span>{viaShootout ? `${half(totals[winner])} to ${half(totals[winner === 'a' ? 'b' : 'a'])} · won in a ${TIEBREAK.name}` : `${CFG.teams[winner].name} win, ${half(totals[winner])} to ${half(totals[winner === 'a' ? 'b' : 'a'])}`}</span></>
+            : level
+              ? <><span>{half(totals.a + totals.b)} of {half(total)} decided</span><span>All square · a {TIEBREAK.name} decides it</span></>
+              : <><span>{half(totals.a + totals.b)} of {half(total)} decided</span><span>{lead} · {half(toClinch)} to clinch</span></>}
       </div>
       <div className="holder">
         <svg width="10" height="20"><use href="#claretjug" /></svg>
-        {decided && winner
-          ? <span>The <b>{CFG.teams[winner].name}</b> hold {ev.trophy} until next October.</span>
-          : ev.previous_winner
+        {winner
+          ? <span>The <b>{CFG.teams[winner].name}</b> hold {trophy} until next October.{viaShootout ? <> Won in a {TIEBREAK.name} on the {TIEBREAK.where}: <b>{shLine}</b>.</> : null}</span>
+          : level
+            ? <span>All square after {half(totals.a + totals.b)} points. The captains settle it in a <b>{TIEBREAK.name}</b> on the {TIEBREAK.where}.</span>
+            : ev.previous_winner
             ? <span>The <b>{CFG.teams[ev.previous_winner].name}</b> hold {ev.trophy} from {ev.previous_year ?? ev.year - 1}.</span>
             : <span>Nobody has held {ev.trophy} yet. The <b>first name</b> goes on it {shortDate(rounds[rounds.length - 1].date)}.</span>}
       </div>
@@ -377,7 +400,7 @@ function MatchCard({ d, m, s, teeTime }: { d: Shaped; m: Match; s: Session; teeT
 }
 
 function Ev({ x }: { x: ReturnType<typeof matchMoments>[number] }) {
-  const c = x.win ? `ev win ${x.side ? cls(x.side) : ''}` : `ev${x.gold ? ' gold' : x.side ? ` ${cls(x.side)}` : ''}`;
+  const c = x.win ? `ev win ${x.side ? cls(x.side) : 'hv'}` : `ev${x.gold ? ' gold' : x.side ? ` ${cls(x.side)}` : ''}`;
   return <div className={c}><span className="t">{clockCT(x.at)}</span><span dangerouslySetInnerHTML={{ __html: x.html }} /></div>;
 }
 

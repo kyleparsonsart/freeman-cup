@@ -327,3 +327,30 @@ body::before{content:'';position:fixed;inset:0 0 -140px 0;z-index:-2;background:
 /* Sep 10: the dedication */
 .sfoot .memoriam{font-family:var(--display);font-style:italic;font-size:15px;color:var(--moss);margin-top:14px;font-synthesis:none}
 .sfoot .memoriam + p{margin-top:12px}
+
+/* Sep 11: the completed state on the site */
+.strip.won .sside.champ .pt{text-shadow:0 0 22px currentColor}
+.strip.won .sside:not(.champ) .pt{opacity:.55}
+.strip.won .juglbl{font-size:15px}
+.strip.won .juglbl.vik{color:#F3B5AB} .strip.won .juglbl.cel{color:#BFD6F0}
+.strip.won .tug .tick{display:none}
+.ev.win.hv{background:var(--brass)}
+.ev.win.hv,.ev.win.hv .t,.ev.win.hv b,.ev.win.hv .who{color:var(--ink)}
+.ev.win.hv .t{color:rgba(15,30,25,.6)}
+/* Sep 11: the Players table on a phone: the name column can shrink, the captain tag drops under the name */
+.team .th,.team li{grid-template-columns:minmax(0,1fr) repeat(var(--rounds,4),64px)}
+.team .th>span:first-child,.team li .nm{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:560px){
+  .team .th,.team li{grid-template-columns:minmax(0,1fr) repeat(var(--rounds,4),54px);gap:6px;padding-left:14px;padding-right:14px}
+  .team .th{font-size:16px}
+  .team li{font-size:14.5px}
+  .team li .nm{white-space:normal;line-height:1.15}
+  .team li i{display:block;margin:2px 0 0;font-size:10px;letter-spacing:.08em}
+  .team li .rn{font-size:14px}
+  .team li .rn small{font-size:10px;margin-left:1px}
+  .team li.lead .nm::after{display:block;margin:2px 0 0}
+  .team .th>span:first-child{white-space:normal;line-height:1.05}
+  .team .th{align-items:end}
+  .shd .wrap{gap:10px} .brandrow{min-width:0} .hdright{flex:none}
+  .sibtn{padding:7px 11px;font-size:12px}
+}
