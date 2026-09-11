@@ -1790,3 +1790,12 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .shst .tg.ro:disabled{opacity:1}
 .shst .tg.ro:disabled .mk,.shst .tg.ro:disabled .cap{color:inherit}
 .shrowx{display:none}
+
+/* Sep 11: the celebration on the Cup tab: final score and the shootout line */
+.woncard{margin-top:18px}
+.woncard .wscore{display:flex;align-items:baseline;gap:8px;font-family:var(--num);font-weight:600;font-size:52px;line-height:1;margin-top:8px}
+.woncard .wscore b{font-weight:600} .woncard .wscore b.a{color:var(--red)} .woncard .wscore b.b{color:var(--blue)}
+.woncard .wscore i{font-style:normal;font-size:16px;color:var(--moss-dim);letter-spacing:.04em}
+.woncard .wsh{font-size:13px;color:var(--moss);margin-top:8px;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(140,167,155,.5)}
+.woncard button.wgo{cursor:pointer}
+.woncard .wt{font-size:25px;letter-spacing:-.01em}

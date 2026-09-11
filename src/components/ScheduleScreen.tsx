@@ -4,7 +4,6 @@ import Scorecard from './Scorecard';
 import { roundRaces, type RoundRace } from '../lib/standings';
 import { stationLabel, type MomentsState } from '../lib/moments';
 import type { EventData } from '../hooks/useEventData';
-import { TrophySvg } from './CupStrip';
 
 const fn = (n?: string | null) => (n || '').split(' ')[0];
 const names = (keys: string[]) => keys.map(k => fn(P[k]?.n) || k).join(' / ');
@@ -28,12 +27,10 @@ export default function ScheduleScreen({ data, moments = null, onMoment }: {
     <>
       {won && onMoment && (
         <div className="dayfade">
-          <button className={`woncard ${won.winner}`} onClick={() => onMoment('won')}>
-            <span className="wjug"><TrophySvg /></span>
-            <span className="wk">The {new Date().getFullYear()} Freeman Cup</span>
-            <span className="wt">{CFG.teams[won.winner].name} take {CFG.trophy}</span>
-            <span className="ws">{half(won.pts[won.winner])} to {half(won.pts[won.winner === 'a' ? 'b' : 'a'])}{won.viaShootout ? ' · won on the practice green' : ''}</span>
-            <span className="wgo">Open the finale ›</span>
+          <button className="wonbar" onClick={() => onMoment('won')}>
+            <span className="t"><b className={won.winner}>{CFG.teams[won.winner].name} take {CFG.trophy}</b>
+              <small>{half(won.pts[won.winner])} to {half(won.pts[won.winner === 'a' ? 'b' : 'a'])}{won.viaShootout ? ' · won on the practice green' : ''}</small></span>
+            <span className="go">Open ›</span>
           </button>
           {won.viaShootout && won.shootout && (
             <button className="shrow" onClick={() => onMoment('shootout')}>
