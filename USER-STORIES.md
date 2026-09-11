@@ -110,7 +110,7 @@ The invitation goes out as a Resend broadcast on Sep 27. The path is: read the e
 
 **PL-06** As a player, I want to know which tees we are playing. Pass when: the Schedule shows the tee for each course once the commissioner posts it. Status: Fixed (Sep 10, 4d4d703): round.tee and round.yards; shown on the Schedule, the letter, the pairings email and the site once the commissioner posts them.
 
-**PL-07** As a player, I want to know the sand ruling before Thursday. Pass when: Art. 6.3 no longer says "settled before Thursday and posted here" and states the ruling. Status: Not built (content decision for Kyle).
+**PL-07** As a player, I want to know the sand ruling before Thursday. Pass when: Art. 6.3 no longer says "settled before Thursday and posted here" and states the ruling. Status: Not built: the sand ruling is still a content decision (Art. 6.3).
 
 ### 3b. The night before a round
 
@@ -258,7 +258,7 @@ The scorer is a player who holds the pencil. The role is per group and per round
 
 **CM-04** As the commissioner, I want to seat the eight players with emails and handicaps. Pass when: Event tab, Seats lists eight rows with name, team, captain flag, email, and index; editing saves; a placeholder address is obvious. Status: Fixed (Sep 10, 4d4d703): email and index edit in place on the Event tab; placeholder addresses flagged "No email".
 
-**CM-05** As the commissioner, I want to know which seats are not yet claimable. Pass when: Seats marks rows whose email has no auth user or whose auth_uid is not linked, so I can fix it before the invitations go out. Status: Partial (Sep 10): the Seats tab flags placeholder addresses; a missing auth user still needs SQL (see HANDOFF).
+**CM-05** As the commissioner, I want to know which seats are not yet claimable. Pass when: Seats marks rows whose email has no auth user or whose auth_uid is not linked, so I can fix it before the invitations go out. Status: Fixed (Sep 11, seat_accounts RPC): the Seats tab shows "No account" on any seat whose email has no sign-in user, and "No email" on placeholders.
 
 **CM-06** As the commissioner, I want to freeze handicaps. Pass when: indexes can be edited until Wednesday and then locked, and the rulebook date matches. Status: Verify (a lock may not exist; a rule that they are not touched is enough for 2026).
 
@@ -368,6 +368,7 @@ Kyle's brief: a clean slate for the next Cup, and a place to reach the previous 
 - The King's Race only counts a card as short against rounds that are in the book, so a round in play never knocks anyone off the board (3f77231). Art. 11.2 stands.
 - Aggregate hole points follow the ball: the sum wins the hole, the lower net takes 2, matching nets take 1 each (2371197). Art. 11.1 rewritten.
 - The Cup strip says "Celts have the points · cards still out" between the clinching putt and the last card (3f77231).
+- Sep 11: the settings sheet is Today, Rounds, Emails, Setup with the acting-as toggle in the header (ef925df); a captain's intro precedes the sheet editor (3159942); email fine print says links open the browser; Art. 5.1 mentions where the tee shows; a "No account" chip on Seats (seat_accounts RPC).
 - The handoff log reads "Handed to JT by Kyle" when the scorer passes the pencil (6211093).
 
 ## 9. Cross-cutting stories
@@ -400,11 +401,9 @@ These apply to every user type and are worth a pass of their own.
 
 Pulled from the Not built and Partial stories above, sorted into what fits before the Sep 13 freeze, what should be in before Oct 8 regardless, and what waits for 2027.
 
-**Quick fixes worth doing before freeze** (Sep 10: IN-12, PL-36, SC-04 and the Seats warning are done)
+**Quick fixes worth doing before freeze** (Sep 11: all done except the sand ruling)
 
 - PL-07 and CM-08 Write the sand ruling into Art. 6.3.
-- CM-05 The auth-user half of seating still takes SQL; a checklist in HANDOFF, or a warning when a seat's email has no auth user.
-- The "Open the app" fine print in the four app emails and the invites (email links always open the browser).
 
 **Must be true before Oct 8, freeze or not**
 

@@ -153,7 +153,7 @@ export const RULEBOOK: Article[] = [
     clauses: [
       { id: '5.1', title: 'One set of tees', keys: ['tee', 'yards', 'yardage'],
         short: 'Everyone plays the same tees every round, chosen from the course’s recommended yardage for the group’s average handicap, never shorter than 6,500 yards.',
-        long: ['The commissioner posts the tee for each course before the trip. Nobody plays up or back, including on par 3s.'] },
+        long: ['The commissioner posts the tee and yardage for each course before the trip; they show on the Schedule, on your letter and on the site. Nobody plays up or back, including on par 3s.'] },
     ],
   },
   {

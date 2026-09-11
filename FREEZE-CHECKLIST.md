@@ -6,11 +6,11 @@ Written Sep 10 after the QA pass. Everything built today is in the repo and push
 
 Build, mine, all small:
 
-- [ ] Fine print under the "Open the app" button in the four app emails and the two invitations, saying email links always open the browser and the home-screen copy is the one to use.
+- [x] Fine print under the "Open the app" button in the four app emails and the two invitations, saying email links always open the browser and the home-screen copy is the one to use.
 - [ ] Art. 6.3 sand ruling text, once you tell me the ruling (waste area as through the green, or as bunkers; Sand Valley treats most of it as waste).
-- [ ] Rulebook Art. 5.1 to mention that the tee and yardage show on the Schedule once posted (one sentence).
-- [ ] Seats: a warning on a row whose email has no auth user yet, so a bad invite is caught on the Event tab rather than on Sep 27. Small if I do it with a Supabase RPC; say yes or no.
-- [ ] HANDOFF.md and USER-STORIES.md refreshed for the settings sheet reorganization and the captain's intro.
+- [x] Rulebook Art. 5.1 to mention that the tee and yardage show on the Schedule once posted (one sentence).
+- [x] Seats: a "No account" chip on a row whose email has no auth user yet (seat_accounts RPC; run freeman-cup-accounts.sql once).
+- [x] HANDOFF.md and USER-STORIES.md refreshed for the settings sheet reorganization and the captain's intro.
 
 Decisions, yours:
 

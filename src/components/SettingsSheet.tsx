@@ -149,6 +149,17 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
   ];
   // one card per round; today's (the desk's) round starts open
   const [openRound, setOpenRound] = useState<string | null>(null);
+  // which seats have an auth user behind their email (seat_accounts RPC, commissioner only)
+  const [accounts, setAccounts] = useState<Record<string, boolean> | null>(null);
+  useEffect(() => {
+    if (!open || !armed || stab !== 'setup') return;
+    supabase.rpc('seat_accounts').then(({ data: rows, error }) => {
+      if (error || !rows) { setAccounts(null); return; }
+      const m: Record<string, boolean> = {};
+      (rows as { id: string; has_account: boolean }[]).forEach(r => { m[r.id] = r.has_account; });
+      setAccounts(m);
+    });
+  }, [open, armed, stab, data.players]);
 
   const teamOf = (side: 'a' | 'b') => data.teams.find(t => t.side === side);
   const playersOf = (side: 'a' | 'b'): DbPlayer[] => {
@@ -532,12 +543,14 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
               <div className="hint">
                 Who each chair belongs to, with the address his invitation and
                 letters go to and the index his strokes come from. Edit a field
-                and tap away to save. Unbind clears a stale account so the right
-                email can claim the seat; run this before invites go out.
+                and tap away to save. "No account" means the address has no sign-in
+                user yet, so a code would never arrive; the SQL in HANDOFF creates
+                them. Unbind clears a stale account so the right email can claim
+                the seat; run this before invites go out.
               </div>
             </div>
             {data.players.map(p => (
-              <SeatRow key={p.id} p={p} side={teamOf('b')?.id === p.team_id ? 'b' : 'a'} me={p.id === data.mePlayerId}
+              <SeatRow key={p.id} p={p} side={teamOf('b')?.id === p.team_id ? 'b' : 'a'} me={p.id === data.mePlayerId} account={accounts ? accounts[p.id] ?? null : null}
                 onSave={(f) => run(supabase.from('player').update(f).eq('id', p.id))}
                 onUnbind={() => unbindSeat(p.id)} />
             ))}
@@ -586,8 +599,8 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
 
 
 /** One seat: name, editable email and index, claim state. Saves on blur. */
-function SeatRow({ p, side, me, onSave, onUnbind }: {
-  p: DbPlayer; side: 'a' | 'b'; me: boolean;
+function SeatRow({ p, side, me, account, onSave, onUnbind }: {
+  p: DbPlayer; side: 'a' | 'b'; me: boolean; account: boolean | null;
   onSave: (f: { email?: string; handicap_index?: number }) => void;
   onUnbind: () => void;
 }) {
@@ -609,7 +622,7 @@ function SeatRow({ p, side, me, onSave, onUnbind }: {
       <span className={`sn2 ${side}`}>{p.name.split(' ')[0]}{p.is_captain ? <small> C</small> : null}</span>
       <input className="sein" type="email" inputMode="email" autoComplete="off" value={email} onChange={e => setEmail(e.target.value)} onBlur={saveEmail} onKeyDown={onKey} aria-label={`${p.name} email`} />
       <input className="sein hcp" type="text" inputMode="decimal" value={hcp} onChange={e => setHcp(e.target.value)} onBlur={saveHcp} onKeyDown={onKey} aria-label={`${p.name} index`} />
-      <span className={`schip${p.auth_uid ? ' ok' : placeholder ? ' warn' : ''}`}>{p.auth_uid ? 'Claimed' : placeholder ? 'No email' : 'Open'}</span>
+      <span className={`schip${p.auth_uid ? ' ok' : placeholder || account === false ? ' warn' : ''}`}>{p.auth_uid ? 'Claimed' : placeholder ? 'No email' : account === false ? 'No account' : 'Open'}</span>
       {p.auth_uid && !me && (
         <button className="unbind" onClick={onUnbind}>Unbind</button>
       )}

@@ -71,7 +71,7 @@ function pairings(round: DbRound, s: Session, m: Match, me: string): Omit<Mail, 
       scorer ? ['Scorer', scorer === fn(me) ? 'You. Keep the card.' : esc(scorer)] : ['Colors', `${teamName(them)} in ${them === 'a' ? 'red' : 'blue'}`],
     ]),
     button('Open the app'),
-    fine('Your sealed letter is waiting there too.'),
+    fine('Your sealed letter is waiting there too. Email links always open in the browser; if the Cup is on your home screen, open it from there.'),
   ].join('');
   return { subject, html: shell({ title: subject, pre: `${dow} at ${s.course}. ${partner ? `You and ${fn(partner)}` : 'You'} against ${m[them].map(fn).join(' and ')}, off at ${tee}.`, body }) };
 }
@@ -171,7 +171,7 @@ export function weekOutMail(d: EventData): Mail[] {
     sentence(`Three rounds, four courses, one jug. Pairings land in the app the night before each round, and your strokes come with them.`),
     rows(byDay),
     button('Open the app'),
-    fine(`Not on your home screen yet? Open the link in Safari, tap Share, then Add to Home Screen, and sign in with the code.<br>Handicaps are frozen ${first ? esc(longDate(new Date(new Date(first.play_date + 'T12:00:00').getTime() - 6 * 86400000).toISOString().slice(0, 10))) : 'the Friday before'}.`),
+    fine(`Not on your home screen yet? Open the link in Safari, tap Share, then Add to Home Screen, and sign in with the code. Email links always open in the browser; once it is on your home screen, open it from there.<br>Handicaps are frozen ${first ? esc(longDate(new Date(new Date(first.play_date + 'T12:00:00').getTime() - 6 * 86400000).toISOString().slice(0, 10))) : 'the Friday before'}.`),
   ].join('');
   return real(d).map(p => ({ to: p.email, subject, html: shell({ title: subject, pre: `${days} days. Three rounds, four courses, one jug. Here is the week.`, body }) }));
 }
