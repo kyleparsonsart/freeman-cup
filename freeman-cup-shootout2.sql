@@ -19,5 +19,5 @@ begin
       raise exception 'shootout needs at least three strokes a side, the same number each';
     end if;
   end if;
-  update event set shootout = s;
+  update event set shootout = s where true;
 end $$ language plpgsql security definer;
