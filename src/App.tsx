@@ -6,6 +6,7 @@ import PullSync from './components/PullSync';
 import SyncBanner from './components/SyncBanner';
 import { IconCloudSlash, IconArmchair } from './components/icons';
 import { half, roundState } from './lib/scoring';
+import { buildFeed } from './lib/feed';
 import { deriveMoments, nextUnseen, markSeen } from './lib/moments';
 import { getActing, setActing, type Acting } from './lib/view';
 import { dueForTick } from './lib/autolive';
@@ -116,8 +117,33 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
   const [rulesJump, setRulesJump] = useState<number | null>(null);
   const openRules = (art: number | null = null) => { setRulesJump(art); setRulesOpen(true); };
   const [tab, setTab] = useState<'scoring' | 'live' | 'schedule'>('scoring');
-  // pulse when a round is actually mid-play, not only when set live
-  const anyLive = !!data && data.scoringSessions.some(s => roundState(s) === 'live');
+  // before the first pairings exist there is nothing to score: open on the Cup
+  const tabChosen = useRef(false);
+  useEffect(() => {
+    if (tabChosen.current || !rawData) return;
+    tabChosen.current = true;
+    if (rawData.matches.length === 0) setTab('live');
+  }, [rawData]);
+  // "3 new" on the Cup tab: feed lines newer than the last look at that tab.
+  // There are no push notifications; this is the honest version of one.
+  const [cupSeenAt, setCupSeenAt] = useState<number>(() => {
+    try { return Number(localStorage.getItem('cup-seen-at')) || 0; } catch { return 0; }
+  });
+  const feedTimes = useMemo(() => {
+    if (!data) return [] as number[];
+    return buildFeed({
+      sessions: data.scoringSessions, matches: data.scoringMatches, matchHoles: data.matchHoles,
+      switches: data.switches, playerById: data.playerById, clinchPoints: Number(data.event.clinch_points) || 5.5,
+    }).flatMap(g => g.items.map(i => i.at));
+  }, [data]);
+  const newOnCup = tab === 'live' ? 0 : feedTimes.filter(t => t > cupSeenAt).length;
+  useEffect(() => {
+    if (tab !== 'live' || !feedTimes.length) return;
+    const latest = Math.max(...feedTimes);
+    if (latest <= cupSeenAt) return;
+    setCupSeenAt(latest);
+    try { localStorage.setItem('cup-seen-at', String(latest)); } catch { /* private mode */ }
+  }, [tab, feedTimes, cupSeenAt]);
 
   // Recap moments: derived like the feed, auto-opened once per device.
   const moments = useMemo(() => data ? deriveMoments({
@@ -146,14 +172,23 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
   }, [rawData, reload]);
   const [moKey, setMoKey] = useState<string | null>(null);
   const autoShown = useRef<Set<string>>(new Set());
+  // A poster never lands on top of a scorer mid-round: if this phone holds
+  // the pencil for a live group whose card is not in, moments wait on the
+  // Cup tab. And at most one auto-opens per app open; the rest stay as
+  // cards on the Cup and Schedule tabs rather than stacking three deep.
+  const busyScoring = !!data && data.teeGroups.some(tg =>
+    tg.scorer_player_id === data.mePlayerId && !tg.submitted_at
+    && data.scoringSessions.some(s => s.id === tg.round_id && roundState(s) === 'live'));
+  const autoBudget = useRef(1);
   useEffect(() => {
-    if (!moments || moKey) return;
+    if (!moments || moKey || busyScoring || autoBudget.current <= 0) return;
     const k = nextUnseen(moments);
     if (k && !autoShown.current.has(k)) {
       autoShown.current.add(k);
+      autoBudget.current -= 1;
       setMoKey(k);
     }
-  }, [moments, moKey]);
+  }, [moments, moKey, busyScoring]);
   const closeMoment = () => {
     if (moKey) { markSeen(moKey); markCardSeen(moKey); }
     setMoKey(null);
@@ -168,13 +203,14 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
     return w;
   }, [data]);
   useEffect(() => {
-    if (!data || moKey) return;
+    if (!data || moKey || busyScoring || autoBudget.current <= 0) return;
     const c = nextMatchCard(data);
     if (c && !autoShown.current.has(c.key)) {
       autoShown.current.add(c.key);
+      autoBudget.current -= 1;
       setMoKey(c.key);
     }
-  }, [data, moKey]);
+  }, [data, moKey, busyScoring]);
   const card = useMemo(
     () => (data && moKey && moKey !== 'duel' ? resolveCard(data, moKey, when, data.event.shootout ?? null) : null),
     [data, moKey, when],
@@ -324,7 +360,7 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
       <nav className="tabs" role="tablist">
         <span className="tabbar" style={{ transform: `translateX(${TAB_ORDER.indexOf(tab) * 100}%)` }} aria-hidden="true" />
         <button className="tab" role="tab" aria-selected={tab === 'live'} onClick={() => goTab('live')}>
-          Cup{anyLive && <span className="pulse" />}
+          Cup{newOnCup > 0 && <span className="newchip">{newOnCup > 99 ? '99+' : newOnCup}</span>}
         </button>
         <button className="tab" role="tab" aria-selected={tab === 'scoring'} onClick={() => goTab('scoring')}>Scoreboard</button>
         <button className="tab" role="tab" aria-selected={tab === 'schedule'} onClick={() => goTab('schedule')}>Schedule</button>

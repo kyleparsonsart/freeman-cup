@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sheetDue, usedPairs, pairingOptions, sheetView } from './sheets';
+import { sheetDue, usedPairs, pairingOptions, sheetView, dueLocal, dueNight } from './sheets';
 import type { DbCaptainSheet, DbMatch, DbPlayer, DbRound, DbSheetStatus, DbTeam } from './types';
 
 const teams: DbTeam[] = [
@@ -94,5 +94,17 @@ describe('sheetView', () => {
     const v = sheetView({ ...base, mePlayerId: 'phil', meIsCommissioner: false });
     expect(v.status.map(s => s.team.name)).toEqual(['Celts', 'Vikes']);
     expect(v.status.map(s => s.captain?.name)).toEqual(['Kyle', 'Griffin']);
+  });
+});
+
+describe('dueLocal', () => {
+  const due = new Date('2026-10-08T02:00:00Z'); // Wed Oct 7, 9:00 pm Central
+  it('names the day when the deadline is days away', () => {
+    expect(dueLocal(due, new Date('2026-09-27T20:00:00Z'))).toBe('Wednesday, Oct 7, 9:00 pm');
+    expect(dueNight(due, new Date('2026-09-27T20:00:00Z'))).toBe('Wednesday night');
+  });
+  it('says tonight and tomorrow near the deadline', () => {
+    expect(dueLocal(due, new Date('2026-10-07T18:00:00Z'))).toBe('tonight, 9:00 pm');
+    expect(dueNight(due, new Date('2026-10-06T18:00:00Z'))).toBe('tomorrow night');
   });
 });

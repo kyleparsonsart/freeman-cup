@@ -12,7 +12,7 @@ import { supabase } from '../lib/supabase';
 import type { EventData } from '../hooks/useEventData';
 import type { DbPlayer, DbRound, DbTeam } from '../lib/types';
 import { calc, half, type Session } from '../lib/scoring';
-import { sheetView, usedPairs, pairingOptions, clockLocal, type SheetView } from '../lib/sheets';
+import { sheetView, usedPairs, pairingOptions, clockLocal, dueLocal, dueNight, type SheetView } from '../lib/sheets';
 
 interface Props { data: EventData; round: DbRound; session: Session; reload: () => void; secondary?: boolean }
 
@@ -102,7 +102,7 @@ function SheetIntro({ data, round, session, view, onStart }: { data: EventData; 
           : <>Nobody has hit a shot yet. </>}
         Your sheet for {session.rd}, {session.fmt.toLowerCase()} at {session.course} on {session.day}, is open.
         It is blind: sealed the moment you submit, and unseen by anyone until the commissioner sends the pairings.
-        Due {clockLocal(view.due)} course time.
+        Due {dueLocal(view.due)} course time.
       </div>
       <button className="abtn" onClick={onStart}>{singles ? 'Order my four' : 'Set my pairings'} ›</button>
     </div>
@@ -144,7 +144,7 @@ function Locked({ view, session }: { view: SheetView; session: Session }) {
     <div className="mymatch">
       <div className="mmk">{session.rd} · {session.fmt}</div>
       <div className="mmt">{view.waitingOn ? `${view.waitingOn.label}’s pairings go out first` : 'Not yet'}</div>
-      <div className="mml">Your sheet for {session.rd} opens once {view.waitingOn?.label || 'the round before'} is posted; the app has to know which pairs have already played together. Due {clockLocal(view.due)} course time.</div>
+      <div className="mml">Your sheet for {session.rd} opens once {view.waitingOn?.label || 'the round before'} is posted; the app has to know which pairs have already played together. Due {dueLocal(view.due)} course time.</div>
     </div>
   );
 }
@@ -153,9 +153,9 @@ function Waiting({ view, session }: { view: SheetView; session: Session }) {
   return (
     <div className="mymatch">
       <div className="mmk">{session.rd} · {session.fmt}</div>
-      <div className="mmt">Pairings post tonight</div>
+      <div className="mmt">Pairings post {dueNight(view.due)}</div>
       <div className="mml">
-        The captains are sealing their sheets. When both are in, a letter with your partner and your match lands on this phone, <b>{clockLocal(view.due)}</b> at the latest.
+        The captains seal their sheets by <b>{dueLocal(view.due)}</b> course time. When both are in, a letter with your partner and your match lands on this phone. The app does not send notifications; check the Cup tab.
       </div>
       <StatusRows view={view} />
       <div className="mmst"><i className="ldot" /><span>{session.course} · {session.holes} holes · tees {session.tees.join(' and ')}</span></div>
@@ -174,7 +174,7 @@ function Sealed({ view, session, names, busy, onSend }: {
       <div className="mmt">{onSend ? 'Both sheets are in' : other?.sealed ? 'Waiting on the send' : `Waiting on ${first(other?.captain || undefined)}`}</div>
       <div className="mml">{onSend
         ? 'Yours and theirs are sealed. Nobody has seen a lineup yet.'
-        : <>Your sheet is in and can’t change. The letters go out when the commissioner sends, or at <b>{clockLocal(view.due)}</b>.</>}</div>
+        : <>Your sheet is in and can’t change. The letters go out when the commissioner sends, or {dueLocal(view.due)}.</>}</div>
       <div className="shsub">Your slots</div>
       {mine.slots.map((slot, i) => (
         <div key={i} className="shslot"><span className="tt">{teeFor(session, view.round, i)}<small>SLOT {i + 1}</small></span><span className={`pair ${view.myTeam?.side}`}>{names(slot)}</span></div>
@@ -281,7 +281,7 @@ function SheetEditor({ data, round, session, team, view, busy, onSeal }: {
 
       <StatusRows view={view} />
       <div className="shfoot">
-        <div className="hint">Submitted pairings can’t be changed. The letters go out when the commissioner sends, or at {clockLocal(view.due)}.</div>
+        <div className="hint">Submitted pairings can’t be changed. The letters go out when the commissioner sends, or {dueLocal(view.due)}.</div>
         <button className="abtn" disabled={!slots.length || busy} onClick={() => onSeal(slots)}>{busy ? 'Submitting…' : 'Submit Pairings'}</button>
       </div>
     </div>

@@ -151,3 +151,32 @@ export function sheetView(input: {
 export const clockLocal = (iso: string | Date): string =>
   new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: SHEET_TZ })
     .format(typeof iso === 'string' ? new Date(iso) : iso).toLowerCase();
+
+/**
+ * A deadline with its day, in course time: "tonight, 9:00 pm", "tomorrow,
+ * 9:00 pm", or "Wednesday, Oct 7, 9:00 pm" when it is further out. Read
+ * from the phone eleven days early, "tonight" would send the field to
+ * check at 9:15.
+ */
+export function dueLocal(due: Date, now: Date = new Date()): string {
+  const day = (d: Date) => new Intl.DateTimeFormat('en-CA', { timeZone: SHEET_TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+  const today = day(now);
+  const tomorrow = day(new Date(now.getTime() + 86_400_000));
+  const when = day(due);
+  const clock = clockLocal(due);
+  if (when === today) return `tonight, ${clock}`;
+  if (when === tomorrow) return `tomorrow, ${clock}`;
+  const label = new Intl.DateTimeFormat('en-US', { timeZone: SHEET_TZ, weekday: 'long', month: 'short', day: 'numeric' }).format(due);
+  return `${label}, ${clock}`;
+}
+
+/** "tonight", "tomorrow night", or "Wednesday night" */
+export function dueNight(due: Date, now: Date = new Date()): string {
+  const day = (d: Date) => new Intl.DateTimeFormat('en-CA', { timeZone: SHEET_TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+  const when = day(due);
+  if (when === day(now)) return 'tonight';
+  if (when === day(new Date(now.getTime() + 86_400_000))) return 'tomorrow night';
+  const wd = new Intl.DateTimeFormat('en-US', { timeZone: SHEET_TZ, weekday: 'long' }).format(due);
+  const hour = Number(new Intl.DateTimeFormat('en-US', { timeZone: SHEET_TZ, hour: 'numeric', hour12: false }).format(due));
+  return hour >= 17 ? `${wd} night` : `${wd} morning`;
+}
