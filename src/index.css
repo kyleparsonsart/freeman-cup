@@ -1820,4 +1820,4 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .pacts .abtn.ghost{background:transparent;border:1px solid var(--line);color:var(--bone)}
 
 /* Sep 15: new since you looked, on the Cup tab */
-.tab .newchip{display:inline-block;margin-left:6px;padding:1px 6px;min-width:18px;border-radius:9px;background:var(--brass);color:var(--ink);font-family:var(--num);font-size:12px;font-weight:600;line-height:16px;vertical-align:2px;letter-spacing:0}
+.tab .newchip{display:inline-block;margin-left:6px;padding:1px 6px;min-width:18px;border-radius:9px;background:var(--brass);color:var(--ink);font-family:var(--num);font-size:12px;font-weight:600;line-height:16px;position:relative;top:-3px;letter-spacing:0}

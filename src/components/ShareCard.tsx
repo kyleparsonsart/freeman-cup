@@ -54,7 +54,7 @@ export default function ShareCard({ card, year, venue, data, onClose, onOpen }: 
         <div className="pfoot"><span className="k">The Freeman Cup · {venue}</span><span className="yr">{year}</span></div>
       </div>
       <div className="pacts">
-        <span className="pnote">Screenshot to share it. The site has the same moment, no sign-in.</span>
+        <span className="pnote">Screenshot to share it. Every match is on the site, no sign-in.</span>
         <div className="prow2">
           <button className="abtn ghost" onClick={onClose}>Close</button>
           {canShare && (
