@@ -297,9 +297,11 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
           <div className="empty">
             <IconCloudSlash />
             <b>Couldn’t reach the clubhouse</b>
-            Check your signal, then pull down to try again. Anything you
-            scored is safe on this phone.
+            Your signal is thin here. Anything you score is kept on this
+            phone until it comes back.
+            <button className="abtn" style={{ marginTop: 14 }} onClick={() => reload()}>Try again</button>
             <span className="errdetail">{error}</span>
+            <span className="errhint">First time on this phone? Open the app once on Wi-Fi before the round so it can work offline.</span>
           </div>
         )}
         {data && tab === 'scoring' && (

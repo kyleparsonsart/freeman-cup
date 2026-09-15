@@ -152,6 +152,9 @@ async function fetchTables(): Promise<RawTables> {
   };
 }
 
+/** the signed-in user as last seen by a load, for offline loads after a token lapse */
+let lastUid: string | null = null;
+
 export function useEventData() {
   const [data, setData] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -173,8 +176,11 @@ export function useEventData() {
     let offline = false;
 
     // who is signed in (local read, works offline)
+    // An expired token with no signal to refresh it returns no session;
+    // the phone still belongs to the same person, so the last known id holds.
     const { data: { session } } = await supabase.auth.getSession();
-    const uid = session?.user.id ?? null;
+    const uid = session?.user.id ?? lastUid;
+    if (session?.user.id) lastUid = session.user.id;
 
     // Read the queue *before* fetching. If a row is flushed while the fetch
     // is in the air, the fetch may predate the upsert but the pre-read
@@ -424,9 +430,41 @@ export function useEventData() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'match' }, () => { load(); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'captain_sheet' }, () => { load(); })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'event' }, () => { load(); })
-      .subscribe();
+      // a (re)join means events may have been missed while the socket was down
+      .subscribe(status => { if (status === 'SUBSCRIBED') load(); });
 
     return () => { supabase.removeChannel(channel); };
+  }, [load]);
+
+  // Coming back from the pocket, or back onto signal: iOS drops the socket
+  // in the background and realtime does not replay what was missed, so the
+  // phone asks for the world again. A token refresh also reloads, since
+  // identity (whose pencil this is) is read from the session at load time.
+  // While the channel is not subscribed, a slow poll stands in for it.
+  useEffect(() => {
+    let last = 0;
+    const bump = () => {
+      const now = Date.now();
+      if (now - last < 3_000) return;
+      last = now;
+      load();
+    };
+    const onVis = () => { if (!document.hidden) bump(); };
+    window.addEventListener('online', bump);
+    document.addEventListener('visibilitychange', onVis);
+    const { data: sub } = supabase.auth.onAuthStateChange(event => {
+      if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') bump();
+    });
+    const poll = setInterval(() => {
+      const ch = supabase.getChannels().find(c => c.topic === 'realtime:cup_changes');
+      if (!document.hidden && (!ch || ch.state !== 'joined')) bump();
+    }, 90_000);
+    return () => {
+      window.removeEventListener('online', bump);
+      document.removeEventListener('visibilitychange', onVis);
+      sub.subscription.unsubscribe();
+      clearInterval(poll);
+    };
   }, [load]);
 
   return { data, loading, error, reload: load };
