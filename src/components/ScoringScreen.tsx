@@ -358,13 +358,18 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
   const teeGroupId = dbMatch?.tee_group_id;
   const handoff = teeGroupId ? data.handoffs[teeGroupId] : undefined;
   const groupKeys = groupPlayers(m.s, m.g, data.scoringMatches);
-  // nobody holds the pencil until the group picks: anyone in the group may take it
+  // anyone in the group may take the pencil: on the first tee when nobody
+  // holds it, and from a dead phone mid-round. Taking it from someone else
+  // asks once; the feed names the takeover.
   const inGroup = !!data.meKey && groupKeys.includes(data.meKey);
-  const canSwap = iAmScorer || data.meIsCommissioner || (!scorerKey && inGroup);
+  const canSwap = iAmScorer || data.meIsCommissioner || inGroup;
+  const [takeConfirm, setTakeConfirm] = useState<string | null>(null);
 
-  const switchScorer = async (k: string) => {
+  const switchScorer = async (k: string, confirmed = false) => {
     if (!teeGroupId) return;
     if (k === scorerKey) { setPicking(false); return; }
+    if (scorerKey && !iAmScorer && !data.meIsCommissioner && !confirmed) { setTakeConfirm(k); return; }
+    setTakeConfirm(null);
     setSwapErr(null);
     const { data: rows, error } = await supabase
       .from('tee_group')
@@ -467,18 +472,21 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
       }
     }
 
-    // Update local state and derive result
+    // Update local state and derive the result, unless the hole was set by
+    // hand: a conceded or ruled hole keeps its result while the scores go in
+    // for day totals. Tapping the override again hands it back to the app.
     h.sc[k] = newVal;
-    settle(m, i);
+    if (h.d || !h.r) settle(m, i);
 
     await postScore(i, newScores, h.r, h.d);
   }, [h, i, keys, m, s.fmt, data, postScore, viewOnly, setPinned]);
 
   const handleOverride = useCallback(async (w: 'A' | 'B' | 'H') => {
     if (viewOnly) return;
-    const newR = (h.r === w && !h.d) ? null : w;
-    h.r = newR;
-    h.d = false;
+    // a second tap on the hand-set result hands the hole back to the app
+    const release = h.r === w && !h.d;
+    if (release) settle(m, i);
+    else { h.r = w; h.d = false; }
 
     const newScores: Record<string, number | string> = {};
     for (const key of keys) {
@@ -490,7 +498,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
       }
     }
 
-    await postScore(i, newScores, newR, false);
+    await postScore(i, newScores, h.r, h.d);
   }, [h, i, keys, m, s.fmt, data, postScore, viewOnly]);
 
   // the hole number slides in from the tapped arrow's side, i.e. away from it
@@ -559,6 +567,8 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
           </svg>
           {submitted && !data.meIsCommissioner ? (
             <span>Card's in. Only <b>{commishName}</b> can edit now.</span>
+          ) : scorerKey && inGroup ? (
+            <span><b>{fn(P[scorerKey]?.n) || 'The scorer'}</b> has the pencil. Phone dead? <button className="takepen" onClick={() => switchScorer(data.meKey)}>Take it</button></span>
           ) : scorerKey ? (
             <span><b>{fn(P[scorerKey]?.n) || 'The scorer'}</b> has the pencil; scores go in from his phone.</span>
           ) : inGroup ? (
@@ -743,7 +753,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
       {!h.d && h.r && (
         <div className="bder">
           <span className="tag">{bye ? 'Bye hole, not counted' : 'Tapped, not computed'}</span>
-          Set by hand{h.by ? ` by ${h.by}` : ''}.
+          Set by hand{h.by ? ` by ${h.by}` : ''}. Scores you enter count for totals and the King's Race; tap the result again to let the app decide the hole.
         </div>
       )}
 
@@ -828,11 +838,33 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
             </span>
             {canSwap && (
               <button className="swap" onClick={() => { setPicking(p => !p); setSwapErr(null); }}>
-                {picking ? 'Cancel' : scorerKey ? 'Switch' : 'Take it'}
+                {picking ? 'Cancel' : scorerKey && (iAmScorer || data.meIsCommissioner) ? 'Switch' : 'Take it'}
               </button>
             )}
           </div>
         </>
+      )}
+
+      {/* Taking the pencil from someone else: one question, then it is yours */}
+      {takeConfirm && createPortal(
+        <>
+          <div className="scrim hi on rise" onClick={() => setTakeConfirm(null)} />
+          <div className="drawer cardin on" role="dialog" aria-modal="true" aria-label="Take the pencil">
+            <div className="dh" />
+            <div className="cdrawer">
+              <div className="cdt">Take the pencil from {fn(P[scorerKey]?.n) || 'the scorer'}?</div>
+              <div className="cdx">
+                {takeConfirm === data.meKey ? 'Your phone becomes the card' : `${fn(P[takeConfirm]?.n) || takeConfirm}'s phone becomes the card`} for this group; his keeps its copy. The feed will say who took it and when.
+                {' '}Needs a signal for the switch itself; scores after that queue as usual.
+              </div>
+              <button className="abtn" onClick={() => switchScorer(takeConfirm, true)}>
+                {takeConfirm === data.meKey ? 'Yes, I’m keeping the card' : `Yes, give it to ${fn(P[takeConfirm]?.n) || takeConfirm}`}
+              </button>
+              <button className="aghost" style={{ marginTop: 10 }} onClick={() => setTakeConfirm(null)}>Not yet</button>
+            </div>
+          </div>
+        </>,
+        document.body,
       )}
 
       {/* The card-in drawer: the scorer's handshake at the end of the day.

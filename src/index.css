@@ -1799,3 +1799,10 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .woncard .wsh{font-size:13px;color:var(--moss);margin-top:8px;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(140,167,155,.5)}
 .woncard button.wgo{cursor:pointer}
 .woncard .wt{font-size:25px;letter-spacing:-.01em}
+
+/* Sep 15: taking the pencil from someone else */
+.cdrawer{padding:6px 18px 28px}
+.cdrawer .cdt{font-family:var(--display);font-size:20px;line-height:1.15;margin-bottom:8px}
+.cdrawer .cdx{font-size:14px;line-height:1.55;color:var(--moss);margin-bottom:16px}
+.cdrawer .abtn{width:100%}
+.cdrawer .aghost{display:block;width:100%;min-height:44px}
