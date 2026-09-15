@@ -5,8 +5,8 @@
 :root{
   --ink-15:#162820;
   --ink:#0F1E19; --ink-2:#172B24; --ink-3:#1E362D; --line:#26443A;
-  --bone:#F0EBDC; --moss:#8CA79B; --moss-dim:#5D7268;
-  --red:#C8402F; --blue:#4C86C4; --brass:#D8A93F;
+  --bone:#F0EBDC; --moss:#8CA79B; --moss-dim:#82958C; --moss-faint:#5D7268;
+  --red:#C8402F; --red-text:#E36A5D; --blue:#4C86C4; --brass:#D8A93F;
   --paper:#E7E1D0;
   --display:'Young Serif',Georgia,serif;
   --body:'Work Sans',system-ui,sans-serif;
@@ -53,7 +53,7 @@ body{background:var(--ink);color:var(--bone);font-family:var(--body);font-size:1
 @keyframes crawl{to{background-position:-14.14px 0}}
 @media(prefers-reduced-motion:reduce){.tug .livez{animation:none}.tug .f{transition:none}}
 .tick{position:absolute;top:-1px;bottom:-1px;width:2px;background:var(--brass);z-index:3}
-.striplbl{display:flex;justify-content:space-between;margin-top:8px;font-size:11.5px;color:var(--moss-dim);max-width:960px;margin-left:auto;margin-right:auto}
+.striplbl{display:flex;justify-content:space-between;margin-top:8px;font-size:13px;color:var(--moss);max-width:960px;margin-left:auto;margin-right:auto}
 
 /* how-it-works bar under the strip */
 .howbar{border-bottom:1px solid var(--line);background:var(--ink-2)}
@@ -118,7 +118,7 @@ body{background:var(--ink);color:var(--bone);font-family:var(--body);font-size:1
 .ev.cel{border-left-color:var(--blue)} .ev.vik{border-left-color:var(--red)} .ev.gold{border-left-color:var(--brass)}
 .ev .t{width:38px;flex:none;font-family:var(--clock);font-size:13.5px;font-weight:600;color:var(--moss-dim);padding-top:1px}
 .ev b{color:var(--bone);font-weight:600}
-.ev .who.cel{color:var(--blue);font-weight:600} .ev .who.vik{color:var(--red);font-weight:600}
+.ev .who.cel{color:var(--blue);font-weight:600} .ev .who.vik{color:var(--red-text);font-weight:600}
 .more{display:none}
 .xp{display:none}
 .xp:checked ~ .more{display:block}
@@ -178,9 +178,9 @@ body{background:var(--ink);color:var(--bone);font-family:var(--body);font-size:1
 .tee .r{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid rgba(38,68,58,.55);font-size:14.5px}
 .tee .r:last-child{border-bottom:none}
 .tee .tt{font-family:var(--clock);font-size:14px;font-weight:600;color:var(--moss)}
-.tee .who .c{color:var(--blue)} .tee .who .v{color:var(--red)} .tee .who i{font-style:normal;color:var(--moss-dim);font-size:13px;margin:0 5px}
+.tee .who .c{color:var(--blue)} .tee .who .v{color:var(--red-text)} .tee .who i{font-style:normal;color:var(--moss-dim);font-size:13px;margin:0 5px}
 .tee .sc{font-family:var(--clock);font-weight:600;white-space:nowrap;font-size:14px}
-.tee .sc.v{color:var(--red)} .tee .sc.c{color:var(--blue)} .tee .sc.hv,.tee .sc.tb{color:var(--moss-dim)}
+.tee .sc.v{color:var(--red-text)} .tee .sc.c{color:var(--blue)} .tee .sc.hv,.tee .sc.tb{color:var(--moss-dim)}
 .tee .sc.lv{color:var(--brass)}
 .wx{border-top:1px solid var(--line);background:var(--ink)}
 .wxcard .wxrow{padding-bottom:10px}

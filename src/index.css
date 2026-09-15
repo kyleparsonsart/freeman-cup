@@ -5,8 +5,10 @@
   src:url('/fonts/YoungSerif-Regular.woff2') format('woff2')}
 :root{
   --ink:#0F1E19; --ink-2:#172B24; --ink-3:#1E362D; --line:#26443A;
-  --bone:#F0EBDC; --moss:#8CA79B; --moss-dim:#5D7268;
+  --bone:#F0EBDC; --moss:#8CA79B; --moss-dim:#82958C; --moss-faint:#5D7268;
   --red:#C8402F; --blue:#4C86C4; --brass:#D8A93F;
+  /* the team red as small text: the fill red reads at 3:1 on ink-2, this at 4.5 */
+  --red-text:#E36A5D;
   --board:#0A1712; --rule:rgba(240,235,220,.055);
   --display:'Young Serif',Georgia,'Times New Roman',serif;
   --body:'Work Sans Variable','Work Sans',system-ui,sans-serif;
@@ -78,8 +80,8 @@ body.light .syncdot span{color:var(--on-brass)}
   background:repeating-linear-gradient(135deg,rgba(240,235,220,.10) 0 5px,transparent 5px 10px);
   transition:all .5s cubic-bezier(.4,0,.2,1)}
 .tick{position:absolute;top:-1px;bottom:-1px;width:2px;background:var(--brass);z-index:3}
-.striplbl{display:flex;justify-content:space-between;margin-top:7px;font-size:11.5px;
-  color:var(--moss-dim);letter-spacing:.005em}
+.striplbl{display:flex;justify-content:space-between;margin-top:7px;font-size:13px;
+  color:var(--moss);letter-spacing:.005em}
 
 /* photo runs the full height of the block, tabs included */
 /* --- live pulse --- */
@@ -107,7 +109,7 @@ body.light .syncdot span{color:var(--on-brass)}
 .ev .t{width:44px;flex:none;font-family:var(--num);font-size:14px;font-weight:600;color:var(--moss-dim);padding-top:2px}
 .ev .bd{flex:1;min-width:0;font-size:15px;line-height:1.45;color:var(--moss)}
 .ev .bd b{color:var(--bone);font-weight:600}
-.ev .who.a{color:var(--red);font-weight:600} .ev .who.b{color:var(--blue);font-weight:600}
+.ev .who.a{color:var(--red-text);font-weight:600} .ev .who.b{color:var(--blue);font-weight:600}
 .ev .sub2{display:block;font-size:13px;color:var(--moss-dim);margin-top:2px}
 .ev.big{background:var(--ink-2)}
 .ev.big .bd{color:var(--bone)}
@@ -522,7 +524,7 @@ body.light .xchip.on{color:var(--on-solid)}
 .prow{display:flex;align-items:center;gap:9px;padding:8px 0;border-top:1px solid var(--line)}
 .prow:first-child{border-top:none}
 .prow .pn{flex:1;min-width:0;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.prow .pn.a{color:var(--red)} .prow .pn.b{color:var(--blue)}
+.prow .pn.a{color:var(--red-text)} .prow .pn.b{color:var(--blue)}
 .prow .pn .hcp{font-family:var(--num);font-size:14px;color:var(--moss-dim);margin-left:3px}
 .step{display:grid;grid-template-columns:38px 40px 38px;grid-template-rows:36px;
   border:1px solid var(--line);flex:none;overflow:hidden}
@@ -636,8 +638,8 @@ body.light .xchip.on{color:var(--on-solid)}
    banner keeps its dark scrim in both modes, so anything sitting on it stays light. */
 body.light{
   --ink:#F7F3E8; --ink-2:#F0EADB; --ink-3:#E5DDC9; --line:#D5CBB3;
-  --bone:#1C2721; --moss:#5A6A61; --moss-dim:#8B968E;
-  --red:#B03A20; --blue:#2C6C9E; --brass:#9C7318;
+  --bone:#1C2721; --moss:#5A6A61; --moss-dim:#66726B; --moss-faint:#8B968E;
+  --red:#B03A20; --red-text:#A5351C; --blue:#2C6C9E; --brass:#9C7318;
   --on-solid:#FFFFFF; --on-brass:#241B05;
   --board:#EDE6D5; --rule:rgba(28,39,33,.07);
   background:#E7E0CD}
@@ -1416,7 +1418,7 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .pc>*{position:relative}
 .pbadge{display:block;flex:none;background:var(--brass);
   -webkit-mask:url(/brand/logo-badge.svg) center/contain no-repeat;mask:url(/brand/logo-badge.svg) center/contain no-repeat}
-.pc .k{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--moss);font-weight:600;line-height:1.5}
+.pc .k{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--moss);font-weight:600;line-height:1.5}
 .pc .k.dim,.pc .dim{color:var(--moss-dim)}
 .pc .ta{color:var(--red)}.pc .tb{color:var(--blue)}.pc .th{color:var(--moss)}.pc .tbrass{color:var(--brass)}
 .ptop{display:flex;align-items:center;justify-content:space-between}
@@ -1810,3 +1812,12 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .empty .errhint{display:block;margin-top:14px;font-size:12.5px;color:var(--moss)}
 .woncard .wleft{font-size:13px;color:var(--moss);margin-top:8px;line-height:1.45}
 .woncard + .strip{margin-top:12px}
+
+/* Sep 15: a poster you can get out of */
+.pacts{gap:10px}
+.pacts .prow2{display:flex;gap:10px;width:100%;max-width:360px}
+.pacts .prow2 .abtn{flex:1;margin:0;min-height:48px;display:flex;align-items:center;justify-content:center}
+.pacts .abtn.ghost{background:transparent;border:1px solid var(--line);color:var(--bone)}
+
+/* Sep 15: new since you looked, on the Cup tab */
+.tab .newchip{display:inline-block;margin-left:6px;padding:1px 6px;min-width:18px;border-radius:9px;background:var(--brass);color:var(--ink);font-family:var(--num);font-size:12px;font-weight:600;line-height:16px;vertical-align:2px;letter-spacing:0}
