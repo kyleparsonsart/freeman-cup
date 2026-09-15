@@ -53,6 +53,33 @@ export const idbPut = (store: StoreName, key: string, value: unknown) =>
 export const idbDelete = (store: StoreName, key: string) =>
   tx<undefined>(store, 'readwrite', s => s.delete(key));
 
+/**
+ * Delete a key only if the stored value still satisfies `keep`, in one
+ * transaction, so a value written between the read and the delete is
+ * never lost. Resolves true when the row was deleted.
+ */
+export function idbDeleteIf<T>(
+  store: StoreName,
+  key: string,
+  matches: (current: T | undefined) => boolean,
+): Promise<boolean> {
+  return open().then(
+    db =>
+      new Promise<boolean>((resolve, reject) => {
+        const t = db.transaction(store, 'readwrite');
+        const s = t.objectStore(store);
+        const get = s.get(key);
+        get.onerror = () => reject(get.error);
+        get.onsuccess = () => {
+          if (!matches(get.result as T | undefined)) { resolve(false); return; }
+          const del = s.delete(key);
+          del.onsuccess = () => resolve(true);
+          del.onerror = () => reject(del.error);
+        };
+      }),
+  );
+}
+
 /** Tests swap the global indexedDB between cases; drop the cached handle. */
 export const _resetDbForTests = () => {
   _db = null;

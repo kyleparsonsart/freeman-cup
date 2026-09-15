@@ -16,7 +16,7 @@
  * (dismissBlocked), never a side effect.
  */
 import { supabase } from './supabase';
-import { idbGetAll, idbPut, idbDelete } from './db';
+import { idbGetAll, idbPut, idbDelete, idbDeleteIf } from './db';
 import type { DbMatchHole } from './types';
 
 export interface QueuedHoleWrite {
@@ -85,6 +85,8 @@ export async function enqueueHoleWrite(
     return;
   }
   notify();
+  // a flush already running holds an older copy of this key; ask it to go again
+  dirty = true;
   await flushQueue(upsert);
 }
 
@@ -94,34 +96,53 @@ function isNetworkError(error: NonNullable<UpsertError>): boolean {
 }
 
 let flushing: Promise<boolean> | null = null;
+/** set by enqueueHoleWrite while a flush is running: rows changed under it */
+let dirty = false;
 
-/** Returns true if at least one queued row reached the server. */
+/** The same row as the one we sent: nothing newer was queued under this key. */
+const sameRow = (sent: QueuedHoleWrite) => (cur: QueuedHoleWrite | undefined) =>
+  !!cur && cur.queued_at === sent.queued_at;
+
+/**
+ * Returns true if at least one queued row reached the server. A row is
+ * only removed if it is still the row that was sent; a correction tapped
+ * while the first save was in flight stays queued and goes out on the
+ * next pass, which runs immediately when anything changed under a flush.
+ */
 export function flushQueue(upsert: Upserter = defaultUpsert): Promise<boolean> {
   if (flushing) return flushing;
   flushing = (async () => {
     let synced = false;
     let changed = false;
-    // fresh rows first so a blocked row never delays a new score
-    const rows = (await getQueuedWrites()).sort(
-      (a, b) => Number(!!a.blocked) - Number(!!b.blocked) || a.queued_at - b.queued_at,
-    );
-    for (const row of rows) {
-      const { error } = await upsert(row).catch((e: Error) => ({
-        error: { message: e.message } as UpsertError,
-      }));
-      if (!error) {
-        await idbDelete('write_queue', keyOf(row));
-        synced = true;
-        changed = true;
-      } else if (isNetworkError(error)) {
-        break; // offline — keep everything for the next trigger
-      } else if (row.blocked !== error.message) {
-        // refused for a permanent reason: keep the row, say so, retry later
-        console.error(`Score for hole ${row.hole} refused, kept as blocked:`, error.message);
-        await idbPut('write_queue', keyOf(row), { ...row, blocked: error.message });
-        changed = true;
+    do {
+      dirty = false;
+      // fresh rows first so a blocked row never delays a new score
+      const rows = (await getQueuedWrites()).sort(
+        (a, b) => Number(!!a.blocked) - Number(!!b.blocked) || a.queued_at - b.queued_at,
+      );
+      let offline = false;
+      for (const row of rows) {
+        const { error } = await upsert(row).catch((e: Error) => ({
+          error: { message: e.message } as UpsertError,
+        }));
+        if (!error) {
+          await idbDeleteIf<QueuedHoleWrite>('write_queue', keyOf(row), sameRow(row));
+          synced = true;
+          changed = true;
+        } else if (isNetworkError(error)) {
+          offline = true;
+          break; // offline: keep everything for the next trigger
+        } else if (row.blocked !== error.message) {
+          // refused for a permanent reason: keep the row (unless a newer one
+          // replaced it meanwhile), say so, retry later
+          console.error(`Score for hole ${row.hole} refused, kept as blocked:`, error.message);
+          const replaced = !(await idbDeleteIf<QueuedHoleWrite>('write_queue', keyOf(row), sameRow(row)));
+          if (!replaced) await idbPut('write_queue', keyOf(row), { ...row, blocked: error.message });
+          changed = true;
+        }
       }
-    }
+      if (offline) break;
+    } while (dirty);
     if (changed) notify();
     return synced;
   })().finally(() => {

@@ -162,6 +162,48 @@ describe('flushQueue', () => {
   });
 });
 
+describe('a correction while the first save is in flight', () => {
+  it('keeps the newer row and sends it on the next pass', async () => {
+    // the first upsert hangs until we release it
+    let release: () => void = () => {};
+    const gate = new Promise<void>(r => { release = r; });
+    const sent: unknown[] = [];
+    const slow: Upserter = async r => {
+      sent.push(r.scores);
+      if (sent.length === 1) await gate;
+      return { error: null };
+    };
+    const first = enqueueHoleWrite(row(7, { scores: { p1: 5 } }), slow);
+    await tick();
+    // the scorer meant 4; same key, newer row, while the 5 is still in flight
+    const second = enqueueHoleWrite(row(7, { scores: { p1: 4 } }), slow);
+    await tick();
+    release();
+    await Promise.all([first, second]);
+    expect(sent).toEqual([{ p1: 5 }, { p1: 4 }]);
+    expect(await getQueuedWrites()).toHaveLength(0);
+  });
+
+  it('never deletes a newer row when the older upsert is refused', async () => {
+    let release: () => void = () => {};
+    const gate = new Promise<void>(r => { release = r; });
+    let n = 0;
+    const slowReject: Upserter = async () => {
+      n++;
+      if (n === 1) { await gate; return { error: { code: '42501', message: 'permission denied' } }; }
+      return { error: null };
+    };
+    const first = enqueueHoleWrite(row(7, { scores: { p1: 5 } }), slowReject);
+    await tick();
+    const second = enqueueHoleWrite(row(7, { scores: { p1: 4 } }), slowReject);
+    await tick();
+    release();
+    await Promise.all([first, second]);
+    // the 4 went out on the second pass and nothing is left, blocked or otherwise
+    expect(await getQueuedWrites()).toHaveLength(0);
+  });
+});
+
 describe('overlayQueue', () => {
   const serverHole = (hole: number): DbMatchHole => ({
     match_id: 'm1', hole, result: 'A', scores: { p1: 4 },
