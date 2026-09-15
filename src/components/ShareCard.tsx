@@ -1,3 +1,4 @@
+import { SITE } from '../lib/email/shell';
 import type { ReactNode } from 'react';
 import { half, CFG, type Match } from '../lib/scoring';
 import {
@@ -45,6 +46,7 @@ interface Props {
  * Close, so a plain screenshot is the share.
  */
 export default function ShareCard({ card, year, venue, data, onClose, onOpen }: Props) {
+  const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
   return (
     <div className="moment poster" role="dialog" aria-modal="true" aria-label="Moment">
       <div className="pc">
@@ -52,7 +54,15 @@ export default function ShareCard({ card, year, venue, data, onClose, onOpen }: 
         <div className="pfoot"><span className="k">The Freeman Cup · {venue}</span><span className="yr">{year}</span></div>
       </div>
       <div className="pacts">
-        <button className="aghost" onClick={onClose}>Close</button>
+        <span className="pnote">Screenshot to share it. The site has the same moment, no sign-in.</span>
+        <div className="prow2">
+          <button className="abtn ghost" onClick={onClose}>Close</button>
+          {canShare && (
+            <button className="abtn" onClick={() => {
+              navigator.share({ title: `The ${year} Freeman Cup`, text: `The Freeman Cup, live from ${venue}`, url: SITE }).catch(() => {});
+            }}>Share the site</button>
+          )}
+        </div>
       </div>
     </div>
   );
