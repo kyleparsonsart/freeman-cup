@@ -57,6 +57,10 @@ export interface WonMoment {
   shootout: { a: number[]; b: number[]; ta: number; tb: number } | null;
   roster: string;
   mvp: { name: string; line: string } | null;
+  /** every planned point decided and every card in: honors are final */
+  weekDone: boolean;
+  /** the day still to play when the Cup was clinched early, e.g. "Saturday" */
+  left: string | null;
 }
 
 export interface MomentsState {
@@ -231,7 +235,7 @@ export function deriveMoments(input: MomentsInput): MomentsState {
       key: 'won', winner: clinchSide, pts: { a, b },
       kick: `${dowOf(clincher.s.day)} · ${clincher.s.course} · ${ampm(clincher.at)}`,
       how, viaShootout: false, shootout: null,
-      roster: rosterOf(clinchSide), mvp: null,
+      roster: rosterOf(clinchSide), mvp: null, weekDone: false, left: null,
     };
   } else if (tie && shWinner) {
     const l: 'a' | 'b' = shWinner === 'a' ? 'b' : 'a';
@@ -242,10 +246,17 @@ export function deriveMoments(input: MomentsInput): MomentsState {
       how: `Won on the ${TIEBREAK.where}: ${captains[shWinner]} ${wT}, ${captains[l]} ${lT} in the ${TIEBREAK.name}.`,
       viaShootout: true,
       shootout: { a: shA, b: shB, ta: shTa, tb: shTb },
-      roster: rosterOf(shWinner), mvp: null,
+      roster: rosterOf(shWinner), mvp: null, weekDone: false, left: null,
     };
   }
-  if (won) won.mvp = mvpOf(sessions, matches);
+  if (won) {
+    // honors wait for the whole week: a Cup clinched on Friday still has
+    // Saturday's singles to play, and the King's Race can turn on them
+    won.weekDone = allDone;
+    won.mvp = allDone ? mvpOf(sessions, matches) : null;
+    const pending = sessions.filter(s => !matches.some(m => m.s === s.id) || matches.some(m => m.s === s.id && !calc(m).done));
+    won.left = allDone ? null : (pending.length ? dowOf(pending[pending.length - 1].day) : null);
+  }
 
   return { days, duelPending: !!tie && !won, tie, won, captains };
 }

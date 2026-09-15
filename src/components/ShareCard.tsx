@@ -254,10 +254,16 @@ function FinaleBody({ c, year, board }: { c: FinaleCard; year: number; board: Bo
         </div>
       )}
       {c.viaShootout && <div className="pline">Won on the practice green<br /><b>{TIEBREAK.name}</b></div>}
-      {mvp && (
+      {c.weekDone && mvp && (
         <div className="pline honors">
           <span>MVP of the Cup <b className={tc(mvp.side)}>{mvp.name}</b> · {mvp.pts} points</span>
           {med && <span>Medalist <b className={tc(med.side)}>{med.name}</b> · {relLabel(med.rel)} net</span>}
+        </div>
+      )}
+      {!c.weekDone && (
+        <div className="pline honors">
+          <span>{c.left ? `${c.left} is for pride and the King’s Race.` : 'The King’s Race is still open.'}</span>
+          {mvp && <span>Leading <b className={tc(mvp.side)}>{mvp.name}</b> · {mvp.pts} points</span>}
         </div>
       )}
     </div>

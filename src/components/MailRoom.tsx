@@ -40,7 +40,7 @@ export default function MailRoom({ data, moments, reload }: { data: EventData; m
       sub: dm ? 'Every card for the day is in' : 'Unlocks when the day’s cards are in', ready: !!dm, build: () => recapMail(data, day),
     });
   });
-  items.push({ id: 'finale', kind: 'finale', key: 'cup', title: 'The finale', sub: moments?.won ? 'The Cup is decided' : 'Unlocks when the Cup is decided', ready: !!moments?.won, build: () => finaleMail(data) });
+  items.push({ id: 'finale', kind: 'finale', key: 'cup', title: 'The finale', sub: moments?.won?.weekDone ? 'The Cup is decided' : moments?.won ? `Clinched; unlocks when ${moments.won.left || 'the last day'} is in the book` : 'Unlocks when the Cup is decided', ready: !!moments?.won?.weekDone, build: () => finaleMail(data) });
   items.push({ id: 'week', kind: 'week', key: 'week', title: 'One week out', sub: 'The schedule, the countdown, the home-screen reminder', ready: true, build: () => weekOutMail(data) });
 
   const go = async (it: Item, test: boolean) => {

@@ -166,6 +166,10 @@ export interface FinaleCard {
   /** the match that clinched it, when the Cup was won on the course */
   clinch: { m: Match; s: Session; r: CalcResult } | null;
   viaShootout: boolean;
+  /** every planned point decided: honors are final */
+  weekDone: boolean;
+  /** the day still to play when the Cup was clinched early */
+  left: string | null;
 }
 
 export function finaleCard(
@@ -179,9 +183,11 @@ export function finaleCard(
   // the whole Cup decided, not merely every match posted so far
   const allDone = d.scoringMatches.length > 0 && d.scoringMatches.every(m => calc(m).done)
     && a + b >= plannedPoints(d.scoringSessions);
+  const pending = d.scoringSessions.filter(s => !d.scoringMatches.some(m => m.s === s.id) || d.scoringMatches.some(m => m.s === s.id && !calc(m).done));
+  const left = allDone ? null : (pending.length ? dowOf(pending[pending.length - 1].day) : null);
   if (allDone && a === b) {
     const sh = shootoutCard(d, shootout);
-    return sh ? { kind: 'won', key: 'won', winner: sh.winner, pts: { a, b }, clinch: null, viaShootout: true } : null;
+    return sh ? { kind: 'won', key: 'won', winner: sh.winner, pts: { a, b }, clinch: null, viaShootout: true, weekDone: true, left: null } : null;
   }
   interface F { at: number; m: Match; s: Session; r: CalcResult }
   const finals: F[] = [];
@@ -197,7 +203,7 @@ export function finaleCard(
   for (const f of finals) {
     wa += f.r.pts.a; wb += f.r.pts.b;
     if (wa >= clinchPts || wb >= clinchPts) {
-      return { kind: 'won', key: 'won', winner: wa >= clinchPts ? 'a' : 'b', pts: { a, b }, clinch: f, viaShootout: false };
+      return { kind: 'won', key: 'won', winner: wa >= clinchPts ? 'a' : 'b', pts: { a, b }, clinch: f, viaShootout: false, weekDone: allDone, left };
     }
   }
   return null;

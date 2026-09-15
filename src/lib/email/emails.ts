@@ -124,7 +124,8 @@ export function finaleMail(d: EventData): Mail[] {
   const c = finaleCard(d, when, d.event.shootout ?? null);
   if (!c) return [];
   const w = c.winner, l: Side = w === 'a' ? 'b' : 'a';
-  const top = mvp(d.scoringSessions, d.scoringMatches);
+  // honors only once the whole week is in; a Friday clinch still has Saturday
+  const top = c.weekDone ? mvp(d.scoringSessions, d.scoringMatches) : null;
   const title = `${teamName(w)} take ${CFG.trophy}.`;
   const cl = c.clinch;
   const clinchLine = c.viaShootout
