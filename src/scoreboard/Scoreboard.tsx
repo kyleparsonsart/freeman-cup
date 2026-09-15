@@ -64,10 +64,13 @@ function roundViews(d: Shaped): RoundView[] {
     const state: RoundView['state'] = ms.length && ms.every(m => calc(m).done) ? 'final'
       : ms.some(m => calc(m).played > 0) ? 'live'
       : s.state === 'final' ? 'final' : 'upcoming';
+    // matches exist only once pairings post; until then the tee groups
+    // carry the times, so the countdown never reads "First tee 12:00am"
     const tees = ms.map(m => d.teeTimeOf(m)).sort();
+    const groupTees = d.snap.tee_groups.filter(g => g.round_id === s.id).map(g => g.tee_time).sort();
     return {
       s, date: row.play_date, ms, pts, state,
-      teeTime: tees[0] || '00:00:00',
+      teeTime: tees[0] || groupTees[0] || '00:00:00',
       pairingsSet: ms.length > 0 && ms.every(m => m.a.length && m.b.length),
     };
   });
@@ -174,7 +177,7 @@ export default function Scoreboard() {
         <div className="wrap">
           <h2>Round by round</h2>
           <p className="sub">{phase === 'pre' ? 'Tee times. Pairings post the night before each round.' : 'Tee times and results.'}</p>
-          {rounds.map(r => <DayBlock key={r.s.id} d={d} r={r} open={r.state === 'live' || (r.state === 'upcoming' && r === next && !liveRounds.length)} />)}
+          {rounds.map(r => <DayBlock key={r.s.id} d={d} r={r} open={r.state === 'live' || onCourse.includes(r) || (!onCourse.length && r.state === 'upcoming' && r === next)} />)}
         </div>
       </section>
 
