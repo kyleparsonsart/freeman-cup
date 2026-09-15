@@ -49,8 +49,10 @@ export function useAuth() {
     return error ? error.message : null;
   }, []);
 
+  // this phone only: the same person is signed in on Safari and the
+  // home-screen app, and signing out of one must not sign out the other
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: 'local' });
   }, []);
 
   return { session, ready, sendCode, verifyCode, devSignIn, signOut };

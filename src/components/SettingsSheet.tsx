@@ -168,6 +168,7 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
   const todayId = desk?.round.id ?? data.rounds.find(r => r.state !== 'final')?.id ?? data.rounds[0]?.id ?? null;
   const isOpen = (id: string) => (openRound ?? todayId) === id;
 
+  const [signOutArmed, setSignOutArmed] = useState(false);
   const account = (
     <>
       <div className="grp"><h3>Account</h3></div>
@@ -176,7 +177,9 @@ export default function SettingsSheet({ data, acting = 'player', onActing, momen
           {fname(me?.name) || 'Signed in'}
           <span className="sub2">{commish ? 'Commissioner' : 'Player'}</span>
         </label>
-        <button className="aghost" onClick={signOut}>Sign out</button>
+        {signOutArmed
+          ? <button className="aghost warn" onClick={signOut}>Yes, sign out of this phone</button>
+          : <button className="aghost" onClick={() => setSignOutArmed(true)}>Sign out</button>}
       </div>
       <div className="build">Build {__BUILD_STAMP__}</div>
     </>

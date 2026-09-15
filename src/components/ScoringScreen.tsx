@@ -1,7 +1,7 @@
-import { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
-import { enqueueHoleWrite, getQueuedWrites, onQueueChange, dismissBlocked, type QueuedHoleWrite } from '../lib/writeQueue';
+import { enqueueHoleWrite, flushQueue, getQueuedWrites, onQueueChange, dismissBlocked, type QueuedHoleWrite } from '../lib/writeQueue';
 import { groupMatches, openHoles, holesShort, byeProgress } from '../lib/card';
 import { calc, derive, settle, holeComplete, getsStroke, strokeMap, holeKeys, missingIn, initials, setContext, CFG, P, type Match, SIDES, lineup } from '../lib/scoring';
 import { IconGolf } from './icons';
@@ -286,8 +286,15 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
     ) : null;
   };
   const [pending, setPending] = useState(0);
+  // rows of this group still queued, counted the moment they exist: this
+  // gates Submit, where a 2.5 s grace would let the card lock a score out
+  const [queuedNow, setQueuedNow] = useState(0);
   const [blocked, setBlocked] = useState<QueuedHoleWrite[]>([]);
 
+  const gmIds = useMemo(
+    () => new Set(groupMatches(data.scoringMatches, m.s, m.g).map(gm => gm.id)),
+    [data.scoringMatches, m.s, m.g],
+  );
   // How many scores are still waiting to reach the server. Online, a row
   // sits in the queue for a few hundred ms before it flushes; showing that
   // reads as flicker, so a non-zero count only appears once it has been
@@ -301,6 +308,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
         if (!live) return;
         if (timer) { clearTimeout(timer); timer = null; }
         setBlocked(q.filter(w => w.blocked));
+        setQueuedNow(q.filter(w => !w.blocked && gmIds.has(w.match_id)).length);
         const fresh = q.filter(w => !w.blocked).length;
         if (fresh === 0) setPending(0);
         else timer = setTimeout(() => { if (live) setPending(fresh); }, 2500);
@@ -309,7 +317,7 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
     update();
     const off = onQueueChange(update);
     return () => { live = false; off(); if (timer) clearTimeout(timer); };
-  }, []);
+  }, [gmIds]);
 
   const i = Math.min(curHole(m, s.holes, pinned), s.holes - 1);
   const h = m.hs[i];
@@ -409,6 +417,13 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
   const submitCard = async () => {
     if (!dbTg) return;
     setSubErr(null);
+    // the last hole's save must land before the card locks it out
+    await flushQueue();
+    const still = (await getQueuedWrites()).filter(w => !w.blocked && gmIds.has(w.match_id)).length;
+    if (still > 0) {
+      setSubErr(`Still syncing ${still} score${still === 1 ? '' : 's'}. Submit unlocks the moment ${still === 1 ? 'it lands' : 'they land'}.`);
+      return;
+    }
     const { error } = await supabase.rpc('submit_card', { tg: dbTg.id });
     if (error) {
       setSubErr(/fetch|network|load failed/i.test(error.message)
@@ -782,13 +797,13 @@ function HeroCard({ match: m, session: s, data, pinned, setPinned, selectMatch, 
       )}
       {!viewOnly && !submitted && i === s.holes - 1 && (iAmScorer || data.meIsCommissioner) && (
         <button
-          className={`advbtn submit${short > 0 || pending > 0 || gBlocked.length > 0 ? ' dim' : ''}`}
-          disabled={short > 0 || pending > 0 || gBlocked.length > 0}
+          className={`advbtn submit${short > 0 || queuedNow > 0 || gBlocked.length > 0 ? ' dim' : ''}`}
+          disabled={short > 0 || queuedNow > 0 || gBlocked.length > 0}
           onClick={submitCard}
         >
           {gBlocked.length > 0 ? `${gBlocked.length} score${gBlocked.length === 1 ? '' : 's'} need attention`
             : short > 0 ? `${short} hole${short === 1 ? '' : 's'} still open`
-            : pending > 0 ? `Syncing ${pending}…`
+            : queuedNow > 0 ? `Syncing ${queuedNow}…`
             : 'Submit scores'}
         </button>
       )}
