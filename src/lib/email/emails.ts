@@ -11,7 +11,7 @@ import type { Side } from '../cards';
 import { strokeHoles } from '../letters';
 import { dayCard, finaleCard, matchStory, names } from '../cards';
 import { mvp, roundRaces, relLabel } from '../standings';
-import { shell, kicker, headline, card, cardLabel, sentence, rows, button, fine, matchBlock, esc, side, C, F, APP, SITE } from './shell';
+import { shell, kicker, headline, card, cardLabel, sentence, rows, button, fine, matchBlock, esc, side, C, F, SITE } from './shell';
 
 export interface Mail { to: string; subject: string; html: string }
 
@@ -110,8 +110,8 @@ export function recapMail(d: EventData, day: string): Mail[] {
     matchBlock(items, '14px 10px 0'),
     potr.length ? kicker('Player of the round', C.dim, '30px 10px 0') + rows(potr.map(r => [esc(r.course), `<span style="color:${side(r.winner!.side)};">${esc(r.winner!.name)}</span> &middot; ${r.winner!.pts} pts &middot; ${relLabel(r.winner!.rel)} net`] as [string, string]), '14px 10px 0') : '',
     c.next ? rows([['Tomorrow', `${esc(c.next.course)} &middot; first tee ${esc((c.next.tees[0] || '').replace(/\s*(AM|PM)/i, x => x.trim().toLowerCase()))}`]], '0 10px 0') : '',
-    button('Open the recap', APP),
-    fine(`The full cards and every moment are on <a href="${SITE}" style="color:${C.moss};">thefreemancup.com</a>.`),
+    button('See it on thefreemancup.com', SITE),
+    fine(`The full cards and every moment are on the site, no sign-in needed. The recap poster is also on the Cup tab of the app on your home screen.`),
   ].join('');
   return real(d).map(p => ({ to: p.email, subject, html: shell({ title: subject, pre: `${c.dow}: ${title} ${items.length} matches, ${potr.length ? 'Player of the round, ' : ''}and tomorrow's first tee.`, body }) }));
 }
@@ -147,8 +147,8 @@ export function finaleMail(d: EventData): Mail[] {
         <div style="font-family:${F.body};font-size:13.5px;line-height:20px;color:${C.moss};padding-top:4px;">${top.pts} hole points &middot; ${top.solo} won alone &middot; ${relLabel(top.rel)} net</div>`, 300, '14px 10px 0'),
     ].join('') : '',
     potr.length ? rows(potr.map(r => [r.rd.replace('Round ', 'R'), `<span style="color:${side(r.winner!.side)};">${esc(r.winner!.name)}</span> &middot; ${r.winner!.pts} pts &middot; ${esc(r.course)}`] as [string, string])) : '',
-    button('Open the finale', APP),
-    fine(`${CFG.trophy} goes home with the ${teamName(w)} until next October.<br>Every card, every match, every moment: <a href="${SITE}" style="color:${C.moss};">thefreemancup.com</a>.`),
+    button('See it on thefreemancup.com', SITE),
+    fine(`${CFG.trophy} goes home with the ${teamName(w)} until next October.<br>Every card, every match, every moment is on the site, no sign-in needed. The finale poster is also on the Cup tab of the app on your home screen.`),
   ].join('');
   return real(d).map(p => ({ to: p.email, subject, html: shell({ title: subject, pre: `${title} ${half(c.pts[w])} to ${half(c.pts[l])}. ${top ? `${top.name} is the MVP.` : ''}`, body, foot: 'See you in 2027.' }) }));
 }
