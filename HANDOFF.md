@@ -131,3 +131,42 @@ The original warnings still stand: don't let anyone rewrite `calc()` or `derive(
 Eight men, two teams, four rounds at Sand Valley, playing for **The Lassie**. Ten points, 5½ wins. Vikes (red): Griffin S. 15 (C), Devin E. 7, Brian K. 6, Matt J. 15. Celts (blue): Kyle P. 15 (C, commissioner), Phil J. 11, Justin D. 7, JT W. 15. Thu Mammoth Dunes four-ball; Fri The Commons aggregate match play (12 holes) then Sand Valley four-ball; Sat Sedge Valley singles. Tie at 5–5 goes to the Captains Shootout on the practice green.
 
 Three tabs: **Live · Scoring · Schedule.** Dark scorecard green, bone, brass; Young Serif (display, one weight, self-hosted Latin subset in `public/fonts/`, replaced Fraunces Sep 1) / Work Sans / Barlow Condensed; sentence case.
+
+
+## Emergency SQL (Sep 16, from the pre-mortem)
+
+Kept here so nobody has to write it on a phone at Sand Valley. Run in the
+Supabase SQL editor.
+
+**A backup commissioner** (Kyle's phone is dead, someone else has to Send
+Pairings, reopen a card, or mark Complete):
+
+```sql
+update player set is_commissioner = true where name like 'Griffin%';
+-- and back again afterward:
+update player set is_commissioner = false where name like 'Griffin%';
+```
+
+**A short-handed team** (someone goes home; the captains' sheet refuses a
+three-man side). Build the round by hand, then let the app carry on:
+
+```sql
+-- find the ids you need
+select id, seq, label from round order by seq;
+select id, seq, tee_time from tee_group where round_id = '<round id>' order by seq;
+select id, name from player order by name;
+
+-- one match per tee group; side_a is Vikes, side_b is Celts, uuids as arrays
+insert into match (round_id, tee_group_id, seq, side_a, side_b) values
+  ('<round id>', '<tee group 1>', 1, array['<vike>','<vike>']::uuid[], array['<celt>','<celt>']::uuid[]),
+  ('<round id>', '<tee group 2>', 2, array['<vike>']::uuid[],          array['<celt>','<celt>']::uuid[]);
+update round set revealed_at = now() where id = '<round id>';
+```
+
+A 1-v-2 side scores as usual (best ball of one is that ball). Scorers are
+elected on the tee as always.
+
+**Creating the seven auth users** is not SQL: run
+`scripts/create-auth-users.mjs` with the service key (see the file header),
+or add them in the dashboard with Auto Confirm on. Never insert into
+`auth.users` by hand.

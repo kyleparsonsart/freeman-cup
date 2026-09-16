@@ -32,10 +32,11 @@ Yours:
 
 - [ ] Collect the seven addresses.
 - [ ] Type each into Settings, Setup, Seats (the "No email" chips go out as you go).
-- [ ] Send me the list and I will write the SQL that creates the seven auth users and links them to the seats in one paste.
-- [ ] Fill the teammate lines in emails/invite-celts.html and emails/invite-vikes.html (marked with an HTML comment), or send me the final rosters and I will.
+- [ ] Send me the list, or run `scripts/create-auth-users.mjs` with the service key (or Dashboard, Users, Add user, Auto Confirm on). Never raw SQL into auth.users. Then check every seat chip reads Open.
 - [ ] In Resend: create the audience with the seven contacts and first names, two segments (Celts, Vikes).
-- [ ] Send yourself a test broadcast of each invitation from Resend; read both on your phone in Gmail dark once.
+- [ ] Send yourself a test broadcast of each invitation from Resend; read both on your phone in Gmail dark once. Check for an injected unsubscribe footer.
+- [ ] Add the DMARC TXT record (MAIL-SETUP.md, bottom).
+- [ ] Confirm the Supabase project is on a paid plan, or open the app every few days: the free tier pauses after seven idle days.
 - [ ] Send the two broadcasts.
 
 Mine:
@@ -61,7 +62,6 @@ Mine:
 
 These are the three Verify items left from the story library. Each needs an installed iPhone app on grass, not a browser on Wi-Fi.
 
-- [ ] PL-19 Push delivery: with the app installed and notifications allowed, score a match final in one group and confirm the other group's phones get the push, and that a correction within 90 seconds cancels it.
 - [ ] SC-09 and SC-11 Offline queue: score three holes with no signal, watch them sync on the way back, then kill the scorer's phone mid-round and have another player take the pencil; confirm nothing is lost or overwritten.
 - [ ] XC-07 Service worker update: deploy anything after the rehearsal starts, and confirm an already-open phone picks up the new build on its next open without a blank screen.
 

@@ -107,3 +107,16 @@ send of the same thing, and logs each send to `feed_event` as `mail_sent`.
 - "Resend refused the send": the message from Resend follows; usually a key
   without sending access or a domain issue. The domain is verified, so the
   key is the first thing to check.
+
+
+## DMARC (Sep 16)
+
+Resend's domain verification sets up SPF and DKIM; it does not add DMARC,
+and Gmail treats a missing DMARC record as a mark against the sender. Add
+one TXT record at the registrar:
+
+    host:  _dmarc.thefreemancup.com
+    value: v=DMARC1; p=none; rua=mailto:kyle@mulliganscoffee.co
+
+`p=none` only asks for reports, so nothing can be rejected by it. Check it
+with `dig txt _dmarc.thefreemancup.com` after an hour.

@@ -169,11 +169,11 @@ export function weekOutMail(d: EventData): Mail[] {
     card(`${cardLabel('Countdown')}
       <div style="font-family:${F.num};font-size:56px;line-height:58px;font-weight:600;color:${C.brass};">${days}</div>
       <div style="font-family:${F.num};font-size:12px;letter-spacing:2px;text-transform:uppercase;color:${C.moss};">days</div>`),
-    sentence(`Three rounds, four courses, one jug. Pairings land in the app the night before each round, and your strokes come with them.`),
+    sentence(`Four rounds, four courses, one jug. Pairings land in the app the night before each round, and your strokes come with them. The app does not send notifications: the Cup tab is where everything lands.`),
     rows(byDay),
     button('Open the app'),
-    fine(`Not on your home screen yet? Open the link in Safari, tap Share, then Add to Home Screen, and sign in with the code. Email links always open in the browser; once it is on your home screen, open it from there.<br>Handicaps are frozen ${first ? esc(longDate(new Date(new Date(first.play_date + 'T12:00:00').getTime() - 6 * 86400000).toISOString().slice(0, 10))) : 'the Friday before'}.`),
+    fine(`Not on your home screen yet? Open the link in Safari, tap Share, then Add to Home Screen, and sign in with the code. Email links always open in the browser; once it is on your home screen, open it from there. Open it once on Wi-Fi before Thursday so it works out on the course.<br>Handicaps are frozen ${first ? esc(longDate(new Date(new Date(first.play_date + 'T12:00:00').getTime() - 6 * 86400000).toISOString().slice(0, 10))) : 'the Friday before'}.`),
   ].join('');
-  return real(d).map(p => ({ to: p.email, subject, html: shell({ title: subject, pre: `${days} days. Three rounds, four courses, one jug. Here is the week.`, body }) }));
+  return real(d).map(p => ({ to: p.email, subject, html: shell({ title: subject, pre: `${days} days. Four rounds, four courses, one jug. Here is the week.`, body }) }));
 }
 

@@ -138,7 +138,7 @@ The invitation goes out as a Resend broadcast on Sep 27. The path is: read the e
 
 **PL-18** As a player, I want the feed to show the important things and not noise. Pass when: holes won with birdies and eagles, lead changes, dormie, finals, and card-in show; scorer switches do not; the feed shows five entries with Show all. Status: Passed (Sep 10).
 
-**PL-19** As a player, I want to be told what I could not see. Pass when: when the other group's match goes final or dormie, or the Cup lead changes, my phone gets a push; birdies do not push; a push waits 90 seconds so a correction cancels it. Status: Verify: still the biggest open item; needs a real installed iPhone.
+**PL-19** As a player, I want to be told what I could not see. Pass when: when the other group's match goes final or dormie, or the Cup lead changes, my phone gets a push; birdies do not push; a push waits 90 seconds so a correction cancels it. Status: Not built for 2026. There is no web push in the app; the Cup tab carries a "new since you looked" count instead (Sep 15). On the 2027 list.
 
 **PL-20** As a player, I want the app to survive no signal. Pass when: with airplane mode on, every tab still opens with the last data and says how old it is; nothing crashes; on reconnect it refreshes without a reload. Status: Passed (Sep 10).
 
@@ -406,7 +406,6 @@ Pulled from the Not built and Partial stories above, sorted into what fits befor
 **Must be true before Oct 8, freeze or not**
 
 - CM-09 Invitations: teammate lines, Resend audience, test broadcast.
-- PL-19 Push delivery verified on a real iPhone home-screen app, including the 90-second hold.
 - SC-09 and SC-11 Offline queue and the dead-phone handoff tested on grass, not on Wi-Fi.
 - XC-07 Service worker update path verified after a deploy.
 - OS-01 Decide what the app shows on Oct 11 so it does not look broken during the goodbye.
