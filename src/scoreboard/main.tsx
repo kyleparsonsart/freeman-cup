@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { Analytics } from '@vercel/analytics/react'
 import './scoreboard.css'
 import Scoreboard from './Scoreboard'
 
@@ -25,5 +26,6 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Scoreboard />
+    <Analytics />
   </StrictMode>,
 )
