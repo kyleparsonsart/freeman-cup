@@ -60,7 +60,7 @@ Two phones is the real thing, but one phone works too: Settings → Setup → Ca
 4. Phone A, acting as commissioner: Send pairings. Every signed-in phone gets a sealed letter with its owner's name; open it and the card shows partner, then opponents, tee time and strokes. Close or See the match.
 5. Behind the letter both phones are already on the match brief; Schedule shows the matches; thefreemancup.com shows them within 60 seconds.
 6. Settings → Setup → Captain's sheets: unseal one side of Round 2 after sealing it, confirm it comes back editable (only possible before Send).
-7. Friday: after Round 2 posts, the Round 3 sheet appears under Round 2's brief (it's due 90 min before the first tee, 11:40 am, not 9 pm).
+7. Friday: after Round 2 posts, the Round 3 sheet appears under Round 2's brief (it's due 30 min before the first tee, 12:40 pm, not 9 pm; was 90 min until Oct 9).
 8. Deadline: to see the default path, set a round's `play_date` to yesterday in the SQL editor and open the app; it fills, reveals, opens and posts on its own. Put the date back.
 9. Settings → Setup → Posted rounds → Reset to sheets takes one round (and any after it) back to the sheets without touching the rest; Clear all scores resets everything so the trip starts clean.
 

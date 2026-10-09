@@ -25,9 +25,9 @@ describe('sheetDue', () => {
   it('handles standard time too', () => {
     expect(sheetDue(R(9, 'singles', '2027-01-10')).toISOString()).toBe('2027-01-10T03:00:00.000Z'); // CST
   });
-  it('a second round on the same day is due 90 minutes before its first tee', () => {
+  it('a second round on the same day is due 30 minutes before its first tee', () => {
     const tgs = [{ id: 'G31', round_id: 'R3', seq: 1, tee_time: '13:10:00', scorer_player_id: null }, { id: 'G32', round_id: 'R3', seq: 2, tee_time: '13:20:00', scorer_player_id: null }];
-    expect(sheetDue(rounds[2], rounds, tgs as never).toISOString()).toBe('2026-10-09T16:40:00.000Z'); // 11:40 CDT
+    expect(sheetDue(rounds[2], rounds, tgs as never).toISOString()).toBe('2026-10-09T17:40:00.000Z'); // 12:40 CDT
     expect(sheetDue(rounds[1], rounds, tgs as never).toISOString()).toBe('2026-10-09T02:00:00.000Z');
   });
 });

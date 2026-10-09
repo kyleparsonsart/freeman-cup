@@ -55,11 +55,12 @@ $$ language sql stable security definer;
 
 -- 9:00 pm the evening before, course time. A second round on the same
 -- day (Friday afternoon) can't be sealed until the morning round has
--- posted, so its deadline is 90 minutes before its first tee instead.
+-- posted, so its deadline is 30 minutes before its first tee instead
+-- (Oct 9: was 90; see freeman-cup-sheets-30min.sql for the change that ran).
 create or replace function sheet_due(r uuid) returns timestamptz as $$
   select case
     when exists (select 1 from round x where x.event_id = me.event_id and x.play_date = me.play_date and x.seq < me.seq)
-      then (me.play_date::timestamp + (select min(tee_time) from tee_group where round_id = me.id) - interval '90 minutes')
+      then (me.play_date::timestamp + (select min(tee_time) from tee_group where round_id = me.id) - interval '30 minutes')
            at time zone 'America/Chicago'
     else ((me.play_date - 1)::timestamp + time '21:00') at time zone 'America/Chicago'
   end

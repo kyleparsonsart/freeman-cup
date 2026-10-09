@@ -107,7 +107,7 @@ Done when: the Schedule tab shows Thursday's four names per match and a named sc
 
 ### Thursday evening: sheets for Friday
 
-- [ ] Captains' sheets open for Round 2 (aggregate, The Commons, 12 holes) and Round 3 (four-ball, Sand Valley) as separate cards. Round 2 is due 9 pm tonight. Round 3 is due Friday 11:40 am, 90 minutes before its first tee, and its pairing is forced by what has already played, so only the tee order is a choice.
+- [ ] Captains' sheets open for Round 2 (aggregate, The Commons, 12 holes) and Round 3 (four-ball, Sand Valley) as separate cards. Round 2 is due 9 pm tonight. Round 3 is due Friday 12:40 pm, 30 minutes before its first tee, and its pairing is forced by what has already played, so only the tee order is a choice.
 - [ ] Tell Griffin about the Round 3 deadline tonight; he will be on the Commons when it lands.
 - [ ] 9:00 pm: Send Round 2 pairings. Name Round 2 scorers. Send the Pairings · Round 2 email.
 - [ ] Settings, Today, Emails, Day recap · Thu: test, read, Send to everyone. The recap poster also drops on every phone.

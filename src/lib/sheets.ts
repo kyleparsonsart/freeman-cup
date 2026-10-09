@@ -25,7 +25,9 @@ function zoned(y: number, m: number, d: number, minutes: number): Date {
 /**
  * When the sheet is due: 9:00 pm the evening before, course time. A second
  * round on the same day (Friday afternoon) can't be sealed until the
- * morning round has posted, so it's due 90 minutes before its first tee.
+ * morning round has posted, so it's due 30 minutes before its first tee
+ * (Oct 9: was 90; the pairing is forced by then anyway, so the tee order
+ * is the only choice and the captains can make it at the turn).
  */
 export function sheetDue(round: Pick<DbRound, 'id' | 'play_date' | 'seq' | 'event_id'>, rounds: DbRound[] = [], teeGroups: DbTeeGroup[] = []): Date {
   const [y, m, d] = round.play_date.split('-').map(Number);
@@ -34,7 +36,7 @@ export function sheetDue(round: Pick<DbRound, 'id' | 'play_date' | 'seq' | 'even
     const tees = teeGroups.filter(t => t.round_id === round.id).map(t => t.tee_time).sort();
     if (tees.length) {
       const [hh, mm] = tees[0].split(':').map(Number);
-      return zoned(y, m, d, hh * 60 + mm - 90);
+      return zoned(y, m, d, hh * 60 + mm - 30);
     }
   }
   return zoned(y, m, d - 1, 21 * 60);
