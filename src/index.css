@@ -1390,9 +1390,13 @@ body.light .ev.cup .score .d{color:rgba(240,235,220,.45)}
 .letterbtn:active{color:var(--bone)}
 /* Scoring before the round: the brief fills the tab and never scrolls, so
    the letter row sits right above the tab bar (same trick as the Live tab) */
-#v-scoring.on:has(.hero.brief){display:flex;flex-direction:column;flex:1;min-height:0;padding-bottom:0}
-#v-scoring.on:has(.hero.brief) #heroSlot.fill{flex:1;min-height:0}
-#v-scoring.on:has(.hero.brief) .hero.brief{flex:1}
+/* Oct 8: only when the brief is alone. The next round's captain's sheet
+   (.capsheet.secondary) is a .hero.brief too, and it used to trip this lock
+   during a live round: the scorecard was squeezed to nothing and drew on top
+   of the sheet. With a sheet below, the tab scrolls normally. */
+#v-scoring.on:has(.hero.brief:not(.secondary)):not(:has(.capsheet.secondary)){display:flex;flex-direction:column;flex:1;min-height:0;padding-bottom:0}
+#v-scoring.on:has(.hero.brief:not(.secondary)):not(:has(.capsheet.secondary)) #heroSlot.fill{flex:1;min-height:0}
+#v-scoring.on:has(.hero.brief:not(.secondary)):not(:has(.capsheet.secondary)) .hero.brief{flex:1}
 
 /* ---------- Sep 8: smoother tab switch. One brass bar slides between the
    tabs; the title and the page arrive from the side you came from ---------- */
