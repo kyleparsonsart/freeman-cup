@@ -156,7 +156,7 @@ function CupApp({ signOut }: { signOut: () => Promise<void> }) {
     teams: data.teams,
     teeGroups: data.teeGroups,
   }) : null, [data]);
-  // Rounds go live on their own at tee minus 30: the first phone to notice
+  // Rounds go live on their own at tee minus 15: the first phone to notice
   // asks the server, which flips it once (freeman-cup-autolive.sql).
   useEffect(() => {
     if (!rawData || rawData.offline) return;

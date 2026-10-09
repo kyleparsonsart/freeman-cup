@@ -1,12 +1,13 @@
 /**
- * Rounds go live on their own thirty minutes before the first tee time
+ * Rounds go live on their own fifteen minutes before the first tee time
+ * (Oct 9: was thirty)
  * (course time, Central). The first phone to look calls round_tick,
  * which flips the round once and records it; a round the commissioner
  * has set back to Not started stays put. Mirrors freeman-cup-autolive.sql.
  */
 import type { DbRound, DbTeeGroup, DbMatch } from './types';
 
-export const AUTO_LIVE_MINUTES = 30;
+export const AUTO_LIVE_MINUTES = 15;
 const COURSE_TZ = 'America/Chicago';
 
 /** play_date + tee_time in course time, as epoch ms; null without a tee time */

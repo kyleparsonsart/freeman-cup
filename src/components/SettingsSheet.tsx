@@ -639,7 +639,7 @@ function Desk({ desk, data, onLive, onComplete }: {
                 {at !== null && !held && (
                   <div className="deskrow ok">
                     <span className="dk">Goes live</span>
-                    <span className="dv">{clockCourse(at)} on its own, 30 minutes before the first tee. Scorers pick up the pencil on the tee.</span>
+                    <span className="dv">{clockCourse(at)} on its own, 15 minutes before the first tee. Scorers pick up the pencil on the tee.</span>
                     <span className="dtick">{'\u23F1'}</span>
                   </div>
                 )}

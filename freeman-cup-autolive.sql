@@ -22,7 +22,7 @@ begin
   if not exists (select 1 from match m where m.round_id = r) then return false; end if;
   select min((rd.play_date + g.tee_time) at time zone 'America/Chicago') into first_tee
     from tee_group g where g.round_id = r;
-  if first_tee is null or now() < first_tee - interval '30 minutes' then return false; end if;
+  if first_tee is null or now() < first_tee - interval '15 minutes' then return false; end if;  -- Oct 9: was 30, see freeman-cup-autolive-15min.sql
   update round set state = 'live', auto_live_at = now() where id = r;
   return true;
 end $$ language plpgsql security definer set search_path = public;

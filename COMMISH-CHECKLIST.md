@@ -84,7 +84,7 @@ Done when: the Schedule tab shows Thursday's four names per match and a named sc
 
 ### 11:30 am: goes live
 
-- [ ] The round goes live on its own 30 minutes before the first tee. Settings, Today shows "Goes live 11:30am" until then and Live after. If a phone with signal has not looked by then, yours does it when you open the desk: Set live now.
+- [ ] The round goes live on its own 15 minutes before the first tee (was 30 until Oct 9). Settings, Today shows "Goes live 11:45am" until then and Live after. If a phone with signal has not looked by then, yours does it when you open the desk: Set live now.
 - [ ] Frost or a delay: Settings, Today, set the round back to Not started. It holds until you set it live by hand.
 
 ### 12:00 pm: first tee

@@ -15,12 +15,12 @@ describe('auto live', () => {
     expect(firstTeeMs(round, tgs)).toBe(Date.UTC(2026, 9, 8, 17, 0));
     expect(clockCourse(firstTeeMs(round, tgs)!)).toBe('12:00pm');
   });
-  it('goes live thirty minutes before', () => {
-    expect(autoLiveAt(round, tgs)).toBe(Date.UTC(2026, 9, 8, 16, 30));
-    expect(clockCourse(autoLiveAt(round, tgs)!)).toBe('11:30am');
+  it('goes live fifteen minutes before', () => {
+    expect(autoLiveAt(round, tgs)).toBe(Date.UTC(2026, 9, 8, 16, 45));
+    expect(clockCourse(autoLiveAt(round, tgs)!)).toBe('11:45am');
   });
   it('is due only with pairings, only once, only when the time has come', () => {
-    const at = Date.UTC(2026, 9, 8, 16, 30);
+    const at = Date.UTC(2026, 9, 8, 16, 45);
     expect(dueForTick([round], tgs, ms, at - 1)).toBeNull();
     expect(dueForTick([round], tgs, ms, at)?.id).toBe('r1');
     expect(dueForTick([round], tgs, [], at)).toBeNull();
